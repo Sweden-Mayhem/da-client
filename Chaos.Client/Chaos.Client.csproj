@@ -1,0 +1,114 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <IsPackable>false</IsPackable>
+        <ApplicationIcon>ChaosClientIcon.ico</ApplicationIcon>
+        <!-- public-facing name; nothing exposes "Chaos.Client" to players -->
+        <AssemblyName>da-swm</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Icon.bmp">
+            <LogicalName>Icon.bmp</LogicalName>
+        </EmbeddedResource>
+        <!-- Custom login screen background (640x480, baked into the exe) -->
+        <EmbeddedResource Include="Assets\da_login.png">
+            <LogicalName>da_login.png</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Assets\da_travel_image.png">
+            <LogicalName>da_travel_image.png</LogicalName>
+        </EmbeddedResource>
+        <!-- Tiling stone texture that fills the letterbox bars behind the 4:3 legacy screens (lobby / char create) -->
+        <EmbeddedResource Include="Assets\lobby_bg.png">
+            <LogicalName>lobby_bg.png</LogicalName>
+        </EmbeddedResource>
+        <!-- Custom character creation background (640x480, replaces the retail _ncreate art) -->
+        <EmbeddedResource Include="Assets\cc_bg.png">
+            <LogicalName>cc_bg.png</LogicalName>
+        </EmbeddedResource>
+        <!-- Generic small (18x18) button art for the DraggableWindow close (_00) and pin (_01) buttons -->
+        <EmbeddedResource Include="Assets\generic_small_button_00.png">
+            <LogicalName>generic_small_button_00.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\generic_small_button_01.png">
+            <LogicalName>generic_small_button_01.png</LogicalName>
+        </EmbeddedResource>
+        <!-- Custom audio is not embedded, it ships as plain files in the Data/sound/ folder (source in
+             client-data/sound/), so it loads by path like the rest of the game's assets and can be swapped without a
+             rebuild. Sound effects are item/money/ui/dialog/window_open/window_close/level_up.mp3 and the login theme
+             is login.mp3. -->
+        <!-- Optional UI font (Libre Baskerville, OFL), the everyday chat/dialog/menu face. Baked in as the default,
+             an external font.ttf in the Data folder overrides it at runtime so the font can be swapped without a rebuild. -->
+        <EmbeddedResource Include="Assets\font.ttf">
+            <LogicalName>font.ttf</LogicalName>
+        </EmbeddedResource>
+        <!-- Display font (Cinzel Decorative Bold, OFL) for the town-map banner title.
+             An external font_fancy.ttf in the Data folder overrides it. -->
+        <EmbeddedResource Include="Assets\font_fancy.ttf">
+            <LogicalName>font_fancy.ttf</LogicalName>
+        </EmbeddedResource>
+        <!-- Sign/board body font (Berkshire Swash, OFL), hand-lettered but readable. External font_sign.ttf overrides. -->
+        <EmbeddedResource Include="Assets\font_sign.ttf">
+            <LogicalName>font_sign.ttf</LogicalName>
+        </EmbeddedResource>
+        <!-- Dynamic tile-light config (which foreground tile emits a light, its shape/offset/colour/kind).
+             An external Data/tilelights.ini overrides it so lights can be tuned without a rebuild. -->
+        <EmbeddedResource Include="Assets\tilelights.ini">
+            <LogicalName>tilelights.ini</LogicalName>
+        </EmbeddedResource>
+        <!-- Town map (M) parchment art, the scroll the map unrolls on, the top name banner, and the red X mark
+             used for travel destinations on both maps. The marks are cropped to the X body so the crossing is the
+             texture center, which is also the click center. -->
+        <EmbeddedResource Include="Assets\map_scroll.png">
+            <LogicalName>map_scroll.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\map_banner.png">
+            <LogicalName>map_banner.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\map_mark_red.png">
+            <LogicalName>map_mark_red.png</LogicalName>
+        </EmbeddedResource>
+        <!-- Warp table for the town-map (T) overlay, tab separated as srcMapId, x, y, destMapId, destName.
+             Baked in, an external warps.txt in the Data folder overrides it. -->
+        <EmbeddedResource Include="Assets\warps.txt">
+            <LogicalName>warps.txt</LogicalName>
+        </EmbeddedResource>
+        <!-- Death greyscale, a pre-compiled desaturation sprite effect (source Assets\Desaturate.fx). The world blit
+             draws through it while the player is dead. Recompile the .fx into the .mgfxo with the mgfxc tool. -->
+        <EmbeddedResource Include="Assets\Desaturate.mgfxo">
+            <LogicalName>desaturate.mgfxo</LogicalName>
+        </EmbeddedResource>
+        <!-- Deferred light and 2D shadow occlusion shader (source Assets\Light.fx).
+             Recompile the .fx into the .mgfxo with the mgfxc tool. -->
+        <EmbeddedResource Include="Assets\Light.mgfxo">
+            <LogicalName>light.mgfxo</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <!-- Native SDL2_mixer binaries per runtime; copied to bin/.../runtimes/{rid}/native/ so the
+         standard .NET native-DLL probe picks them up via [LibraryImport("SDL2_mixer")].
+         SDL2.dll itself is provided by MonoGame.Framework.DesktopGL's own runtimes payload. -->
+    <ItemGroup>
+        <Content Include="runtimes\**\*.dll;runtimes\**\*.dylib;runtimes\**\*.so*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Chaos.Client.Data\Chaos.Client.Data.csproj"/>
+        <ProjectReference Include="..\Chaos.Client.Rendering\Chaos.Client.Rendering.csproj"/>
+        <ProjectReference Include="..\Chaos.Client.Networking\Chaos.Client.Networking.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Chaos.Pathfinding"/>
+    </ItemGroup>
+
+    <!-- SkiaSharp (pulled in transitively via DALib) ships native libSkiaSharp only for Windows/macOS in
+         its base package. On Linux the native library comes from this separate package; without it the
+         linux-x64 libSkiaSharp.so is absent and SKImageInfo's static ctor throws DllNotFoundException. -->
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux"/>
+    </ItemGroup>
+</Project>

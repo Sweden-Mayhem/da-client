@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="Chaos.Common"/>
+        <PackageReference Include="Chaos.DarkAges"/>
+        <PackageReference Include="Chaos.Geometry"/>
+        <PackageReference Include="DALib" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory"/>
+    </ItemGroup>
+</Project>

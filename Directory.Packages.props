@@ -1,0 +1,14 @@
+<Project>
+  <ItemGroup>
+    <PackageVersion Include="Chaos.Common" Version="1.11.0-preview-0017-gd51f7c445e" />
+    <PackageVersion Include="Chaos.DarkAges" Version="1.11.0-preview-0017-gd51f7c445e" />
+    <PackageVersion Include="Chaos.Geometry" Version="1.11.0-preview-0017-gd51f7c445e" />
+    <PackageVersion Include="Chaos.Networking" Version="1.11.0-preview-0017-gd51f7c445e" />
+    <PackageVersion Include="Chaos.Pathfinding" Version="1.11.0-preview-0017-gd51f7c445e" />
+    <PackageVersion Include="DALib" Version="0.7.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.0" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
+    <PackageVersion Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.6.133" />
+  </ItemGroup>
+</Project>

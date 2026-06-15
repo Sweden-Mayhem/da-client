@@ -1,0 +1,3594 @@
+1	3	4	2	Mileth Crypt 2-1
+1	12	49	425	Crypt Vestibule
+1	13	49	425	Crypt Vestibule
+1	14	49	425	Crypt Vestibule
+1	15	49	425	Crypt Vestibule
+1	16	49	425	Crypt Vestibule
+1	17	49	425	Crypt Vestibule
+1	18	49	425	Crypt Vestibule
+1	41	44	4	Mileth Crypt 2-3
+1	44	18	3	Mileth Crypt 2-2
+2	12	22	5	Mileth Crypt 3-1
+2	44	22	1	Mileth Crypt 1
+3	10	18	1	Mileth Crypt 1
+3	43	2	6	Mileth Crypt 3-2
+4	2	43	7	Mileth Crypt 3-3
+4	44	0	1	Mileth Crypt 1
+5	0	30	2	Mileth Crypt 2-1
+5	30	44	8	Mileth Crypt 4-1
+5	41	1	8	Mileth Crypt 4-1
+6	29	27	9	Mileth Crypt 4-2
+6	35	0	3	Mileth Crypt 2-2
+7	10	2	10	Mileth Crypt 4-3
+7	23	26	4	Mileth Crypt 2-3
+8	5	0	5	Mileth Crypt 3-1
+8	5	41	11	Mileth Crypt 5
+9	8	0	6	Mileth Crypt 3-2
+9	27	34	11	Mileth Crypt 5
+10	18	10	11	Mileth Crypt 5
+10	44	0	7	Mileth Crypt 3-3
+11	0	39	9	Mileth Crypt 4-2
+11	2	2	136	Mileth Inn
+11	5	28	13	Mileth Crypt 6-1
+11	14	0	8	Mileth Crypt 4-1
+11	27	13	14	Mileth Crypt 6-2
+11	42	24	15	Mileth Crypt 6-3
+11	44	0	10	Mileth Crypt 4-3
+12	35	48	3068	Singing Sylvan Grove
+12	36	48	3068	Singing Sylvan Grove
+13	5	14	16	Mileth Crypt 7-1
+13	21	18	16	Mileth Crypt 7-1
+13	44	9	11	Mileth Crypt 5
+14	0	6	11	Mileth Crypt 5
+14	13	1	17	Mileth Crypt 7-2
+15	8	2	18	Mileth Crypt 7-3
+15	16	27	18	Mileth Crypt 7-3
+15	35	0	11	Mileth Crypt 5
+16	12	22	20	Mileth Crypt 8-1
+16	14	0	13	Mileth Crypt 6-1
+16	37	1	20	Mileth Crypt 8-1
+17	17	0	14	Mileth Crypt 6-2
+17	37	40	21	Mileth Crypt 8-2
+18	0	36	15	Mileth Crypt 6-3
+18	28	13	22	Mileth Crypt 8-3
+20	30	2	24	Mileth Crypt 9-1
+20	38	42	16	Mileth Crypt 7-1
+21	16	32	25	Mileth Crypt 9-2
+21	32	0	17	Mileth Crypt 7-2
+22	19	35	18	Mileth Crypt 7-3
+22	42	30	26	Mileth Crypt 9-3
+24	20	0	20	Mileth Crypt 8-1
+24	40	2	30	Mileth Crypt 10
+25	17	9	30	Mileth Crypt 10
+25	41	0	21	Mileth Crypt 8-2
+26	5	39	22	Mileth Crypt 8-3
+26	18	19	30	Mileth Crypt 10
+30	0	36	26	Mileth Crypt 9-3
+30	8	23	25	Mileth Crypt 9-2
+30	32	0	24	Mileth Crypt 9-1
+30	44	2	138	Mileth Inn Room 10
+30	44	26	34	Mileth Crypt 11
+34	0	38	30	Mileth Crypt 10
+34	44	36	37	Mileth Crypt 12
+37	0	18	34	Mileth Crypt 11
+37	2	43	40	Mileth Crypt 13
+40	23	26	37	Mileth Crypt 12
+40	33	38	43	Mileth Crypt 14
+43	5	0	40	Mileth Crypt 13
+43	18	10	47	Mileth Crypt 15
+47	0	6	43	Mileth Crypt 14
+47	33	19	51	Mileth Crypt 16
+51	8	0	47	Mileth Crypt 15
+51	28	13	55	Mileth Crypt 17
+55	19	35	51	Mileth Crypt 16
+55	38	11	60	Mileth Crypt 18
+60	27	34	63	Mileth Crypt 19
+60	41	0	55	Mileth Crypt 17
+63	12	22	66	Mileth Crypt 20
+63	23	0	60	Mileth Crypt 18
+66	0	30	63	Mileth Crypt 19
+66	3	19	68	Mileth Crypt 21
+68	12	22	72	Mileth Crypt 22
+68	44	22	66	Mileth Crypt 20
+72	22	1	76	Mileth Crypt 23
+72	35	0	68	Mileth Crypt 21
+76	16	28	717	Mileth Training Center
+76	18	10	80	Mileth Crypt 24
+76	31	26	72	Mileth Crypt 22
+80	0	6	76	Mileth Crypt 23
+80	14	2	85	Mileth Crypt 25
+85	28	10	90	Mileth Crypt 26
+85	38	41	80	Mileth Crypt 24
+90	20	0	85	Mileth Crypt 25
+90	37	2	94	Mileth Crypt 27
+94	13	26	90	Mileth Crypt 26
+94	34	28	96	Mileth Crypt 28
+96	12	32	97	Mileth Crypt 29
+96	44	24	94	Mileth Crypt 27
+97	21	18	101	Mileth Crypt 30
+97	44	0	96	Mileth Crypt 28
+100	0	45	101	Mileth Crypt 30
+101	5	0	97	Mileth Crypt 29
+101	17	19	100	Royal Crypt Entrance
+101	17	20	100	Royal Crypt Entrance
+109	5	0	110	1st Floor Corridor
+109	5	15	3271	Royal Castle of Zolian
+109	14	6	126	2nd Floor Corridor
+109	15	6	126	2nd Floor Corridor
+110	8	0	120	Royal Kitchen
+110	8	15	109	Castle Foyer
+110	15	6	378	Royal Dungeon
+115	0	8	123	Magic Corridor
+115	8	15	119	Royal Hall
+119	5	6	115	Throne Room
+119	5	15	126	2nd Floor Corridor
+119	6	6	115	Throne Room
+120	8	0	122	Royal Armory
+120	8	9	110	1st Floor Corridor
+122	6	9	120	Royal Kitchen
+123	0	5	124	Royal Apothecary
+123	5	0	3041	Royal Library
+123	9	6	115	Throne Room
+124	9	6	123	Magic Corridor
+126	2	0	119	Royal Hall
+126	2	20	109	Castle Foyer
+127	6	14	500	Mileth Village
+127	7	14	500	Mileth Village
+128	6	14	500	Mileth Village
+128	7	14	500	Mileth Village
+129	8	14	500	Mileth Village
+129	9	14	500	Mileth Village
+129	12	0	134	Mileth Tavern
+130	6	14	500	Mileth Village
+130	7	14	500	Mileth Village
+132	6	14	500	Mileth Village
+132	7	14	500	Mileth Village
+132	12	0	133	Mileth Armor Shop
+133	0	9	132	Mileth Weapon Shop
+133	11	8	500	Mileth Village
+133	11	9	500	Mileth Village
+134	10	14	129	Mileth Restaurant
+134	11	14	129	Mileth Restaurant
+134	14	4	500	Mileth Village
+134	14	5	500	Mileth Village
+135	5	11	500	Mileth Village
+135	6	11	500	Mileth Village
+136	0	9	200	Mileth Inn Corridor 1
+136	5	11	500	Mileth Village
+136	6	11	500	Mileth Village
+136	11	2	500	Mileth Village
+136	11	3	500	Mileth Village
+137	6	4	200	Mileth Inn Corridor 1
+137	6	5	200	Mileth Inn Corridor 1
+137	7	4	200	Mileth Inn Corridor 1
+137	7	5	200	Mileth Inn Corridor 1
+138	4	7	201	Mileth Inn Corridor 2
+138	5	7	201	Mileth Inn Corridor 2
+139	6	4	200	Mileth Inn Corridor 1
+139	6	5	200	Mileth Inn Corridor 1
+139	7	4	200	Mileth Inn Corridor 1
+139	7	5	200	Mileth Inn Corridor 1
+140	6	4	200	Mileth Inn Corridor 1
+140	6	5	200	Mileth Inn Corridor 1
+140	7	4	200	Mileth Inn Corridor 1
+140	7	5	200	Mileth Inn Corridor 1
+141	6	4	200	Mileth Inn Corridor 1
+141	6	5	200	Mileth Inn Corridor 1
+141	7	4	200	Mileth Inn Corridor 1
+141	7	5	200	Mileth Inn Corridor 1
+142	6	4	200	Mileth Inn Corridor 1
+142	6	5	200	Mileth Inn Corridor 1
+142	7	4	200	Mileth Inn Corridor 1
+142	7	5	200	Mileth Inn Corridor 1
+143	4	7	201	Mileth Inn Corridor 2
+143	5	7	201	Mileth Inn Corridor 2
+144	4	7	201	Mileth Inn Corridor 2
+144	5	7	201	Mileth Inn Corridor 2
+145	4	7	201	Mileth Inn Corridor 2
+145	5	7	201	Mileth Inn Corridor 2
+146	4	7	201	Mileth Inn Corridor 2
+146	5	7	201	Mileth Inn Corridor 2
+185	7	29	195	Coastal Bar
+185	7	46	502	Abel
+185	7	47	502	Abel
+185	8	29	195	Coastal Bar
+185	8	30	195	Coastal Bar
+185	11	47	502	Abel
+185	11	48	502	Abel
+185	26	31	207	Abel Dungeon 1
+185	27	30	207	Abel Dungeon 1
+185	46	0	186	Atlantis Entrance
+185	47	0	186	Atlantis Entrance
+186	10	29	185	Abel Coast
+186	11	29	185	Abel Coast
+186	12	29	185	Abel Coast
+186	13	29	185	Abel Coast
+186	14	29	185	Abel Coast
+186	15	29	185	Abel Coast
+186	16	29	185	Abel Coast
+187	1	8	190	Piet Dungeon 2-2
+187	9	0	501	Piet
+187	10	0	501	Piet
+187	11	0	501	Piet
+187	13	3	189	Piet Dungeon 2-1
+189	0	9	187	Piet Dungeon 1
+189	1	3	191	Piet Dungeon 3-1
+190	12	20	194	Piet Dungeon 3-2
+190	17	24	187	Piet Dungeon 1
+190	18	24	187	Piet Dungeon 1
+190	19	24	187	Piet Dungeon 1
+191	3	8	189	Piet Dungeon 2-1
+191	10	4	199	Piet Dungeon 4-1
+192	8	24	500	Mileth Village
+192	9	24	500	Mileth Village
+194	0	6	190	Piet Dungeon 2-2
+194	14	11	216	Piet Dungeon 4-2
+195	9	5	185	Abel Coast
+195	9	6	185	Abel Coast
+199	0	19	191	Piet Dungeon 3-1
+199	0	20	191	Piet Dungeon 3-1
+199	0	21	191	Piet Dungeon 3-1
+199	10	3	220	Piet Dungeon 5-1
+200	0	2	142	Mileth Inn Room 5
+200	0	5	141	Mileth Inn Room 4
+200	0	8	140	Mileth Inn Room 3
+200	0	11	139	Mileth Inn Room 2
+200	0	14	137	Mileth Inn Room 1
+200	2	0	201	Mileth Inn Corridor 2
+200	3	0	201	Mileth Inn Corridor 2
+200	4	15	136	Mileth Inn
+201	1	4	200	Mileth Inn Corridor 1
+201	2	0	143	Mileth Inn Room 6
+201	2	4	200	Mileth Inn Corridor 1
+201	5	0	144	Mileth Inn Room 7
+201	8	0	145	Mileth Inn Room 8
+201	11	0	146	Mileth Inn Room 9
+201	14	0	138	Mileth Inn Room 10
+207	3	8	208	Abel Dungeon 2-1
+207	4	8	208	Abel Dungeon 2-1
+207	22	0	185	Abel Coast
+207	29	30	209	Abel Dungeon 2-2
+207	30	30	209	Abel Dungeon 2-2
+208	0	33	207	Abel Dungeon 1
+208	11	36	262	Abel Dungeon 3-1
+208	12	36	262	Abel Dungeon 3-1
+209	15	14	263	Abel Dungeon 3-2
+209	16	14	263	Abel Dungeon 3-2
+209	22	0	207	Abel Dungeon 1
+215	6	19	3003	Dark District
+215	7	19	3003	Dark District
+216	10	0	194	Piet Dungeon 3-2
+216	11	19	219	Piet Dungeon 5-2
+219	4	2	232	Piet Dungeon 6-2
+219	12	0	216	Piet Dungeon 4-2
+220	1	21	231	Piet Dungeon 6-1
+220	25	10	199	Piet Dungeon 4-1
+231	4	39	220	Piet Dungeon 5-1
+231	35	32	239	Piet Dungeon 7-1
+231	36	32	239	Piet Dungeon 7-1
+232	2	3	240	Piet Dungeon 7-2
+232	15	6	219	Piet Dungeon 5-2
+232	15	7	219	Piet Dungeon 5-2
+232	15	8	219	Piet Dungeon 5-2
+239	2	21	249	Piet Dungeon 8-1
+239	25	9	231	Piet Dungeon 6-1
+240	2	10	250	Piet Dungeon 8-2
+240	14	49	232	Piet Dungeon 6-2
+249	13	49	239	Piet Dungeon 7-1
+249	14	49	239	Piet Dungeon 7-1
+249	30	6	258	Piet Dungeon 9-1
+250	4	39	240	Piet Dungeon 7-2
+250	24	10	260	Piet Dungeon 9-2
+250	25	10	260	Piet Dungeon 9-2
+258	18	0	259	Piet Dungeon 10
+258	21	19	260	Piet Dungeon 9-2
+258	25	9	249	Piet Dungeon 8-1
+259	0	40	258	Piet Dungeon 9-1
+259	13	49	261	Piet Dungeon 11
+259	14	49	261	Piet Dungeon 11
+259	49	43	260	Piet Dungeon 9-2
+260	4	39	250	Piet Dungeon 8-2
+260	20	0	258	Piet Dungeon 9-1
+260	20	33	259	Piet Dungeon 10
+260	21	33	259	Piet Dungeon 10
+261	25	9	284	The Crossroads
+261	26	9	284	The Crossroads
+261	36	0	259	Piet Dungeon 10
+262	10	0	208	Abel Dungeon 2-1
+262	13	20	265	Abel Dungeon 4-1
+262	14	20	265	Abel Dungeon 4-1
+263	4	36	266	Abel Dungeon 4-2
+263	5	36	266	Abel Dungeon 4-2
+263	22	0	209	Abel Dungeon 2-2
+265	15	14	268	Abel Dungeon 5-1
+265	16	14	268	Abel Dungeon 5-1
+265	22	0	262	Abel Dungeon 3-1
+266	4	10	269	Abel Dungeon 5-2
+266	5	10	269	Abel Dungeon 5-2
+266	20	0	263	Abel Dungeon 3-2
+268	10	0	265	Abel Dungeon 4-1
+268	35	8	270	Abel Dungeon 6-1
+268	36	8	270	Abel Dungeon 6-1
+269	22	0	266	Abel Dungeon 4-2
+269	24	36	271	Abel Dungeon 6-2
+269	25	36	271	Abel Dungeon 6-2
+270	0	33	268	Abel Dungeon 5-1
+270	6	0	272	Abel Dungeon 7-1
+271	22	0	269	Abel Dungeon 5-2
+271	36	2	273	Abel Dungeon 7-2
+271	37	2	273	Abel Dungeon 7-2
+272	10	0	270	Abel Dungeon 6-1
+272	29	18	275	Abel Dungeon 8-1
+272	30	18	275	Abel Dungeon 8-1
+273	25	23	276	Abel Dungeon 8-2
+273	26	23	276	Abel Dungeon 8-2
+273	35	0	271	Abel Dungeon 6-2
+275	2	13	278	Abel Dungeon 9-1
+275	3	13	278	Abel Dungeon 9-1
+275	22	0	272	Abel Dungeon 7-1
+276	0	11	273	Abel Dungeon 7-2
+276	3	2	279	Abel Dungeon 9-2
+276	4	2	279	Abel Dungeon 9-2
+278	0	33	275	Abel Dungeon 8-1
+278	29	18	282	Abel Dungeon 10-1
+278	30	18	282	Abel Dungeon 10-1
+279	11	0	276	Abel Dungeon 8-2
+279	13	13	283	Abel Dungeon 10-2
+279	14	13	283	Abel Dungeon 10-2
+282	0	33	278	Abel Dungeon 9-1
+282	36	3	284	The Crossroads
+282	37	3	284	The Crossroads
+283	0	29	279	Abel Dungeon 9-2
+283	33	33	284	The Crossroads
+283	34	33	284	The Crossroads
+284	0	29	282	Abel Dungeon 10-1
+284	0	29	283	Abel Dungeon 10-2
+284	26	16	261	Piet Dungeon 11
+284	27	16	261	Piet Dungeon 11
+301	6	14	500	Mileth Village
+301	7	14	500	Mileth Village
+301	12	0	302	Devlin's White Magic
+302	7	14	301	Mileth Combat Trainer
+302	8	14	301	Mileth Combat Trainer
+302	14	7	500	Mileth Village
+302	14	8	500	Mileth Village
+303	14	8	505	Rucesion Village
+303	14	9	505	Rucesion Village
+308	1	10	3018	Shrine to Sgrios
+308	8	21	340	Dubhaim Castle
+308	9	21	340	Dubhaim Castle
+308	10	21	340	Dubhaim Castle
+319	0	2	325	Dubhaim Castle West 6-1
+319	0	8	324	Dubhaim Castle West 5-1
+319	0	14	323	Dubhaim Castle West 4-1
+319	0	20	322	Dubhaim Castle West 3-1
+319	0	26	321	Dubhaim Castle West 2-1
+319	0	32	320	Dubhaim Castle West 1-1
+319	5	39	340	Dubhaim Castle
+320	21	11	319	Dubhaim Castle West Corridor
+321	21	11	319	Dubhaim Castle West Corridor
+322	21	11	319	Dubhaim Castle West Corridor
+323	0	11	4004	Chamber I North
+323	21	11	319	Dubhaim Castle West Corridor
+324	0	11	4008	Chamber II North
+324	21	11	319	Dubhaim Castle West Corridor
+325	0	11	4012	Chamber III North
+325	21	11	319	Dubhaim Castle West Corridor
+340	12	26	319	Dubhaim Castle West Corridor
+340	25	31	308	Dubhaim Castle East 1-1
+341	1	7	344	Path Temple 6
+341	6	1	342	Path Temple 7
+341	6	11	399	Path Temple 2
+341	7	11	399	Path Temple 2
+341	11	7	396	Path Temple 4
+341	11	8	396	Path Temple 4
+342	1	6	346	Chief Rogue Hall
+342	6	1	345	Chief Priest Hall
+342	6	11	341	Path Temple 3
+342	7	11	341	Path Temple 3
+342	11	6	397	Path Temple 8
+342	11	7	397	Path Temple 8
+343	1	7	347	Chief Warrior Hall
+343	6	1	344	Path Temple 6
+343	11	7	399	Path Temple 2
+343	11	8	399	Path Temple 2
+344	1	7	348	Chief Monk Hall
+344	6	1	346	Chief Rogue Hall
+344	6	11	343	Path Temple 5
+344	7	11	343	Path Temple 5
+344	11	7	341	Path Temple 3
+344	11	8	341	Path Temple 3
+345	6	11	342	Path Temple 7
+345	7	11	342	Path Temple 7
+346	6	11	344	Path Temple 6
+346	7	11	344	Path Temple 6
+346	11	6	342	Path Temple 7
+346	11	7	342	Path Temple 7
+347	11	5	343	Path Temple 5
+347	11	6	343	Path Temple 5
+348	11	5	344	Path Temple 6
+348	11	6	344	Path Temple 6
+378	1	8	110	1st Floor Corridor
+381	11	5	500	Mileth Village
+381	11	6	500	Mileth Village
+386	5	11	501	Piet
+386	6	11	501	Piet
+390	12	6	502	Abel
+390	12	7	502	Abel
+393	11	5	500	Mileth Village
+393	11	6	500	Mileth Village
+394	2	4	395	Path Temple 1
+394	2	5	395	Path Temple 1
+395	1	7	399	Path Temple 2
+395	6	1	396	Path Temple 4
+395	11	7	394	Path Sitting Room
+395	11	8	394	Path Sitting Room
+396	1	6	341	Path Temple 3
+396	6	1	397	Path Temple 8
+396	6	11	395	Path Temple 1
+396	7	11	395	Path Temple 1
+397	1	5	342	Path Temple 7
+397	6	11	396	Path Temple 4
+397	7	1	398	Chief Wizard Hall
+397	7	11	396	Path Temple 4
+398	6	11	397	Path Temple 8
+398	7	11	397	Path Temple 8
+399	1	5	343	Path Temple 5
+399	7	1	341	Path Temple 3
+399	11	5	395	Path Temple 1
+399	11	6	395	Path Temple 1
+400	6	14	500	Mileth Village
+400	7	14	500	Mileth Village
+401	14	7	500	Mileth Village
+401	14	8	500	Mileth Village
+420	6	14	505	Rucesion Village
+420	7	14	505	Rucesion Village
+420	13	0	421	Rucesion Armor Shop
+421	0	10	420	Rucesion Weapon Shop
+421	11	8	505	Rucesion Village
+421	11	9	505	Rucesion Village
+422	5	14	505	Rucesion Village
+422	6	14	505	Rucesion Village
+423	6	14	505	Rucesion Village
+423	7	14	505	Rucesion Village
+425	6	15	500	Mileth Village
+425	7	15	500	Mileth Village
+425	8	15	500	Mileth Village
+425	9	6	1	Mileth Crypt 1
+425	9	15	500	Mileth Village
+441	14	15	2051	Abandoned Church
+441	15	14	2051	Abandoned Church
+441	15	15	2051	Abandoned Church
+449	23	0	451	Western Woodlands 1
+449	24	0	451	Western Woodlands 1
+449	25	49	452	Western Woodlands 2
+449	26	49	452	Western Woodlands 2
+450	23	0	453	Western Woodlands 3
+450	24	0	453	Western Woodlands 3
+451	25	49	449	Western Crossroads
+451	26	49	449	Western Crossroads
+452	0	23	453	Western Woodlands 3
+452	0	24	453	Western Woodlands 3
+452	23	0	449	Western Crossroads
+452	24	0	449	Western Crossroads
+453	0	23	454	Dwarven Enclave
+453	0	24	454	Dwarven Enclave
+453	23	0	452	Western Woodlands 2
+453	24	0	452	Western Woodlands 2
+453	25	49	450	Western Woodlands 4
+453	26	49	450	Western Woodlands 4
+454	0	23	456	Western Woodlands 5
+454	0	24	456	Western Woodlands 5
+454	25	49	453	Western Woodlands 3
+454	26	49	453	Western Woodlands 3
+456	23	0	457	Western Woodlands 6
+456	24	0	457	Western Woodlands 6
+456	25	49	454	Dwarven Enclave
+456	26	49	454	Dwarven Enclave
+457	0	23	461	Western Woodlands 10
+457	0	24	461	Western Woodlands 10
+457	25	49	456	Western Woodlands 5
+457	26	49	456	Western Woodlands 5
+457	49	23	458	Western Woodlands 7
+457	49	24	458	Western Woodlands 7
+458	0	23	457	Western Woodlands 6
+458	0	24	457	Western Woodlands 6
+458	23	0	460	Western Woodlands 9
+458	24	0	460	Western Woodlands 9
+458	25	49	459	Western Woodlands 8
+458	26	49	459	Western Woodlands 8
+459	23	0	458	Western Woodlands 7
+459	24	0	458	Western Woodlands 7
+460	25	49	458	Western Woodlands 7
+460	26	49	458	Western Woodlands 7
+461	23	0	463	Western Woodlands 12
+461	24	0	463	Western Woodlands 12
+461	25	49	462	Western Woodlands 11
+461	26	49	462	Western Woodlands 11
+461	49	23	457	Western Woodlands 6
+461	49	24	457	Western Woodlands 6
+462	23	0	461	Western Woodlands 10
+462	24	0	461	Western Woodlands 10
+463	25	49	461	Western Woodlands 10
+463	26	49	461	Western Woodlands 10
+463	49	25	464	Rucesion Empty Room 1
+463	49	26	464	Rucesion Empty Room 1
+464	12	6	505	Rucesion Village
+464	12	7	505	Rucesion Village
+486	7	4	496	Rucesion Inn Corridor 1
+486	7	5	496	Rucesion Inn Corridor 1
+487	4	7	497	Rucesion Inn Corridor 2
+487	5	7	497	Rucesion Inn Corridor 2
+488	7	4	496	Rucesion Inn Corridor 1
+488	7	5	496	Rucesion Inn Corridor 1
+489	7	4	496	Rucesion Inn Corridor 1
+489	7	5	496	Rucesion Inn Corridor 1
+490	7	4	496	Rucesion Inn Corridor 1
+490	7	5	496	Rucesion Inn Corridor 1
+491	7	4	496	Rucesion Inn Corridor 1
+491	7	5	496	Rucesion Inn Corridor 1
+492	4	7	497	Rucesion Inn Corridor 2
+492	5	7	497	Rucesion Inn Corridor 2
+493	4	7	497	Rucesion Inn Corridor 2
+493	5	7	497	Rucesion Inn Corridor 2
+494	4	7	497	Rucesion Inn Corridor 2
+494	5	7	497	Rucesion Inn Corridor 2
+495	4	7	497	Rucesion Inn Corridor 2
+495	5	7	497	Rucesion Inn Corridor 2
+496	0	1	491	Rucesion Inn Room 5
+496	0	4	490	Rucesion Inn Room 4
+496	0	7	489	Rucesion Inn Room 3
+496	0	10	488	Rucesion Inn Room 2
+496	0	13	486	Rucesion Inn Room 1
+496	2	0	497	Rucesion Inn Corridor 2
+496	3	0	497	Rucesion Inn Corridor 2
+496	4	13	498	Rucesion Inn
+497	1	0	492	Rucesion Inn Room 6
+497	1	4	496	Rucesion Inn Corridor 1
+497	2	4	496	Rucesion Inn Corridor 1
+497	4	0	493	Rucesion Inn Room 7
+497	7	0	494	Rucesion Inn Room 8
+497	10	0	495	Rucesion Inn Room 9
+497	13	0	487	Rucesion Inn Room 10
+498	0	10	496	Rucesion Inn Corridor 1
+498	4	11	505	Rucesion Village
+498	5	11	505	Rucesion Village
+498	6	11	505	Rucesion Village
+498	7	11	505	Rucesion Village
+500	13	68	132	Mileth Weapon Shop
+500	14	41	400	Mileth Special Skills
+500	15	41	400	Mileth Special Skills
+500	18	61	133	Mileth Armor Shop
+500	18	62	133	Mileth Armor Shop
+500	19	21	401	Dar's Black Magic
+500	19	22	401	Dar's Black Magic
+500	26	15	127	Mileth Alchemist
+500	27	43	136	Mileth Inn
+500	28	43	136	Mileth Inn
+500	30	82	128	Mileth Messenger
+500	31	82	128	Mileth Messenger
+500	32	37	136	Mileth Inn
+500	32	38	136	Mileth Inn
+500	40	75	192	Mileth Church
+500	42	58	130	Mileth Tailor
+500	43	58	130	Mileth Tailor
+500	45	50	500	Mileth Village
+500	54	69	135	Mileth Storage
+500	55	69	135	Mileth Storage
+500	59	80	381	Niamh's Hair Boutique
+500	59	81	381	Niamh's Hair Boutique
+500	62	60	129	Mileth Restaurant
+500	63	60	129	Mileth Restaurant
+500	69	54	134	Mileth Tavern
+500	69	55	134	Mileth Tavern
+500	72	79	301	Mileth Combat Trainer
+500	73	79	301	Mileth Combat Trainer
+500	80	72	302	Devlin's White Magic
+500	80	73	302	Devlin's White Magic
+500	90	55	425	Crypt Vestibule
+500	91	54	425	Crypt Vestibule
+500	92	12	393	Hall of Advancement
+500	99	26	3006	Mileth Village Way
+500	99	27	3006	Mileth Village Way
+500	99	28	3006	Mileth Village Way
+500	99	29	3006	Mileth Village Way
+500	99	30	3006	Mileth Village Way
+500	99	31	3006	Mileth Village Way
+505	7	23	423	Rucesion Goods Shop
+505	9	33	303	Rucesion Special Skill M
+505	9	34	303	Rucesion Special Skill M
+505	10	11	719	Rucesion Church
+505	11	11	719	Rucesion Church
+505	22	19	464	Rucesion Empty Room 1
+505	28	0	3010	Rucesion Village Way
+505	29	0	3010	Rucesion Village Way
+505	30	0	3010	Rucesion Village Way
+505	32	33	420	Rucesion Weapon Shop
+505	37	28	421	Rucesion Armor Shop
+505	41	41	498	Rucesion Inn
+505	41	42	498	Rucesion Inn
+505	41	43	498	Rucesion Inn
+505	42	11	422	Rucesion Storage
+509	8	8	509	Flavian Amphitheatre
+509	8	48	509	Flavian Amphitheatre
+509	16	16	509	Flavian Amphitheatre
+509	16	40	509	Flavian Amphitheatre
+509	40	16	509	Flavian Amphitheatre
+509	40	40	509	Flavian Amphitheatre
+509	48	8	509	Flavian Amphitheatre
+509	48	48	509	Flavian Amphitheatre
+600	0	7	622	Enchanted Garden
+600	0	8	622	Enchanted Garden
+600	3	0	601	Eastern Woods 2nd Circle
+600	4	0	601	Eastern Woods 2nd Circle
+600	8	0	602	Eastern Woods 3rd Circle
+600	9	0	602	Eastern Woods 3rd Circle
+600	13	0	603	Eastern Woods 4th Circle
+600	14	0	603	Eastern Woods 4th Circle
+600	17	0	604	Eastern Woods 5th Circle
+600	18	0	604	Eastern Woods 5th Circle
+600	21	0	616	Eastern Woods 6th Circle
+600	22	0	616	Eastern Woods 6th Circle
+600	24	8	464	Rucesion Empty Room 1
+600	24	9	464	Rucesion Empty Room 1
+600	24	15	623	Desolate Wastelands
+600	24	16	623	Desolate Wastelands
+601	25	99	600	Eastern Crossroads
+601	26	99	600	Eastern Crossroads
+602	25	99	600	Eastern Crossroads
+602	26	99	600	Eastern Crossroads
+603	25	99	600	Eastern Crossroads
+603	26	99	600	Eastern Crossroads
+604	23	0	605	Eastern Woodlands 7
+604	24	0	605	Eastern Woodlands 7
+604	25	49	600	Eastern Crossroads
+604	26	49	600	Eastern Crossroads
+604	49	23	612	Eastern Woodlands 10
+604	49	24	612	Eastern Woodlands 10
+605	0	23	609	Eastern Woodlands 8
+605	0	24	609	Eastern Woodlands 8
+605	25	49	604	Eastern Woods 5th Circle
+605	26	49	604	Eastern Woods 5th Circle
+606	23	0	611	Eastern Woodlands 12
+606	24	0	611	Eastern Woodlands 12
+606	25	49	612	Eastern Woodlands 10
+606	26	49	612	Eastern Woodlands 10
+607	23	0	609	Eastern Woodlands 8
+607	24	0	609	Eastern Woodlands 8
+608	25	49	609	Eastern Woodlands 8
+608	26	49	609	Eastern Woodlands 8
+609	23	0	608	Eastern Woodlands 9-2
+609	24	0	608	Eastern Woodlands 9-2
+609	25	49	607	Eastern Woodlands 9-1
+609	26	49	607	Eastern Woodlands 9-1
+609	49	25	605	Eastern Woodlands 7
+609	49	26	605	Eastern Woodlands 7
+610	49	25	611	Eastern Woodlands 12
+610	49	26	611	Eastern Woodlands 12
+611	0	23	610	Eastern Woodlands 13
+611	0	24	610	Eastern Woodlands 13
+611	25	49	606	Eastern Woodlands 11
+611	26	49	606	Eastern Woodlands 11
+612	0	23	604	Eastern Woods 5th Circle
+612	0	24	604	Eastern Woods 5th Circle
+612	23	0	606	Eastern Woodlands 11
+612	24	0	606	Eastern Woodlands 11
+613	23	0	614	Eastern Woodlands 18
+613	24	0	614	Eastern Woodlands 18
+614	23	0	615	Eastern Woodlands 19-2
+614	24	0	615	Eastern Woodlands 19-2
+614	25	49	613	Eastern Woodlands 19-1
+614	26	49	613	Eastern Woodlands 19-1
+614	49	23	617	Eastern Woodlands 15
+614	49	24	617	Eastern Woodlands 15
+615	25	49	614	Eastern Woodlands 18
+615	26	49	614	Eastern Woodlands 18
+615	49	25	618	Eastern Woodlands 20
+615	49	26	618	Eastern Woodlands 20
+616	23	0	617	Eastern Woodlands 15
+616	24	0	617	Eastern Woodlands 15
+616	25	49	600	Eastern Crossroads
+616	26	49	600	Eastern Crossroads
+617	0	23	614	Eastern Woodlands 18
+617	0	24	614	Eastern Woodlands 18
+617	17	0	3068	Singing Sylvan Grove
+617	18	0	3068	Singing Sylvan Grove
+617	25	49	616	Eastern Woods 6th Circle
+617	26	49	616	Eastern Woods 6th Circle
+617	49	23	620	Eastern Woodlands 16
+617	49	24	620	Eastern Woodlands 16
+618	0	23	615	Eastern Woodlands 19-2
+618	0	24	615	Eastern Woodlands 19-2
+619	23	0	620	Eastern Woodlands 16
+619	24	0	620	Eastern Woodlands 16
+620	0	23	617	Eastern Woodlands 15
+620	0	24	617	Eastern Woodlands 15
+620	23	0	621	Eastern Woodlands 17-2
+620	24	0	621	Eastern Woodlands 17-2
+620	25	49	619	Eastern Woodlands 17-1
+620	26	49	619	Eastern Woodlands 17-1
+621	25	49	620	Eastern Woodlands 16
+621	26	49	620	Eastern Woodlands 16
+622	55	0	675	Druid Circle
+622	56	0	675	Druid Circle
+622	99	49	600	Eastern Crossroads
+622	99	50	600	Eastern Crossroads
+623	0	47	600	Eastern Crossroads
+623	0	48	600	Eastern Crossroads
+623	0	49	600	Eastern Crossroads
+624	2	80	660	Kasmanium Mines
+624	43	15	625	Gold Mine
+625	1	55	624	Talos & Copper Mine
+625	67	87	624	Talos & Copper Mine
+660	23	27	624	Talos & Copper Mine
+660	24	27	624	Talos & Copper Mine
+662	28	76	5252	Training Welcome Center
+662	29	76	5252	Training Welcome Center
+662	40	56	1960	Tagor Inn
+662	73	9	1247	Manor Stablehand Farm
+662	73	10	1247	Manor Stablehand Farm
+675	23	20	622	Enchanted Garden
+675	23	21	622	Enchanted Garden
+675	23	22	622	Enchanted Garden
+701	8	0	702	Grass Battle Field
+701	9	0	702	Grass Battle Field
+701	10	0	702	Grass Battle Field
+701	11	0	702	Grass Battle Field
+702	17	31	701	Forward Camp
+702	18	31	701	Forward Camp
+702	19	31	701	Forward Camp
+702	20	31	701	Forward Camp
+717	0	7	721	Mileth Adv Training Center
+717	1	4	76	Mileth Crypt 23
+717	11	5	500	Mileth Village
+717	11	6	500	Mileth Village
+719	18	24	505	Rucesion Village
+719	19	24	505	Rucesion Village
+719	20	24	505	Rucesion Village
+721	29	15	717	Mileth Training Center
+721	29	16	717	Mileth Training Center
+1247	6	0	2038	Filth Forest 1
+1247	7	0	2038	Filth Forest 1
+1247	8	0	2038	Filth Forest 1
+1247	9	0	2038	Filth Forest 1
+1247	15	49	662	Tagor Village
+1247	16	49	662	Tagor Village
+1960	5	13	662	Tagor Village
+1960	6	13	662	Tagor Village
+1960	7	13	662	Tagor Village
+1960	8	13	662	Tagor Village
+2038	0	41	2039	Filth Forest 2
+2038	0	42	2039	Filth Forest 2
+2038	0	43	2039	Filth Forest 2
+2038	56	0	2040	Filth Forest 3
+2038	56	99	1247	Manor Stablehand Farm
+2038	57	0	2040	Filth Forest 3
+2038	57	99	1247	Manor Stablehand Farm
+2038	58	0	2040	Filth Forest 3
+2038	58	99	1247	Manor Stablehand Farm
+2038	59	0	2040	Filth Forest 3
+2038	59	99	1247	Manor Stablehand Farm
+2038	60	0	2040	Filth Forest 3
+2038	60	99	1247	Manor Stablehand Farm
+2038	61	99	1247	Manor Stablehand Farm
+2038	99	41	2041	Filth Forest 4
+2038	99	42	2041	Filth Forest 4
+2038	99	43	2041	Filth Forest 4
+2039	99	41	2038	Filth Forest 1
+2039	99	42	2038	Filth Forest 1
+2039	99	43	2038	Filth Forest 1
+2040	56	99	2038	Filth Forest 1
+2040	57	99	2038	Filth Forest 1
+2040	58	99	2038	Filth Forest 1
+2040	59	99	2038	Filth Forest 1
+2040	60	99	2038	Filth Forest 1
+2041	0	41	2038	Filth Forest 1
+2041	0	42	2038	Filth Forest 1
+2041	0	43	2038	Filth Forest 1
+2041	64	3	6946	Guest House
+2046	0	41	2047	House Macabre Yard 2
+2046	0	42	2047	House Macabre Yard 2
+2046	0	43	2047	House Macabre Yard 2
+2046	8	7	5061	Macabre Study 1-1
+2046	8	8	5061	Macabre Study 1-1
+2046	8	9	5061	Macabre Study 1-1
+2046	27	57	5062	Macabre Study 1-2
+2046	56	0	2048	House Macabre Yard 3
+2046	57	0	2048	House Macabre Yard 3
+2046	57	99	2052	Road to House Macabre
+2046	58	0	2048	House Macabre Yard 3
+2046	58	99	2052	Road to House Macabre
+2046	59	0	2048	House Macabre Yard 3
+2046	59	99	2052	Road to House Macabre
+2046	60	0	2048	House Macabre Yard 3
+2046	60	99	2052	Road to House Macabre
+2046	71	86	5064	Macabre Study 1-4
+2046	82	16	5063	Macabre Study 1-3
+2046	99	41	2049	
+2046	99	42	2049	
+2046	99	43	2049	
+2047	10	11	5073	Macabre Study 2-1
+2047	17	46	5074	Macabre Study 2-2
+2047	59	52	5075	Macabre Study 2-3
+2047	77	39	5076	Macabre Study 2-4
+2047	78	39	5076	Macabre Study 2-4
+2047	79	39	5076	Macabre Study 2-4
+2047	99	41	2046	House Macabre Yard 1
+2047	99	42	2046	House Macabre Yard 1
+2047	99	43	2046	House Macabre Yard 1
+2048	8	85	5086	Macabre Study 3-2
+2048	9	85	5086	Macabre Study 3-2
+2048	10	85	5086	Macabre Study 3-2
+2048	18	12	5085	Macabre Study 3-1
+2048	19	12	5085	Macabre Study 3-1
+2048	20	12	5085	Macabre Study 3-1
+2048	34	53	5087	Macabre Study 3-3
+2048	56	99	2046	House Macabre Yard 1
+2048	57	99	2046	House Macabre Yard 1
+2048	58	99	2046	House Macabre Yard 1
+2048	59	99	2046	House Macabre Yard 1
+2048	60	99	2046	House Macabre Yard 1
+2048	90	7	5088	Macabre Study 3-4
+2049	52	50	10288	Test
+2051	19	1	441	Gigean's Dwelling
+2051	19	9	2056	Filth Forest 8
+2051	19	10	2056	Filth Forest 8
+2052	7	0	2046	House Macabre Yard 1
+2052	8	0	2046	House Macabre Yard 1
+2052	9	0	2046	House Macabre Yard 1
+2052	10	0	2046	House Macabre Yard 1
+2052	11	0	2046	House Macabre Yard 1
+2053	51	0	2054	Filth Forest 6
+2053	52	0	2054	Filth Forest 6
+2053	53	0	2054	Filth Forest 6
+2053	54	0	2054	Filth Forest 6
+2053	64	99	6946	Guest House
+2053	65	99	6946	Guest House
+2053	66	99	6946	Guest House
+2053	67	99	6946	Guest House
+2053	68	99	6946	Guest House
+2053	69	99	6946	Guest House
+2054	51	0	2055	Filth Forest 7
+2054	52	0	2055	Filth Forest 7
+2054	52	99	2053	Filth Forest 5
+2054	53	0	2055	Filth Forest 7
+2054	53	99	2053	Filth Forest 5
+2054	54	0	2055	Filth Forest 7
+2054	54	99	2053	Filth Forest 5
+2054	55	99	2053	Filth Forest 5
+2054	56	99	2053	Filth Forest 5
+2055	7	0	2056	Filth Forest 8
+2055	8	0	2056	Filth Forest 8
+2055	9	0	2056	Filth Forest 8
+2055	9	19	2054	Filth Forest 6
+2055	10	0	2056	Filth Forest 8
+2055	10	19	2054	Filth Forest 6
+2055	11	0	2056	Filth Forest 8
+2055	11	19	2054	Filth Forest 6
+2055	12	0	2056	Filth Forest 8
+2055	12	19	2054	Filth Forest 6
+2056	41	99	2055	Filth Forest 7
+2056	42	99	2055	Filth Forest 7
+2056	43	99	2055	Filth Forest 7
+2056	44	99	2055	Filth Forest 7
+2056	45	99	2055	Filth Forest 7
+2056	46	99	2055	Filth Forest 7
+2056	47	99	2055	Filth Forest 7
+2056	52	41	2051	Abandoned Church
+2056	52	42	2051	Abandoned Church
+2060	0	9	2061	Ice Caverns Throughway
+2061	0	9	2062	Ice Caverns Ice Pools
+2061	19	9	2060	Ice Caverns Entrance
+2062	9	19	2063	Ice Caverns Junction
+2062	19	16	2061	Ice Caverns Throughway
+2063	0	12	2064	Dark Caverns
+2063	9	0	2062	Ice Caverns Ice Pools
+2064	0	12	2065	Yeti's Lair
+2064	19	10	2063	Ice Caverns Junction
+2064	19	11	2063	Ice Caverns Junction
+2065	19	9	2064	Dark Caverns
+2065	19	10	2064	Dark Caverns
+3000	4	7	136	Mileth Inn
+3000	5	7	136	Mileth Inn
+3003	2	7	215	Black Market
+3003	4	19	502	Abel
+3003	5	19	502	Abel
+3006	0	4	500	Mileth Village
+3006	0	5	500	Mileth Village
+3006	0	6	500	Mileth Village
+3006	0	7	500	Mileth Village
+3006	0	8	500	Mileth Village
+3006	0	9	500	Mileth Village
+3006	12	0	3025	Mileth Commons
+3006	13	0	3025	Mileth Commons
+3006	14	0	3025	Mileth Commons
+3006	15	0	3025	Mileth Commons
+3006	15	13	3043	Mileth College
+3006	15	14	3043	Mileth College
+3007	24	7	3006	Mileth Village Way
+3007	24	8	3006	Mileth Village Way
+3008	0	17	504	Undine
+3008	0	18	504	Undine
+3008	7	6	3009	Shrine to Cail
+3009	24	6	3008	Undine Village Path
+3009	24	7	3008	Undine Village Path
+3009	24	8	3008	Undine Village Path
+3010	14	15	505	Rucesion Village
+3010	15	15	505	Rucesion Village
+3010	16	15	505	Rucesion Village
+3010	23	9	3048	Rucesion Commons
+3010	23	10	3048	Rucesion Commons
+3010	23	11	3048	Rucesion Commons
+3011	24	7	3010	Rucesion Village Way
+3011	24	8	3010	Rucesion Village Way
+3011	24	9	3010	Rucesion Village Way
+3012	0	5	3000	Mileth Inn Room 0
+3012	0	6	3000	Mileth Inn Room 0
+3012	0	7	3000	Mileth Inn Room 0
+3012	0	8	3000	Mileth Inn Room 0
+3012	7	18	3013	Shrine to Gramail
+3012	8	18	3013	Shrine to Gramail
+3013	24	5	3012	Loures Outskirts
+3013	24	6	3012	Loures Outskirts
+3013	24	7	3012	Loures Outskirts
+3013	24	8	3012	Loures Outskirts
+3014	6	4	3015	Shrine to Fiosachd
+3014	6	5	3015	Shrine to Fiosachd
+3014	6	6	3015	Shrine to Fiosachd
+3014	9	21	502	Abel
+3014	10	21	502	Abel
+3015	24	6	3014	Abel Port Way
+3015	24	7	3014	Abel Port Way
+3015	24	8	3014	Abel Port Way
+3016	10	6	3017	Shrine to Deoch
+3016	10	7	3017	Shrine to Deoch
+3016	15	15	503	Suomi
+3016	16	15	503	Suomi
+3016	17	15	503	Suomi
+3017	14	5	3017	Shrine to Deoch
+3017	14	7	3017	Shrine to Deoch
+3017	16	6	3017	Shrine to Deoch
+3017	16	8	3017	Shrine to Deoch
+3017	24	7	3016	Suomi Village Way
+3017	24	8	3016	Suomi Village Way
+3018	24	7	340	Dubhaim Castle
+3018	24	8	340	Dubhaim Castle
+3019	24	7	3020	Piet Village Way
+3020	6	7	3019	Shrine to Ceannlaidir
+3020	7	7	3019	Shrine to Ceannlaidir
+3020	23	8	501	Piet
+3020	23	9	501	Piet
+3020	23	10	501	Piet
+3020	23	11	501	Piet
+3020	23	12	501	Piet
+3020	23	13	501	Piet
+3023	5	0	8	Mileth Crypt 4-1
+3025	4	6	3026	Mileth Town Hall
+3025	12	15	3006	Mileth Village Way
+3025	13	15	3006	Mileth Village Way
+3025	14	15	3006	Mileth Village Way
+3025	15	15	3006	Mileth Village Way
+3025	27	8	3027	Mileth Justice Hall
+3026	6	15	3025	Mileth Commons
+3026	7	15	3025	Mileth Commons
+3027	1	2	3027	Mileth Justice Hall
+3027	1	10	3027	Mileth Justice Hall
+3027	6	19	3025	Mileth Commons
+3027	7	19	3025	Mileth Commons
+3027	13	1	3027	Mileth Justice Hall
+3027	13	2	3027	Mileth Justice Hall
+3027	13	3	3027	Mileth Justice Hall
+3027	13	10	3027	Mileth Justice Hall
+3027	13	11	3027	Mileth Justice Hall
+3027	13	12	3027	Mileth Justice Hall
+3029	10	26	3031	Tutorial: 3
+3029	15	20	3033	Tutorial: 5
+3029	17	0	3030	Tutorial: 2
+3029	18	0	3030	Tutorial: 2
+3029	19	0	3030	Tutorial: 2
+3029	20	0	3030	Tutorial: 2
+3029	38	14	3032	Tutorial: 4
+3030	22	49	3029	Tutorial: 1
+3030	23	49	3029	Tutorial: 1
+3030	24	49	3029	Tutorial: 1
+3030	25	49	3029	Tutorial: 1
+3031	7	14	3029	Tutorial: 1
+3031	8	14	3029	Tutorial: 1
+3032	6	14	3029	Tutorial: 1
+3032	7	14	3029	Tutorial: 1
+3033	14	7	3029	Tutorial: 1
+3033	14	8	3029	Tutorial: 1
+3041	8	15	123	Magic Corridor
+3042	5	11	3043	Mileth College
+3042	6	11	3043	Mileth College
+3043	0	11	3006	Mileth Village Way
+3043	0	12	3006	Mileth Village Way
+3043	4	22	3044	Mileth History
+3043	5	22	3044	Mileth History
+3043	9	8	3042	Mileth Library
+3043	9	17	3045	Mileth Literature
+3043	9	18	3045	Mileth Literature
+3043	10	8	3042	Mileth Library
+3043	16	11	3047	Mileth Lore
+3043	17	11	3047	Mileth Lore
+3043	21	6	3046	Mileth Philosophy
+3043	21	7	3046	Mileth Philosophy
+3043	24	23	3992	Mileth Contest Hall
+3043	24	24	3992	Mileth Contest Hall
+3044	3	13	3043	Mileth College
+3044	3	13	6907	Test Town
+3044	4	13	3043	Mileth College
+3044	4	13	6907	Test Town
+3045	13	3	3043	Mileth College
+3045	13	4	3043	Mileth College
+3046	13	3	3043	Mileth College
+3046	13	4	3043	Mileth College
+3047	3	13	3043	Mileth College
+3047	4	13	3043	Mileth College
+3048	0	8	3010	Rucesion Village Way
+3048	0	9	3010	Rucesion Village Way
+3048	0	10	3010	Rucesion Village Way
+3048	4	5	3049	Rucesion Town Hall
+3048	5	5	3049	Rucesion Town Hall
+3048	15	5	3050	Rucesion Justice Hall
+3049	6	15	3048	Rucesion Commons
+3049	7	15	3048	Rucesion Commons
+3050	1	2	3050	Rucesion Justice Hall
+3050	1	10	3050	Rucesion Justice Hall
+3050	7	19	3048	Rucesion Commons
+3050	8	19	3048	Rucesion Commons
+3050	13	1	3050	Rucesion Justice Hall
+3050	13	2	3050	Rucesion Justice Hall
+3050	13	3	3050	Rucesion Justice Hall
+3050	13	10	3050	Rucesion Justice Hall
+3050	13	11	3050	Rucesion Justice Hall
+3050	13	12	3050	Rucesion Justice Hall
+3052	11	18	3059	Western Pravat Entrance
+3052	11	19	3059	Western Pravat Entrance
+3052	11	20	3059	Western Pravat Entrance
+3052	15	25	3059	Western Pravat Entrance
+3052	16	25	3059	Western Pravat Entrance
+3052	17	11	3055	Pravat Shallow
+3052	17	12	3055	Pravat Shallow
+3052	18	11	3055	Pravat Shallow
+3052	18	12	3055	Pravat Shallow
+3052	19	11	3055	Pravat Shallow
+3052	19	12	3055	Pravat Shallow
+3052	35	13	3055	Pravat Shallow
+3052	36	13	3055	Pravat Shallow
+3052	37	13	3055	Pravat Shallow
+3053	0	9	3055	Pravat Shallow
+3053	0	10	3055	Pravat Shallow
+3053	0	11	3055	Pravat Shallow
+3053	0	12	3055	Pravat Shallow
+3053	8	15	3055	Pravat Shallow
+3053	9	15	3055	Pravat Shallow
+3053	10	15	3055	Pravat Shallow
+3053	11	15	3055	Pravat Shallow
+3054	0	4	3056	Pravat Hearth
+3054	0	5	3056	Pravat Hearth
+3054	0	6	3056	Pravat Hearth
+3054	0	7	3056	Pravat Hearth
+3054	0	23	3056	Pravat Hearth
+3054	0	24	3056	Pravat Hearth
+3054	0	25	3056	Pravat Hearth
+3054	14	49	3055	Pravat Shallow
+3054	15	49	3055	Pravat Shallow
+3054	16	49	3055	Pravat Shallow
+3054	17	49	3055	Pravat Shallow
+3054	39	49	3055	Pravat Shallow
+3054	40	49	3055	Pravat Shallow
+3054	41	49	3055	Pravat Shallow
+3054	42	49	3055	Pravat Shallow
+3054	43	49	3055	Pravat Shallow
+3055	0	20	3057	Pravat Works
+3055	0	21	3057	Pravat Works
+3055	0	22	3057	Pravat Works
+3055	0	23	3057	Pravat Works
+3055	0	39	3057	Pravat Works
+3055	0	40	3057	Pravat Works
+3055	0	41	3057	Pravat Works
+3055	0	42	3057	Pravat Works
+3055	8	49	3052	Southern Pravat Entrance
+3055	9	49	3052	Southern Pravat Entrance
+3055	10	49	3052	Southern Pravat Entrance
+3055	11	49	3052	Southern Pravat Entrance
+3055	14	0	3054	Pravat Prole Ground
+3055	15	0	3054	Pravat Prole Ground
+3055	16	0	3054	Pravat Prole Ground
+3055	17	0	3054	Pravat Prole Ground
+3055	38	49	3052	Southern Pravat Entrance
+3055	39	0	3054	Pravat Prole Ground
+3055	39	49	3052	Southern Pravat Entrance
+3055	40	0	3054	Pravat Prole Ground
+3055	40	49	3052	Southern Pravat Entrance
+3055	41	0	3054	Pravat Prole Ground
+3055	41	49	3052	Southern Pravat Entrance
+3055	42	0	3054	Pravat Prole Ground
+3055	43	0	3054	Pravat Prole Ground
+3055	49	11	3053	Pravat Heart
+3055	49	12	3053	Pravat Heart
+3055	49	13	3053	Pravat Heart
+3055	49	14	3053	Pravat Heart
+3055	49	31	3053	Pravat Heart
+3055	49	32	3053	Pravat Heart
+3055	49	33	3053	Pravat Heart
+3055	49	34	3053	Pravat Heart
+3056	0	24	3059	Western Pravat Entrance
+3056	0	25	3059	Western Pravat Entrance
+3056	0	26	3059	Western Pravat Entrance
+3056	0	27	3059	Western Pravat Entrance
+3056	0	41	3059	Western Pravat Entrance
+3056	0	42	3059	Western Pravat Entrance
+3056	0	43	3059	Western Pravat Entrance
+3056	0	44	3059	Western Pravat Entrance
+3056	13	0	3058	Pravat Deep
+3056	14	0	3058	Pravat Deep
+3056	15	0	3058	Pravat Deep
+3056	16	0	3058	Pravat Deep
+3056	16	49	3057	Pravat Works
+3056	17	0	3058	Pravat Deep
+3056	17	49	3057	Pravat Works
+3056	18	49	3057	Pravat Works
+3056	19	49	3057	Pravat Works
+3056	31	0	3058	Pravat Deep
+3056	32	0	3058	Pravat Deep
+3056	33	0	3058	Pravat Deep
+3056	34	0	3058	Pravat Deep
+3056	35	0	3058	Pravat Deep
+3056	36	0	3058	Pravat Deep
+3056	37	49	3057	Pravat Works
+3056	38	49	3057	Pravat Works
+3056	39	49	3057	Pravat Works
+3056	40	49	3057	Pravat Works
+3056	41	49	3057	Pravat Works
+3056	49	4	3054	Pravat Prole Ground
+3056	49	5	3054	Pravat Prole Ground
+3056	49	6	3054	Pravat Prole Ground
+3056	49	7	3054	Pravat Prole Ground
+3056	49	23	3054	Pravat Prole Ground
+3056	49	24	3054	Pravat Prole Ground
+3056	49	25	3054	Pravat Prole Ground
+3057	16	0	3056	Pravat Hearth
+3057	17	0	3056	Pravat Hearth
+3057	18	0	3056	Pravat Hearth
+3057	19	0	3056	Pravat Hearth
+3057	37	0	3056	Pravat Hearth
+3057	38	0	3056	Pravat Hearth
+3057	39	0	3056	Pravat Hearth
+3057	40	0	3056	Pravat Hearth
+3057	41	0	3056	Pravat Hearth
+3057	49	20	3055	Pravat Shallow
+3057	49	21	3055	Pravat Shallow
+3057	49	22	3055	Pravat Shallow
+3057	49	23	3055	Pravat Shallow
+3057	49	39	3055	Pravat Shallow
+3057	49	40	3055	Pravat Shallow
+3057	49	41	3055	Pravat Shallow
+3057	49	42	3055	Pravat Shallow
+3058	1	23	3056	Pravat Hearth
+3058	2	23	3056	Pravat Hearth
+3058	3	23	3056	Pravat Hearth
+3058	4	23	3056	Pravat Hearth
+3058	5	23	3056	Pravat Hearth
+3058	8	0	3635	Chaos Entrance
+3058	19	23	3056	Pravat Hearth
+3058	20	23	3056	Pravat Hearth
+3058	21	23	3056	Pravat Hearth
+3058	22	23	3056	Pravat Hearth
+3059	5	0	3052	Southern Pravat Entrance
+3059	5	20	3052	Southern Pravat Entrance
+3059	6	0	3052	Southern Pravat Entrance
+3059	6	20	3052	Southern Pravat Entrance
+3059	13	0	3056	Pravat Hearth
+3059	13	1	3056	Pravat Hearth
+3059	13	2	3056	Pravat Hearth
+3059	13	3	3056	Pravat Hearth
+3059	13	17	3056	Pravat Hearth
+3059	13	18	3056	Pravat Hearth
+3059	13	19	3056	Pravat Hearth
+3059	13	20	3056	Pravat Hearth
+3060	0	1	3061	Astrid South-East
+3060	0	2	3061	Astrid South-East
+3060	0	3	3061	Astrid South-East
+3060	0	4	3061	Astrid South-East
+3060	0	14	3062	Astrid South
+3060	0	15	3062	Astrid South
+3060	0	16	3062	Astrid South
+3060	0	17	3062	Astrid South
+3060	0	18	3062	Astrid South
+3061	0	16	3063	Astrid North-East
+3061	0	17	3063	Astrid North-East
+3061	0	18	3063	Astrid North-East
+3061	0	19	3063	Astrid North-East
+3061	0	20	3063	Astrid North-East
+3061	0	21	3063	Astrid North-East
+3061	0	22	3064	Astrid Center
+3061	0	23	3064	Astrid Center
+3061	0	24	3064	Astrid Center
+3061	0	25	3064	Astrid Center
+3061	0	26	3064	Astrid Center
+3061	3	39	3062	Astrid South
+3061	4	39	3062	Astrid South
+3061	5	39	3062	Astrid South
+3061	18	39	3062	Astrid South
+3061	19	39	3062	Astrid South
+3061	20	39	3062	Astrid South
+3061	21	39	3062	Astrid South
+3061	39	30	3060	Astrid Entrance
+3061	39	31	3060	Astrid Entrance
+3061	39	32	3060	Astrid Entrance
+3061	39	33	3060	Astrid Entrance
+3061	39	34	3060	Astrid Entrance
+3062	0	18	3064	Astrid Center
+3062	0	19	3064	Astrid Center
+3062	0	20	3064	Astrid Center
+3062	0	21	3064	Astrid Center
+3062	0	29	3065	Astrid South-West
+3062	0	30	3065	Astrid South-West
+3062	0	31	3065	Astrid South-West
+3062	3	0	3061	Astrid South-East
+3062	4	0	3061	Astrid South-East
+3062	5	0	3061	Astrid South-East
+3062	18	0	3061	Astrid South-East
+3062	19	0	3061	Astrid South-East
+3062	20	0	3061	Astrid South-East
+3062	21	0	3061	Astrid South-East
+3062	39	4	3060	Astrid Entrance
+3062	39	5	3060	Astrid Entrance
+3062	39	6	3060	Astrid Entrance
+3062	39	7	3060	Astrid Entrance
+3062	39	8	3060	Astrid Entrance
+3063	0	29	3066	Astrid North
+3063	0	30	3066	Astrid North
+3063	0	31	3066	Astrid North
+3063	0	37	3066	Astrid North
+3063	0	38	3066	Astrid North
+3063	1	39	3064	Astrid Center
+3063	2	39	3064	Astrid Center
+3063	33	39	3064	Astrid Center
+3063	34	39	3064	Astrid Center
+3063	35	39	3064	Astrid Center
+3063	36	39	3064	Astrid Center
+3063	37	39	3064	Astrid Center
+3063	38	39	3064	Astrid Center
+3063	39	33	3061	Astrid South-East
+3063	39	34	3061	Astrid South-East
+3063	39	35	3061	Astrid South-East
+3063	39	36	3061	Astrid South-East
+3063	39	37	3061	Astrid South-East
+3063	39	38	3061	Astrid South-East
+3064	0	1	3066	Astrid North
+3064	0	2	3066	Astrid North
+3064	0	33	3067	Astrid North-West
+3064	0	34	3067	Astrid North-West
+3064	0	35	3067	Astrid North-West
+3064	0	36	3067	Astrid North-West
+3064	0	37	3067	Astrid North-West
+3064	0	38	3067	Astrid North-West
+3064	1	0	3063	Astrid North-East
+3064	1	39	3065	Astrid South-West
+3064	2	0	3063	Astrid North-East
+3064	2	39	3065	Astrid South-West
+3064	3	39	3065	Astrid South-West
+3064	4	39	3065	Astrid South-West
+3064	5	39	3065	Astrid South-West
+3064	33	0	3063	Astrid North-East
+3064	34	0	3063	Astrid North-East
+3064	35	0	3063	Astrid North-East
+3064	36	0	3063	Astrid North-East
+3064	37	0	3063	Astrid North-East
+3064	37	39	3065	Astrid South-West
+3064	38	0	3063	Astrid North-East
+3064	38	39	3065	Astrid South-West
+3064	39	1	3061	Astrid South-East
+3064	39	2	3061	Astrid South-East
+3064	39	3	3061	Astrid South-East
+3064	39	4	3061	Astrid South-East
+3064	39	5	3061	Astrid South-East
+3064	39	6	3061	Astrid South-East
+3064	39	7	3061	Astrid South-East
+3064	39	37	3062	Astrid South
+3064	39	38	3062	Astrid South
+3065	0	1	3067	Astrid North-West
+3065	0	2	3067	Astrid North-West
+3065	0	3	3067	Astrid North-West
+3065	0	4	3067	Astrid North-West
+3065	0	5	3067	Astrid North-West
+3065	0	6	3067	Astrid North-West
+3065	1	0	3064	Astrid Center
+3065	2	0	3064	Astrid Center
+3065	3	0	3064	Astrid Center
+3065	4	0	3064	Astrid Center
+3065	5	0	3064	Astrid Center
+3065	37	0	3064	Astrid Center
+3065	38	0	3064	Astrid Center
+3065	39	8	3062	Astrid South
+3065	39	9	3062	Astrid South
+3065	39	10	3062	Astrid South
+3066	18	39	3067	Astrid North-West
+3066	19	39	3067	Astrid North-West
+3066	20	39	3067	Astrid North-West
+3066	21	39	3067	Astrid North-West
+3066	33	39	3067	Astrid North-West
+3066	34	39	3067	Astrid North-West
+3066	35	39	3067	Astrid North-West
+3066	39	9	3063	Astrid North-East
+3066	39	10	3063	Astrid North-East
+3066	39	11	3063	Astrid North-East
+3066	39	19	3063	Astrid North-East
+3066	39	20	3063	Astrid North-East
+3066	39	21	3063	Astrid North-East
+3066	39	22	3064	Astrid Center
+3067	18	0	3066	Astrid North
+3067	19	0	3066	Astrid North
+3067	20	0	3066	Astrid North
+3067	21	0	3066	Astrid North
+3067	34	0	3066	Astrid North
+3067	35	0	3066	Astrid North
+3067	36	0	3066	Astrid North
+3067	39	15	3064	Astrid Center
+3067	39	16	3064	Astrid Center
+3067	39	17	3064	Astrid Center
+3067	39	18	3064	Astrid Center
+3067	39	19	3065	Astrid South-West
+3067	39	20	3065	Astrid South-West
+3067	39	21	3065	Astrid South-West
+3067	39	22	3065	Astrid South-West
+3067	39	23	3065	Astrid South-West
+3068	3	7	617	Eastern Woodlands 15
+3071	7	0	3072	Mehadi Hema
+3071	7	1	3072	Mehadi Hema
+3071	7	2	3072	Mehadi Hema
+3071	7	3	3072	Mehadi Hema
+3071	7	10	3072	Mehadi Hema
+3071	7	11	3072	Mehadi Hema
+3071	7	12	3072	Mehadi Hema
+3071	7	13	3072	Mehadi Hema
+3072	0	7	3071	Mehadi Entrance
+3072	0	8	3071	Mehadi Entrance
+3072	0	9	3071	Mehadi Entrance
+3072	0	10	3071	Mehadi Entrance
+3072	0	17	3071	Mehadi Entrance
+3072	0	18	3071	Mehadi Entrance
+3072	0	19	3071	Mehadi Entrance
+3072	0	20	3071	Mehadi Entrance
+3072	31	2	3073	Mehadi Ellama
+3072	31	3	3073	Mehadi Ellama
+3072	31	4	3073	Mehadi Ellama
+3072	31	5	3073	Mehadi Ellama
+3072	31	21	3074	Chandi Mukul Gathering
+3072	31	22	3074	Chandi Mukul Gathering
+3072	31	23	3074	Chandi Mukul Gathering
+3072	31	24	3074	Chandi Mukul Gathering
+3072	31	30	3074	Chandi Mukul Gathering
+3072	31	31	3074	Chandi Mukul Gathering
+3073	0	15	3072	Mehadi Hema
+3073	0	16	3072	Mehadi Hema
+3073	0	17	3072	Mehadi Hema
+3073	0	18	3072	Mehadi Hema
+3073	5	0	3075	Rishi Mukul Gathering
+3073	6	0	3075	Rishi Mukul Gathering
+3073	7	0	3075	Rishi Mukul Gathering
+3073	7	31	3074	Chandi Mukul Gathering
+3073	8	0	3075	Rishi Mukul Gathering
+3073	8	31	3074	Chandi Mukul Gathering
+3073	9	31	3074	Chandi Mukul Gathering
+3073	10	31	3074	Chandi Mukul Gathering
+3073	26	0	3075	Rishi Mukul Gathering
+3073	27	0	3075	Rishi Mukul Gathering
+3073	28	0	3075	Rishi Mukul Gathering
+3073	29	0	3075	Rishi Mukul Gathering
+3073	31	14	3076	Mehadi Shashi
+3073	31	15	3076	Mehadi Shashi
+3073	31	16	3076	Mehadi Shashi
+3073	31	17	3076	Mehadi Shashi
+3074	0	1	3072	Mehadi Hema
+3074	0	2	3072	Mehadi Hema
+3074	0	3	3072	Mehadi Hema
+3074	0	4	3072	Mehadi Hema
+3074	0	10	3072	Mehadi Hema
+3074	0	11	3072	Mehadi Hema
+3074	7	0	3073	Mehadi Ellama
+3074	8	0	3073	Mehadi Ellama
+3074	9	0	3073	Mehadi Ellama
+3074	10	0	3073	Mehadi Ellama
+3074	11	31	4001	Shifting Swamp West
+3074	12	31	4001	Shifting Swamp West
+3074	13	31	4001	Shifting Swamp West
+3074	14	31	4001	Shifting Swamp West
+3074	31	11	4000	Shifting Swamp North
+3074	31	12	4000	Shifting Swamp North
+3074	31	13	4000	Shifting Swamp North
+3074	31	14	4000	Shifting Swamp North
+3075	0	29	3073	Mehadi Ellama
+3075	0	30	3073	Mehadi Ellama
+3075	0	31	3073	Mehadi Ellama
+3075	1	31	3073	Mehadi Ellama
+3075	17	31	3073	Mehadi Ellama
+3075	18	31	3073	Mehadi Ellama
+3075	19	31	3073	Mehadi Ellama
+3075	20	31	3073	Mehadi Ellama
+3075	28	31	3076	Mehadi Shashi
+3075	29	31	3076	Mehadi Shashi
+3075	30	31	3076	Mehadi Shashi
+3075	31	31	3076	Mehadi Shashi
+3076	0	14	3073	Mehadi Ellama
+3076	0	15	3073	Mehadi Ellama
+3076	0	16	3073	Mehadi Ellama
+3076	0	17	3073	Mehadi Ellama
+3076	5	0	3075	Rishi Mukul Gathering
+3076	6	0	3075	Rishi Mukul Gathering
+3076	7	0	3075	Rishi Mukul Gathering
+3076	8	0	3075	Rishi Mukul Gathering
+3076	11	31	4000	Shifting Swamp North
+3076	12	31	4000	Shifting Swamp North
+3076	13	31	4000	Shifting Swamp North
+3076	14	31	4000	Shifting Swamp North
+3076	31	11	4002	Shifting Swamp East
+3076	31	12	4002	Shifting Swamp East
+3076	31	13	4002	Shifting Swamp East
+3076	31	14	4002	Shifting Swamp East
+3077	1	0	4003	Shifting Swamp South
+3077	2	0	4003	Shifting Swamp South
+3077	3	0	4003	Shifting Swamp South
+3077	4	0	4003	Shifting Swamp South
+3077	11	2	3078	Heart East
+3078	0	1	4003	Shifting Swamp South
+3078	0	2	4003	Shifting Swamp South
+3078	0	3	4003	Shifting Swamp South
+3078	0	4	4003	Shifting Swamp South
+3078	0	17	3077	Heart West
+3100	0	12	3110	Wayside Amphitheater
+3100	0	13	3110	Wayside Amphitheater
+3100	0	14	3110	Wayside Amphitheater
+3100	0	21	3105	Wayside Arena
+3100	0	22	3105	Wayside Arena
+3100	0	23	3105	Wayside Arena
+3100	5	10	3101	Wayside Tavern
+3100	6	10	3101	Wayside Tavern
+3100	11	29	3006	Mileth Village Way
+3100	12	4	3102	Wayside Market
+3100	12	5	3102	Wayside Market
+3100	12	29	3006	Mileth Village Way
+3100	13	29	3006	Mileth Village Way
+3101	9	15	3100	Wayside Park
+3101	10	15	3100	Wayside Park
+3101	13	0	3102	Wayside Market
+3102	0	7	3101	Wayside Tavern
+3102	9	6	3100	Wayside Park
+3102	9	7	3100	Wayside Park
+3105	15	7	3100	Wayside Park
+3105	15	8	3100	Wayside Park
+3107	2	17	3110	Wayside Amphitheater
+3107	3	17	3110	Wayside Amphitheater
+3107	9	3	3110	Wayside Amphitheater
+3107	9	15	3110	Wayside Amphitheater
+3110	4	23	3107	Dressing Room
+3110	7	3	3107	Dressing Room
+3110	7	20	3107	Dressing Room
+3110	25	26	3100	Wayside Park
+3110	25	27	3100	Wayside Park
+3110	25	28	3100	Wayside Park
+3210	27	1	3211	Rionnag Harbor
+3210	59	24	3211	Rionnag Harbor
+3210	59	25	3211	Rionnag Harbor
+3210	59	26	3211	Rionnag Harbor
+3210	59	27	3211	Rionnag Harbor
+3211	0	18	3210	Rionnag
+3211	0	19	3210	Rionnag
+3211	0	20	3210	Rionnag
+3211	32	1	3210	Rionnag
+3211	59	18	3212	Six Point Outlook
+3211	59	19	3212	Six Point Outlook
+3211	59	20	3212	Six Point Outlook
+3212	0	16	3211	Rionnag Harbor
+3212	0	17	3211	Rionnag Harbor
+3212	0	18	3211	Rionnag Harbor
+3271	28	36	109	Castle Foyer
+3271	29	36	109	Castle Foyer
+3271	30	36	109	Castle Foyer
+3271	31	76	3000	Mileth Inn Room 0
+3271	32	76	3000	Mileth Inn Room 0
+3271	33	76	3000	Mileth Inn Room 0
+3601	0	14	3634	Chaos 1
+3601	1	14	3634	Chaos 1
+3601	44	69	3602	Chaos 3
+3601	69	33	3602	Chaos 3
+3602	26	78	3603	Chaos 4
+3602	26	79	3603	Chaos 4
+3602	47	9	3601	Chaos 2
+3602	47	10	3601	Chaos 2
+3602	78	39	3604	Chaos 5
+3602	79	39	3604	Chaos 5
+3603	20	0	3602	Chaos 3
+3603	20	1	3602	Chaos 3
+3603	48	25	3605	Chaos 6
+3603	49	25	3605	Chaos 6
+3604	0	38	3602	Chaos 3
+3604	1	38	3602	Chaos 3
+3604	41	48	3605	Chaos 6
+3604	41	49	3605	Chaos 6
+3605	0	38	3603	Chaos 4
+3605	1	38	3603	Chaos 4
+3605	33	0	3604	Chaos 5
+3605	33	1	3604	Chaos 5
+3605	68	48	3606	Chaos 7
+3605	69	48	3606	Chaos 7
+3606	0	43	3605	Chaos 6
+3606	1	43	3605	Chaos 6
+3606	78	39	3607	Chaos 8
+3606	79	39	3607	Chaos 8
+3607	0	50	3606	Chaos 7
+3607	69	18	3608	Chaos 9
+3607	69	19	3608	Chaos 9
+3607	69	20	3608	Chaos 9
+3608	0	27	3607	Chaos 8
+3608	4	59	3609	Chaos 10
+3608	5	59	3609	Chaos 10
+3608	6	59	3609	Chaos 10
+3609	8	0	3608	Chaos 9
+3609	29	69	3610	Chaos 11
+3609	30	69	3610	Chaos 11
+3609	31	69	3610	Chaos 11
+3610	13	79	3611	Chaos 12
+3610	14	79	3611	Chaos 12
+3610	15	79	3611	Chaos 12
+3610	16	79	3611	Chaos 12
+3610	26	0	3609	Chaos 10
+3611	0	73	3610	Chaos 11
+3611	18	99	3612	Chaos 13
+3611	46	0	3610	Chaos 11
+3612	4	79	3613	Chaos 14
+3612	70	0	3611	Chaos 12
+3613	2	0	3612	Chaos 13
+3613	33	69	3614	Chaos 15
+3613	34	69	3614	Chaos 15
+3613	35	69	3614	Chaos 15
+3613	69	39	3615	Chaos 16
+3613	69	40	3615	Chaos 16
+3613	69	41	3615	Chaos 16
+3614	26	0	3613	Chaos 14
+3614	49	42	3616	Chaos 17
+3614	49	43	3616	Chaos 17
+3615	0	19	3613	Chaos 14
+3615	26	49	3616	Chaos 17
+3615	27	49	3616	Chaos 17
+3616	0	75	3614	Chaos 15
+3616	26	0	3615	Chaos 16
+3616	29	79	3617	Chaos 18
+3616	30	79	3617	Chaos 18
+3616	31	79	3617	Chaos 18
+3616	32	79	3617	Chaos 18
+3617	26	0	3616	Chaos 17
+3617	79	17	3618	Chaos 19
+3617	79	18	3618	Chaos 19
+3617	79	19	3618	Chaos 19
+3618	0	26	3617	Chaos 18
+3618	79	46	3619	Chaos 20
+3618	79	47	3619	Chaos 20
+3618	79	48	3619	Chaos 20
+3618	79	49	3619	Chaos 20
+3618	79	50	3619	Chaos 20
+3618	79	51	3619	Chaos 20
+3619	0	47	3618	Chaos 19
+3619	69	59	3620	Chaos 21
+3619	69	60	3620	Chaos 21
+3619	69	61	3620	Chaos 21
+3620	0	77	3619	Chaos 20
+3620	99	54	3621	Chaos 22
+3620	99	55	3621	Chaos 22
+3620	99	56	3621	Chaos 22
+3621	0	25	3620	Chaos 21
+3621	69	29	3622	Chaos 23
+3621	69	30	3622	Chaos 23
+3621	69	31	3622	Chaos 23
+3621	69	32	3622	Chaos 23
+3621	69	33	3622	Chaos 23
+3621	69	34	3622	Chaos 23
+3622	0	30	3621	Chaos 22
+3622	99	50	3623	Chaos 24
+3623	0	27	3622	Chaos 23
+3623	29	79	3624	Chaos 25
+3623	30	79	3624	Chaos 25
+3623	79	1	3636	Smolten Forge
+3623	79	2	3636	Smolten Forge
+3623	79	3	3636	Smolten Forge
+3624	23	0	3623	Chaos 24
+3624	55	69	3625	Chaos 26
+3624	56	69	3625	Chaos 26
+3624	69	6	3626	Chaos 27
+3625	25	0	3624	Chaos 25
+3625	49	3	3627	Chaos 28
+3625	49	4	3627	Chaos 28
+3626	0	31	3624	Chaos 25
+3626	30	49	3627	Chaos 28
+3626	31	49	3627	Chaos 28
+3627	0	27	3625	Chaos 26
+3627	32	0	3626	Chaos 27
+3627	56	79	3628	Chaos 29
+3627	57	79	3628	Chaos 29
+3627	58	79	3628	Chaos 29
+3627	59	79	3628	Chaos 29
+3628	27	69	3629	Chaos 30
+3628	28	69	3629	Chaos 30
+3628	29	69	3629	Chaos 30
+3628	30	69	3629	Chaos 30
+3628	31	69	3629	Chaos 30
+3628	32	69	3629	Chaos 30
+3628	33	69	3629	Chaos 30
+3628	34	7	3627	Chaos 28
+3628	34	8	3627	Chaos 28
+3629	3	39	3630	Chaos 31
+3629	3	40	3630	Chaos 31
+3629	28	4	3628	Chaos 29
+3629	29	4	3628	Chaos 29
+3629	30	4	3628	Chaos 29
+3630	4	49	3631	
+3630	5	49	3631	
+3630	49	23	3629	Chaos 30
+3630	49	24	3629	Chaos 30
+3632	24	0	4335	Grim Chaos 34
+3632	25	0	4335	Grim Chaos 34
+3632	26	0	4335	Grim Chaos 34
+3632	27	0	4335	Grim Chaos 34
+3632	28	0	4335	Grim Chaos 34
+3632	29	0	4335	Grim Chaos 34
+3632	69	15	3631	
+3632	69	16	3631	
+3632	69	17	3631	
+3634	0	14	3635	Chaos Entrance
+3634	28	16	3601	Chaos 2
+3634	29	16	3601	Chaos 2
+3635	6	1	3634	Chaos 1
+3635	10	19	3058	Pravat Deep
+3635	11	19	3058	Pravat Deep
+3636	4	14	3623	Chaos 24
+3636	4	15	3623	Chaos 24
+3636	4	16	3623	Chaos 24
+3935	2	16	7401	Loures Sewer Canal 1
+3935	2	17	7401	Loures Sewer Canal 1
+3992	17	3	3043	Mileth College
+3992	17	4	3043	Mileth College
+4000	0	11	3074	Chandi Mukul Gathering
+4000	0	12	3074	Chandi Mukul Gathering
+4000	0	13	3074	Chandi Mukul Gathering
+4000	0	14	3074	Chandi Mukul Gathering
+4000	11	0	3076	Mehadi Shashi
+4000	11	31	4001	Shifting Swamp West
+4000	12	0	3076	Mehadi Shashi
+4000	12	31	4001	Shifting Swamp West
+4000	13	0	3076	Mehadi Shashi
+4000	13	31	4001	Shifting Swamp West
+4000	14	0	3076	Mehadi Shashi
+4000	14	31	4001	Shifting Swamp West
+4000	31	11	4002	Shifting Swamp East
+4000	31	12	4002	Shifting Swamp East
+4000	31	13	4002	Shifting Swamp East
+4000	31	14	4002	Shifting Swamp East
+4001	0	11	3074	Chandi Mukul Gathering
+4001	0	12	3074	Chandi Mukul Gathering
+4001	0	13	3074	Chandi Mukul Gathering
+4001	0	14	3074	Chandi Mukul Gathering
+4001	11	0	4000	Shifting Swamp North
+4001	11	31	3076	Mehadi Shashi
+4001	12	0	4000	Shifting Swamp North
+4001	12	31	3076	Mehadi Shashi
+4001	13	0	4000	Shifting Swamp North
+4001	13	31	3076	Mehadi Shashi
+4001	14	0	4000	Shifting Swamp North
+4001	14	31	3076	Mehadi Shashi
+4001	31	11	4003	Shifting Swamp South
+4001	31	12	4003	Shifting Swamp South
+4001	31	13	4003	Shifting Swamp South
+4001	31	14	4003	Shifting Swamp South
+4002	0	11	4000	Shifting Swamp North
+4002	0	12	4000	Shifting Swamp North
+4002	0	13	4000	Shifting Swamp North
+4002	0	14	4000	Shifting Swamp North
+4002	11	0	3076	Mehadi Shashi
+4002	11	31	4003	Shifting Swamp South
+4002	12	0	3076	Mehadi Shashi
+4002	12	31	4003	Shifting Swamp South
+4002	13	0	3076	Mehadi Shashi
+4002	13	31	4003	Shifting Swamp South
+4002	14	0	3076	Mehadi Shashi
+4002	14	31	4003	Shifting Swamp South
+4002	31	11	3074	Chandi Mukul Gathering
+4002	31	12	3074	Chandi Mukul Gathering
+4002	31	13	3074	Chandi Mukul Gathering
+4002	31	14	3074	Chandi Mukul Gathering
+4003	0	11	4001	Shifting Swamp West
+4003	0	12	4001	Shifting Swamp West
+4003	0	13	4001	Shifting Swamp West
+4003	0	14	4001	Shifting Swamp West
+4003	11	0	4002	Shifting Swamp East
+4003	11	31	3077	Heart West
+4003	12	0	4002	Shifting Swamp East
+4003	12	31	3077	Heart West
+4003	13	0	4002	Shifting Swamp East
+4003	13	31	3077	Heart West
+4003	14	0	4002	Shifting Swamp East
+4003	14	31	3077	Heart West
+4003	31	11	3078	Heart East
+4003	31	12	3078	Heart East
+4003	31	13	3078	Heart East
+4003	31	14	3078	Heart East
+4004	0	10	4005	Chamber I East
+4004	0	11	4005	Chamber I East
+4004	0	12	4005	Chamber I East
+4004	0	13	4005	Chamber I East
+4004	0	14	4005	Chamber I East
+4004	0	15	4005	Chamber I East
+4004	0	16	4005	Chamber I East
+4004	0	17	4005	Chamber I East
+4004	10	0	4005	Chamber I East
+4004	10	27	4005	Chamber I East
+4004	11	0	4005	Chamber I East
+4004	11	27	4005	Chamber I East
+4004	12	0	4005	Chamber I East
+4004	12	27	4005	Chamber I East
+4004	13	0	4005	Chamber I East
+4004	13	27	4005	Chamber I East
+4004	14	0	4005	Chamber I East
+4004	14	27	4005	Chamber I East
+4004	15	0	4005	Chamber I East
+4004	15	27	4005	Chamber I East
+4004	16	0	4005	Chamber I East
+4004	16	27	4005	Chamber I East
+4004	17	0	4005	Chamber I East
+4004	17	27	4005	Chamber I East
+4004	27	1	323	Dubhaim Castle West 4-1
+4004	27	2	323	Dubhaim Castle West 4-1
+4004	27	10	4005	Chamber I East
+4004	27	11	4005	Chamber I East
+4004	27	12	4005	Chamber I East
+4004	27	13	4005	Chamber I East
+4004	27	14	4005	Chamber I East
+4004	27	15	4005	Chamber I East
+4004	27	16	4005	Chamber I East
+4004	27	17	4005	Chamber I East
+4005	0	10	4004	Chamber I North
+4005	0	11	4004	Chamber I North
+4005	0	12	4004	Chamber I North
+4005	0	13	4004	Chamber I North
+4005	0	14	4004	Chamber I North
+4005	0	15	4004	Chamber I North
+4005	0	16	4004	Chamber I North
+4005	0	17	4004	Chamber I North
+4005	3	4	4006	Chamber I South
+4005	4	3	4006	Chamber I South
+4005	4	4	4006	Chamber I South
+4005	4	5	4006	Chamber I South
+4005	5	4	4006	Chamber I South
+4005	10	0	4004	Chamber I North
+4005	10	27	4004	Chamber I North
+4005	11	0	4004	Chamber I North
+4005	11	27	4004	Chamber I North
+4005	12	0	4004	Chamber I North
+4005	12	27	4004	Chamber I North
+4005	13	0	4004	Chamber I North
+4005	13	27	4004	Chamber I North
+4005	14	0	4004	Chamber I North
+4005	14	27	4004	Chamber I North
+4005	15	0	4004	Chamber I North
+4005	15	27	4004	Chamber I North
+4005	16	0	4004	Chamber I North
+4005	16	27	4004	Chamber I North
+4005	17	0	4004	Chamber I North
+4005	17	27	4004	Chamber I North
+4005	27	10	4004	Chamber I North
+4005	27	11	4004	Chamber I North
+4005	27	12	4004	Chamber I North
+4005	27	13	4004	Chamber I North
+4005	27	14	4004	Chamber I North
+4005	27	15	4004	Chamber I North
+4005	27	16	4004	Chamber I North
+4005	27	17	4004	Chamber I North
+4006	0	10	4007	Chamber I West
+4006	0	11	4007	Chamber I West
+4006	0	12	4007	Chamber I West
+4006	0	13	4007	Chamber I West
+4006	0	14	4007	Chamber I West
+4006	0	15	4007	Chamber I West
+4006	0	16	4007	Chamber I West
+4006	0	17	4007	Chamber I West
+4006	3	4	4005	Chamber I East
+4006	4	3	4005	Chamber I East
+4006	4	4	4005	Chamber I East
+4006	4	5	4005	Chamber I East
+4006	5	4	4005	Chamber I East
+4006	10	0	4007	Chamber I West
+4006	10	27	4007	Chamber I West
+4006	11	0	4007	Chamber I West
+4006	11	27	4007	Chamber I West
+4006	12	0	4007	Chamber I West
+4006	12	27	4007	Chamber I West
+4006	13	0	4007	Chamber I West
+4006	13	27	4007	Chamber I West
+4006	14	0	4007	Chamber I West
+4006	14	27	4007	Chamber I West
+4006	15	0	4007	Chamber I West
+4006	15	27	4007	Chamber I West
+4006	16	0	4007	Chamber I West
+4006	16	27	4007	Chamber I West
+4006	17	0	4007	Chamber I West
+4006	17	27	4007	Chamber I West
+4006	27	10	4007	Chamber I West
+4006	27	11	4007	Chamber I West
+4006	27	12	4007	Chamber I West
+4006	27	13	4007	Chamber I West
+4006	27	14	4007	Chamber I West
+4006	27	15	4007	Chamber I West
+4006	27	16	4007	Chamber I West
+4006	27	17	4007	Chamber I West
+4007	0	10	4006	Chamber I South
+4007	0	11	4006	Chamber I South
+4007	0	12	4006	Chamber I South
+4007	0	13	4006	Chamber I South
+4007	0	14	4006	Chamber I South
+4007	0	15	4006	Chamber I South
+4007	0	16	4006	Chamber I South
+4007	0	17	4006	Chamber I South
+4007	10	0	4006	Chamber I South
+4007	10	27	4006	Chamber I South
+4007	11	0	4006	Chamber I South
+4007	11	27	4006	Chamber I South
+4007	12	0	4006	Chamber I South
+4007	12	27	4006	Chamber I South
+4007	13	0	4006	Chamber I South
+4007	13	27	4006	Chamber I South
+4007	14	0	4006	Chamber I South
+4007	14	27	4006	Chamber I South
+4007	15	0	4006	Chamber I South
+4007	15	27	4006	Chamber I South
+4007	16	0	4006	Chamber I South
+4007	16	27	4006	Chamber I South
+4007	17	0	4006	Chamber I South
+4007	17	27	4006	Chamber I South
+4007	27	10	4006	Chamber I South
+4007	27	11	4006	Chamber I South
+4007	27	12	4006	Chamber I South
+4007	27	13	4006	Chamber I South
+4007	27	14	4006	Chamber I South
+4007	27	15	4006	Chamber I South
+4007	27	16	4006	Chamber I South
+4007	27	17	4006	Chamber I South
+4008	0	10	4009	Chamber II East
+4008	0	11	4009	Chamber II East
+4008	0	12	4009	Chamber II East
+4008	0	13	4009	Chamber II East
+4008	0	14	4009	Chamber II East
+4008	0	15	4009	Chamber II East
+4008	0	16	4009	Chamber II East
+4008	0	17	4009	Chamber II East
+4008	10	0	4009	Chamber II East
+4008	10	27	4009	Chamber II East
+4008	11	0	4009	Chamber II East
+4008	11	27	4009	Chamber II East
+4008	12	0	4009	Chamber II East
+4008	12	27	4009	Chamber II East
+4008	13	0	4009	Chamber II East
+4008	13	27	4009	Chamber II East
+4008	14	0	4009	Chamber II East
+4008	14	27	4009	Chamber II East
+4008	15	0	4009	Chamber II East
+4008	15	27	4009	Chamber II East
+4008	16	0	4009	Chamber II East
+4008	16	27	4009	Chamber II East
+4008	17	0	4009	Chamber II East
+4008	17	27	4009	Chamber II East
+4008	27	1	324	Dubhaim Castle West 5-1
+4008	27	2	324	Dubhaim Castle West 5-1
+4008	27	10	4009	Chamber II East
+4008	27	11	4009	Chamber II East
+4008	27	12	4009	Chamber II East
+4008	27	13	4009	Chamber II East
+4008	27	14	4009	Chamber II East
+4008	27	15	4009	Chamber II East
+4008	27	16	4009	Chamber II East
+4008	27	17	4009	Chamber II East
+4009	0	10	4008	Chamber II North
+4009	0	11	4008	Chamber II North
+4009	0	12	4008	Chamber II North
+4009	0	13	4008	Chamber II North
+4009	0	14	4008	Chamber II North
+4009	0	15	4008	Chamber II North
+4009	0	16	4008	Chamber II North
+4009	0	17	4008	Chamber II North
+4009	3	4	4010	Chamber II South
+4009	4	3	4010	Chamber II South
+4009	4	4	4010	Chamber II South
+4009	4	5	4010	Chamber II South
+4009	5	4	4010	Chamber II South
+4009	10	0	4008	Chamber II North
+4009	10	27	4008	Chamber II North
+4009	11	0	4008	Chamber II North
+4009	11	27	4008	Chamber II North
+4009	12	0	4008	Chamber II North
+4009	12	27	4008	Chamber II North
+4009	13	0	4008	Chamber II North
+4009	13	27	4008	Chamber II North
+4009	14	0	4008	Chamber II North
+4009	14	27	4008	Chamber II North
+4009	15	0	4008	Chamber II North
+4009	15	27	4008	Chamber II North
+4009	16	0	4008	Chamber II North
+4009	16	27	4008	Chamber II North
+4009	17	0	4008	Chamber II North
+4009	17	27	4008	Chamber II North
+4009	27	10	4008	Chamber II North
+4009	27	11	4008	Chamber II North
+4009	27	12	4008	Chamber II North
+4009	27	13	4008	Chamber II North
+4009	27	14	4008	Chamber II North
+4009	27	15	4008	Chamber II North
+4009	27	16	4008	Chamber II North
+4009	27	17	4008	Chamber II North
+4010	0	10	4011	Chamber II West
+4010	0	11	4011	Chamber II West
+4010	0	12	4011	Chamber II West
+4010	0	13	4011	Chamber II West
+4010	0	14	4011	Chamber II West
+4010	0	15	4011	Chamber II West
+4010	0	16	4011	Chamber II West
+4010	0	17	4011	Chamber II West
+4010	3	4	4009	Chamber II East
+4010	4	3	4009	Chamber II East
+4010	4	4	4009	Chamber II East
+4010	4	5	4009	Chamber II East
+4010	5	4	4009	Chamber II East
+4010	10	0	4011	Chamber II West
+4010	10	27	4011	Chamber II West
+4010	11	0	4011	Chamber II West
+4010	11	27	4011	Chamber II West
+4010	12	0	4011	Chamber II West
+4010	12	27	4011	Chamber II West
+4010	13	0	4011	Chamber II West
+4010	13	27	4011	Chamber II West
+4010	14	0	4011	Chamber II West
+4010	14	27	4011	Chamber II West
+4010	15	0	4011	Chamber II West
+4010	15	27	4011	Chamber II West
+4010	16	0	4011	Chamber II West
+4010	16	27	4011	Chamber II West
+4010	17	0	4011	Chamber II West
+4010	17	27	4011	Chamber II West
+4010	27	10	4011	Chamber II West
+4010	27	11	4011	Chamber II West
+4010	27	12	4011	Chamber II West
+4010	27	13	4011	Chamber II West
+4010	27	14	4011	Chamber II West
+4010	27	15	4011	Chamber II West
+4010	27	16	4011	Chamber II West
+4010	27	17	4011	Chamber II West
+4011	0	10	4010	Chamber II South
+4011	0	11	4010	Chamber II South
+4011	0	12	4010	Chamber II South
+4011	0	13	4010	Chamber II South
+4011	0	14	4010	Chamber II South
+4011	0	15	4010	Chamber II South
+4011	0	16	4010	Chamber II South
+4011	0	17	4010	Chamber II South
+4011	10	0	4010	Chamber II South
+4011	10	27	4010	Chamber II South
+4011	11	0	4010	Chamber II South
+4011	11	27	4010	Chamber II South
+4011	12	0	4010	Chamber II South
+4011	12	27	4010	Chamber II South
+4011	13	0	4010	Chamber II South
+4011	13	27	4010	Chamber II South
+4011	14	0	4010	Chamber II South
+4011	14	27	4010	Chamber II South
+4011	15	0	4010	Chamber II South
+4011	15	27	4010	Chamber II South
+4011	16	0	4010	Chamber II South
+4011	16	27	4010	Chamber II South
+4011	17	0	4010	Chamber II South
+4011	17	27	4010	Chamber II South
+4011	27	10	4010	Chamber II South
+4011	27	11	4010	Chamber II South
+4011	27	12	4010	Chamber II South
+4011	27	13	4010	Chamber II South
+4011	27	14	4010	Chamber II South
+4011	27	15	4010	Chamber II South
+4011	27	16	4010	Chamber II South
+4011	27	17	4010	Chamber II South
+4012	0	10	4013	Chamber III East
+4012	0	11	4013	Chamber III East
+4012	0	12	4013	Chamber III East
+4012	0	13	4013	Chamber III East
+4012	0	14	4013	Chamber III East
+4012	0	15	4013	Chamber III East
+4012	0	16	4013	Chamber III East
+4012	0	17	4013	Chamber III East
+4012	10	0	4013	Chamber III East
+4012	10	27	4013	Chamber III East
+4012	11	0	4013	Chamber III East
+4012	11	27	4013	Chamber III East
+4012	12	0	4013	Chamber III East
+4012	12	27	4013	Chamber III East
+4012	13	0	4013	Chamber III East
+4012	13	27	4013	Chamber III East
+4012	14	0	4013	Chamber III East
+4012	14	27	4013	Chamber III East
+4012	15	0	4013	Chamber III East
+4012	15	27	4013	Chamber III East
+4012	16	0	4013	Chamber III East
+4012	16	27	4013	Chamber III East
+4012	17	0	4013	Chamber III East
+4012	17	27	4013	Chamber III East
+4012	27	1	325	Dubhaim Castle West 6-1
+4012	27	2	325	Dubhaim Castle West 6-1
+4012	27	10	4013	Chamber III East
+4012	27	11	4013	Chamber III East
+4012	27	12	4013	Chamber III East
+4012	27	13	4013	Chamber III East
+4012	27	14	4013	Chamber III East
+4012	27	15	4013	Chamber III East
+4012	27	16	4013	Chamber III East
+4012	27	17	4013	Chamber III East
+4013	0	10	4012	Chamber III North
+4013	0	11	4012	Chamber III North
+4013	0	12	4012	Chamber III North
+4013	0	13	4012	Chamber III North
+4013	0	14	4012	Chamber III North
+4013	0	15	4012	Chamber III North
+4013	0	16	4012	Chamber III North
+4013	0	17	4012	Chamber III North
+4013	3	4	4014	Chamber III South
+4013	4	3	4014	Chamber III South
+4013	4	4	4014	Chamber III South
+4013	4	5	4014	Chamber III South
+4013	5	4	4014	Chamber III South
+4013	10	0	4012	Chamber III North
+4013	10	27	4012	Chamber III North
+4013	11	0	4012	Chamber III North
+4013	11	27	4012	Chamber III North
+4013	12	0	4012	Chamber III North
+4013	12	27	4012	Chamber III North
+4013	13	0	4012	Chamber III North
+4013	13	27	4012	Chamber III North
+4013	14	0	4012	Chamber III North
+4013	14	27	4012	Chamber III North
+4013	15	0	4012	Chamber III North
+4013	15	27	4012	Chamber III North
+4013	16	0	4012	Chamber III North
+4013	16	27	4012	Chamber III North
+4013	17	0	4012	Chamber III North
+4013	17	27	4012	Chamber III North
+4013	27	10	4012	Chamber III North
+4013	27	11	4012	Chamber III North
+4013	27	12	4012	Chamber III North
+4013	27	13	4012	Chamber III North
+4013	27	14	4012	Chamber III North
+4013	27	15	4012	Chamber III North
+4013	27	16	4012	Chamber III North
+4013	27	17	4012	Chamber III North
+4014	0	10	4015	Chamber III West
+4014	0	11	4015	Chamber III West
+4014	0	12	4015	Chamber III West
+4014	0	13	4015	Chamber III West
+4014	0	14	4015	Chamber III West
+4014	0	15	4015	Chamber III West
+4014	0	16	4015	Chamber III West
+4014	0	17	4015	Chamber III West
+4014	3	4	4013	Chamber III East
+4014	4	3	4013	Chamber III East
+4014	4	4	4013	Chamber III East
+4014	4	5	4013	Chamber III East
+4014	5	4	4013	Chamber III East
+4014	10	0	4015	Chamber III West
+4014	10	27	4015	Chamber III West
+4014	11	0	4015	Chamber III West
+4014	11	27	4015	Chamber III West
+4014	12	0	4015	Chamber III West
+4014	12	27	4015	Chamber III West
+4014	13	0	4015	Chamber III West
+4014	13	27	4015	Chamber III West
+4014	14	0	4015	Chamber III West
+4014	14	27	4015	Chamber III West
+4014	15	0	4015	Chamber III West
+4014	15	27	4015	Chamber III West
+4014	16	0	4015	Chamber III West
+4014	16	27	4015	Chamber III West
+4014	17	0	4015	Chamber III West
+4014	17	27	4015	Chamber III West
+4014	27	10	4015	Chamber III West
+4014	27	11	4015	Chamber III West
+4014	27	12	4015	Chamber III West
+4014	27	13	4015	Chamber III West
+4014	27	14	4015	Chamber III West
+4014	27	15	4015	Chamber III West
+4014	27	16	4015	Chamber III West
+4014	27	17	4015	Chamber III West
+4015	0	10	4014	Chamber III South
+4015	0	11	4014	Chamber III South
+4015	0	12	4014	Chamber III South
+4015	0	13	4014	Chamber III South
+4015	0	14	4014	Chamber III South
+4015	0	15	4014	Chamber III South
+4015	0	16	4014	Chamber III South
+4015	0	17	4014	Chamber III South
+4015	10	0	4014	Chamber III South
+4015	10	27	4014	Chamber III South
+4015	11	0	4014	Chamber III South
+4015	11	27	4014	Chamber III South
+4015	12	0	4014	Chamber III South
+4015	12	27	4014	Chamber III South
+4015	13	0	4014	Chamber III South
+4015	13	27	4014	Chamber III South
+4015	14	0	4014	Chamber III South
+4015	14	27	4014	Chamber III South
+4015	15	0	4014	Chamber III South
+4015	15	27	4014	Chamber III South
+4015	16	0	4014	Chamber III South
+4015	16	27	4014	Chamber III South
+4015	17	0	4014	Chamber III South
+4015	17	27	4014	Chamber III South
+4015	27	10	4014	Chamber III South
+4015	27	11	4014	Chamber III South
+4015	27	12	4014	Chamber III South
+4015	27	13	4014	Chamber III South
+4015	27	14	4014	Chamber III South
+4015	27	15	4014	Chamber III South
+4015	27	16	4014	Chamber III South
+4015	27	17	4014	Chamber III South
+4017	3	4	4018	Chamber IV South
+4017	4	3	4018	Chamber IV South
+4017	4	4	4018	Chamber IV South
+4017	4	5	4018	Chamber IV South
+4017	5	4	4018	Chamber IV South
+4018	0	10	4019	Chamber IV West
+4018	0	11	4019	Chamber IV West
+4018	0	12	4019	Chamber IV West
+4018	0	13	4019	Chamber IV West
+4018	0	14	4019	Chamber IV West
+4018	0	15	4019	Chamber IV West
+4018	0	16	4019	Chamber IV West
+4018	0	17	4019	Chamber IV West
+4018	3	4	4017	Chamber IV East
+4018	4	3	4017	Chamber IV East
+4018	4	4	4017	Chamber IV East
+4018	4	5	4017	Chamber IV East
+4018	5	4	4017	Chamber IV East
+4018	10	0	4019	Chamber IV West
+4018	10	27	4019	Chamber IV West
+4018	11	0	4019	Chamber IV West
+4018	11	27	4019	Chamber IV West
+4018	12	0	4019	Chamber IV West
+4018	12	27	4019	Chamber IV West
+4018	13	0	4019	Chamber IV West
+4018	13	27	4019	Chamber IV West
+4018	14	0	4019	Chamber IV West
+4018	14	27	4019	Chamber IV West
+4018	15	0	4019	Chamber IV West
+4018	15	27	4019	Chamber IV West
+4018	16	0	4019	Chamber IV West
+4018	16	27	4019	Chamber IV West
+4018	17	0	4019	Chamber IV West
+4018	17	27	4019	Chamber IV West
+4018	27	10	4019	Chamber IV West
+4018	27	11	4019	Chamber IV West
+4018	27	12	4019	Chamber IV West
+4018	27	13	4019	Chamber IV West
+4018	27	14	4019	Chamber IV West
+4018	27	15	4019	Chamber IV West
+4018	27	16	4019	Chamber IV West
+4018	27	17	4019	Chamber IV West
+4019	0	10	4018	Chamber IV South
+4019	0	11	4018	Chamber IV South
+4019	0	12	4018	Chamber IV South
+4019	0	13	4018	Chamber IV South
+4019	0	14	4018	Chamber IV South
+4019	0	15	4018	Chamber IV South
+4019	0	16	4018	Chamber IV South
+4019	0	17	4018	Chamber IV South
+4019	10	0	4018	Chamber IV South
+4019	10	27	4018	Chamber IV South
+4019	11	0	4018	Chamber IV South
+4019	11	27	4018	Chamber IV South
+4019	12	0	4018	Chamber IV South
+4019	12	27	4018	Chamber IV South
+4019	13	0	4018	Chamber IV South
+4019	13	27	4018	Chamber IV South
+4019	14	0	4018	Chamber IV South
+4019	14	27	4018	Chamber IV South
+4019	15	0	4018	Chamber IV South
+4019	15	27	4018	Chamber IV South
+4019	16	0	4018	Chamber IV South
+4019	16	27	4018	Chamber IV South
+4019	17	0	4018	Chamber IV South
+4019	17	27	4018	Chamber IV South
+4019	27	10	4018	Chamber IV South
+4019	27	11	4018	Chamber IV South
+4019	27	12	4018	Chamber IV South
+4019	27	13	4018	Chamber IV South
+4019	27	14	4018	Chamber IV South
+4019	27	15	4018	Chamber IV South
+4019	27	16	4018	Chamber IV South
+4019	27	17	4018	Chamber IV South
+4600	23	49	503	Suomi
+4600	24	49	503	Suomi
+4600	25	49	503	Suomi
+4600	26	49	503	Suomi
+4600	27	49	503	Suomi
+5001	7	39	5099	Macabre Cellar 4-3
+5001	39	1	5002	Cthonic Remains 2
+5001	47	38	5100	Macabre Cellar 4-4
+5001	52	72	5002	Cthonic Remains 2
+5001	63	18	5101	Macabre Cellar 4-5
+5001	73	45	5002	Cthonic Remains 2
+5002	40	1	5001	Cthonic Remains 1
+5002	51	37	5003	Cthonic Remains 3
+5002	52	72	5001	Cthonic Remains 1
+5002	73	45	5001	Cthonic Remains 1
+5002	89	22	5003	Cthonic Remains 3
+5003	2	43	5004	Cthonic Remains 4
+5003	38	63	5004	Cthonic Remains 4
+5003	51	40	5002	Cthonic Remains 2
+5003	53	1	5004	Cthonic Remains 4
+5003	89	17	5002	Cthonic Remains 2
+5004	6	50	5003	Cthonic Remains 3
+5004	7	81	5005	Cthonic Remains 5
+5004	28	22	5005	Cthonic Remains 5
+5004	38	63	5003	Cthonic Remains 3
+5004	43	2	5003	Cthonic Remains 3
+5004	74	47	5005	Cthonic Remains 5
+5005	3	31	5006	Cthonic Remains 6
+5005	4	81	5004	Cthonic Remains 4
+5005	28	15	5004	Cthonic Remains 4
+5005	37	63	5006	Cthonic Remains 6
+5005	69	5	5006	Cthonic Remains 6
+5005	74	47	5004	Cthonic Remains 4
+5006	3	31	5005	Cthonic Remains 5
+5006	14	28	5007	
+5006	37	63	5005	Cthonic Remains 5
+5006	45	34	5007	
+5006	69	6	5005	Cthonic Remains 5
+5006	74	48	5007	
+5008	8	64	5007	
+5008	10	32	5009	Cthonic Remains 9
+5008	46	53	5007	
+5008	46	72	5009	Cthonic Remains 9
+5008	73	43	5009	Cthonic Remains 9
+5008	77	8	5007	
+5009	2	65	5010	Cthonic Remains 10
+5009	21	36	5008	Cthonic Remains 8
+5009	23	5	5010	Cthonic Remains 10
+5009	46	72	5008	Cthonic Remains 8
+5009	59	15	5010	Cthonic Remains 10
+5009	74	39	5008	Cthonic Remains 8
+5010	2	65	5009	Cthonic Remains 9
+5010	23	6	5009	Cthonic Remains 9
+5010	42	63	5011	Cthonic Remains 11
+5010	56	47	5011	Cthonic Remains 11
+5010	59	16	5009	Cthonic Remains 9
+5010	84	5	5011	Cthonic Remains 11
+5011	27	14	5012	Cthonic Remains 12
+5011	28	76	5012	Cthonic Remains 12
+5011	42	63	5010	Cthonic Remains 10
+5011	56	47	5010	Cthonic Remains 10
+5011	69	30	5012	Cthonic Remains 12
+5011	84	5	5010	Cthonic Remains 10
+5012	12	8	5013	Cthonic Remains 13
+5012	27	10	5011	Cthonic Remains 11
+5012	65	67	5013	Cthonic Remains 13
+5012	69	30	5011	Cthonic Remains 11
+5012	84	5	5013	Cthonic Remains 13
+5013	11	74	5014	Cthonic Remains 14
+5013	12	4	5012	Cthonic Remains 12
+5013	40	38	5014	Cthonic Remains 14
+5013	60	5	5014	Cthonic Remains 14
+5013	65	67	5012	Cthonic Remains 12
+5013	84	5	5012	Cthonic Remains 12
+5014	8	50	5013	Cthonic Remains 13
+5014	20	4	5015	Adventurer's Guild Camp
+5014	40	36	5013	Cthonic Remains 13
+5014	48	75	5015	Adventurer's Guild Camp
+5014	60	5	5013	Cthonic Remains 13
+5014	78	8	5015	Adventurer's Guild Camp
+5015	4	35	5016	Cthonic Remains 16
+5015	9	21	5014	Cthonic Remains 14
+5015	50	9	5016	Cthonic Remains 16
+5015	53	75	5014	Cthonic Remains 14
+5015	78	8	5014	Cthonic Remains 14
+5015	83	55	5016	Cthonic Remains 16
+5016	3	28	5015	Adventurer's Guild Camp
+5016	9	85	5017	Cthonic Remains 17
+5016	23	1	5017	Cthonic Remains 17
+5016	28	31	5017	Cthonic Remains 17
+5016	36	14	5015	Adventurer's Guild Camp
+5016	86	46	5015	Adventurer's Guild Camp
+5017	6	16	5016	Cthonic Remains 16
+5017	6	47	5018	Cthonic Remains 18
+5017	20	81	5016	Cthonic Remains 16
+5017	28	31	5016	Cthonic Remains 16
+5017	60	28	5018	Cthonic Remains 18
+5017	83	53	5018	Cthonic Remains 18
+5018	6	21	5017	Cthonic Remains 17
+5018	6	45	5019	Cthonic Remains 19
+5018	20	79	5019	Cthonic Remains 19
+5018	36	70	5019	Cthonic Remains 19
+5018	60	28	5017	Cthonic Remains 17
+5018	83	68	5017	Cthonic Remains 17
+5019	3	45	5018	Cthonic Remains 18
+5019	15	79	5018	Cthonic Remains 18
+5019	35	70	5018	Cthonic Remains 18
+5019	37	16	5020	Cthonic Remains 20
+5019	81	64	5020	Cthonic Remains 20
+5019	84	15	5020	Cthonic Remains 20
+5020	12	24	5021	Cthonic Remains 21
+5020	20	81	5021	Cthonic Remains 21
+5020	43	25	5019	Cthonic Remains 19
+5020	68	72	5019	Cthonic Remains 19
+5020	83	59	5021	Cthonic Remains 21
+5020	84	3	5019	Cthonic Remains 19
+5021	4	53	5022	Cthonic Remains 22
+5021	5	80	5020	Cthonic Remains 20
+5021	12	28	5020	Cthonic Remains 20
+5021	70	17	5022	Cthonic Remains 22
+5021	80	47	5020	Cthonic Remains 20
+5022	1	53	5021	Cthonic Remains 21
+5022	26	57	5023	Cthonic Remains 23
+5022	36	75	5023	Cthonic Remains 23
+5022	82	2	5021	Cthonic Remains 21
+5023	26	57	5022	Cthonic Remains 22
+5023	32	7	5024	Cthonic Remains 24
+5023	44	76	5022	Cthonic Remains 22
+5023	68	54	5024	Cthonic Remains 24
+5023	89	21	5024	Cthonic Remains 24
+5024	2	34	5025	Cthonic Remains 25
+5024	32	12	5023	Cthonic Remains 23
+5024	56	73	5025	Cthonic Remains 25
+5024	68	54	5023	Cthonic Remains 23
+5024	84	9	5023	Cthonic Remains 23
+5025	2	34	5024	Cthonic Remains 24
+5025	39	51	5026	Cthonic Remains 26
+5025	66	33	5026	Cthonic Remains 26
+5025	69	63	5024	Cthonic Remains 24
+5026	2	12	5027	Cthonic Remains 27
+5026	30	30	5027	Cthonic Remains 27
+5026	38	48	5025	Cthonic Remains 25
+5026	79	28	5025	Cthonic Remains 25
+5027	1	12	5026	Cthonic Remains 26
+5027	29	25	5026	Cthonic Remains 26
+5027	60	63	5028	Cthonic Remains 28
+5027	85	2	5028	Cthonic Remains 28
+5028	13	72	5029	Cthonic Remains 29
+5028	19	25	5029	Cthonic Remains 29
+5028	50	13	5029	Cthonic Remains 29
+5028	60	63	5027	Cthonic Remains 27
+5028	85	21	5027	Cthonic Remains 27
+5029	3	72	5028	Cthonic Remains 28
+5029	9	25	5028	Cthonic Remains 28
+5029	28	7	5030	Cthonic Remains 30
+5029	46	40	5030	Cthonic Remains 30
+5029	49	13	5028	Cthonic Remains 28
+5029	71	45	5030	Cthonic Remains 30
+5030	3	53	5031	Adventurer's Advanced Camp
+5030	12	2	5029	Cthonic Remains 29
+5030	28	2	5029	Cthonic Remains 29
+5030	46	37	5029	Cthonic Remains 29
+5030	75	40	5029	Cthonic Remains 29
+5030	77	22	5031	Adventurer's Advanced Camp
+5031	1	39	5030	Cthonic Remains 30
+5031	18	49	5032	Cthonic Depths 1
+5031	23	0	5030	Cthonic Remains 30
+5031	49	39	5032	Cthonic Depths 1
+5032	0	31	5033	Cthonic Depths 2
+5032	4	0	5031	Adventurer's Advanced Camp
+5032	30	69	5034	Cthonic Depths 3
+5032	65	0	5031	Adventurer's Advanced Camp
+5033	3	0	5036	Cthonic Depths 5
+5033	29	8	5032	Cthonic Depths 1
+5034	0	3	5032	Cthonic Depths 1
+5034	27	29	5035	Cthonic Depths 4
+5035	0	9	5034	Cthonic Depths 3
+5035	2	29	5036	Cthonic Depths 5
+5036	26	0	5035	Cthonic Depths 4
+5036	73	79	5033	Cthonic Depths 2
+5036	79	19	5038	Cthonic Depths 7
+5036	79	33	5037	Cthonic Depths 6
+5037	14	44	5036	Cthonic Depths 5
+5037	44	0	5039	Cthonic Depths 8
+5038	12	0	5040	Cthonic Depths 9
+5038	13	0	5040	Cthonic Depths 9
+5038	13	29	5036	Cthonic Depths 5
+5038	14	0	5040	Cthonic Depths 9
+5038	14	29	5036	Cthonic Depths 5
+5038	15	29	5036	Cthonic Depths 5
+5039	23	0	5041	Cthonic Depths 10
+5039	32	64	5037	Cthonic Depths 6
+5040	8	49	5038	Cthonic Depths 7
+5040	44	0	5041	Cthonic Depths 10
+5041	0	19	5042	Cthonic Depths 11
+5041	13	49	5040	Cthonic Depths 9
+5041	24	49	5039	Cthonic Depths 8
+5042	0	29	5043	Cthonic Depths 12
+5042	15	79	5043	Cthonic Depths 12
+5042	53	0	5043	Cthonic Depths 12
+5042	79	50	5041	Cthonic Depths 10
+5043	10	0	5042	Cthonic Depths 11
+5043	11	0	5042	Cthonic Depths 11
+5043	11	149	5044	Cthonic Depths 13
+5043	12	0	5042	Cthonic Depths 11
+5043	12	149	5044	Cthonic Depths 13
+5043	13	0	5042	Cthonic Depths 11
+5043	13	149	5044	Cthonic Depths 13
+5043	14	149	5044	Cthonic Depths 13
+5044	0	9	5043	Cthonic Depths 12
+5044	45	99	5046	
+5044	99	69	5045	Cthonic Depths 14
+5045	31	0	5044	Cthonic Depths 13
+5045	49	43	5047	Cthonic Depths 16
+5047	0	16	5045	Cthonic Depths 14
+5047	69	45	5049	Cthonic Depths 17
+5049	0	22	5047	Cthonic Depths 16
+5049	12	0	5046	
+5049	42	59	5050	Forward SpecOp Camp
+5050	11	0	5049	Cthonic Depths 17
+5050	12	0	5049	Cthonic Depths 17
+5061	1	2	5065	Macabre Cellar 1
+5061	2	2	5065	Macabre Cellar 1
+5061	17	19	2046	House Macabre Yard 1
+5061	18	19	2046	House Macabre Yard 1
+5061	19	4	2046	House Macabre Yard 1
+5061	19	5	2046	House Macabre Yard 1
+5062	2	1	5067	Macabre Cellar 1-2
+5062	2	2	5067	Macabre Cellar 1-2
+5062	19	16	2046	House Macabre Yard 1
+5062	19	17	2046	House Macabre Yard 1
+5063	2	1	5069	Macabre Cellar 1-4
+5063	2	2	5069	Macabre Cellar 1-4
+5063	19	2	2046	House Macabre Yard 1
+5063	19	3	2046	House Macabre Yard 1
+5064	4	3	5071	Macabre Cellar 1-6
+5064	4	4	5071	Macabre Cellar 1-6
+5064	19	16	2046	House Macabre Yard 1
+5064	19	17	2046	House Macabre Yard 1
+5065	1	1	5061	Macabre Study 1-1
+5065	11	19	5066	Macabre Cellar 1-1
+5065	19	13	5070	Macabre Cellar 1-5
+5066	10	19	5067	Macabre Cellar 1-2
+5066	13	0	5065	Macabre Cellar 1
+5067	3	2	5062	Macabre Study 1-2
+5067	11	0	5066	Macabre Cellar 1-1
+5067	19	7	5068	Macabre Cellar 1-3
+5068	0	8	5067	Macabre Cellar 1-2
+5068	19	9	5071	Macabre Cellar 1-6
+5069	0	7	5070	Macabre Cellar 1-5
+5069	2	1	5063	Macabre Study 1-3
+5069	11	19	5072	
+5070	0	4	5065	Macabre Cellar 1
+5070	19	4	5069	Macabre Cellar 1-4
+5071	0	8	5068	Macabre Cellar 1-3
+5071	2	3	5064	Macabre Study 1-4
+5071	8	0	5072	
+5073	1	2	5077	Macabre Cellar 2-1
+5073	2	2	5077	Macabre Cellar 2-1
+5073	19	4	2047	House Macabre Yard 2
+5073	19	5	2047	House Macabre Yard 2
+5074	1	2	5079	Macabre Cellar 2-3
+5074	2	2	5079	Macabre Cellar 2-3
+5074	17	19	2047	House Macabre Yard 2
+5074	18	19	2047	House Macabre Yard 2
+5074	19	4	2047	House Macabre Yard 2
+5074	19	5	2047	House Macabre Yard 2
+5075	4	3	5081	Macabre Cellar 2-5
+5075	4	4	5081	Macabre Cellar 2-5
+5075	19	16	2047	House Macabre Yard 2
+5075	19	17	2047	House Macabre Yard 2
+5076	1	19	2047	House Macabre Yard 2
+5076	2	1	5083	Macabre Cellar 2-7
+5076	2	2	5083	Macabre Cellar 2-7
+5076	2	19	2047	House Macabre Yard 2
+5077	1	1	5073	Macabre Study 2-1
+5077	11	19	5078	Macabre Cellar 2-2
+5077	19	4	5084	Macabre Cellar 2-8
+5078	8	0	5077	Macabre Cellar 2-1
+5078	12	19	5079	Macabre Cellar 2-3
+5079	3	1	5074	Macabre Study 2-2
+5079	11	0	5078	Macabre Cellar 2-2
+5079	19	12	5080	Macabre Cellar 2-4
+5080	0	8	5079	Macabre Cellar 2-3
+5080	19	9	5081	Macabre Cellar 2-5
+5081	0	8	5080	Macabre Cellar 2-4
+5081	2	3	5075	Macabre Study 2-3
+5081	8	0	5082	Macabre Cellar 2-6
+5082	6	0	5083	Macabre Cellar 2-7
+5082	11	19	5081	Macabre Cellar 2-5
+5083	0	7	5084	Macabre Cellar 2-8
+5083	2	1	5076	Macabre Study 2-4
+5083	6	19	5082	Macabre Cellar 2-6
+5084	0	4	5077	Macabre Cellar 2-1
+5084	19	15	5083	Macabre Cellar 2-7
+5085	4	3	5089	Macabre Cellar 3-1
+5085	4	4	5089	Macabre Cellar 3-1
+5085	19	16	2048	House Macabre Yard 3
+5085	19	17	2048	House Macabre Yard 3
+5086	1	19	2048	House Macabre Yard 3
+5086	2	1	5091	Macabre Cellar 3-3
+5086	2	2	5091	Macabre Cellar 3-3
+5086	2	19	2048	House Macabre Yard 3
+5087	4	3	5093	Macabre Cellar 3-5
+5087	4	4	5093	Macabre Cellar 3-5
+5087	19	16	2048	House Macabre Yard 3
+5087	19	17	2048	House Macabre Yard 3
+5088	1	2	5095	Macabre Cellar 3-7
+5088	2	2	5095	Macabre Cellar 3-7
+5088	17	19	2048	House Macabre Yard 3
+5088	18	19	2048	House Macabre Yard 3
+5089	1	1	5085	Macabre Study 3-1
+5089	11	19	5090	Macabre Cellar 3-2
+5089	19	17	5096	Macabre Cellar 3-8
+5090	4	19	5091	Macabre Cellar 3-3
+5090	8	0	5089	Macabre Cellar 3-1
+5091	3	1	5086	Macabre Study 3-2
+5091	11	0	5090	Macabre Cellar 3-2
+5091	19	12	5092	Macabre Cellar 3-4
+5092	0	8	5091	Macabre Cellar 3-3
+5092	16	0	5093	Macabre Cellar 3-5
+5093	1	2	5087	Macabre Study 3-3
+5093	9	19	5092	Macabre Cellar 3-4
+5093	19	10	5094	Macabre Cellar 3-6
+5094	0	8	5093	Macabre Cellar 3-5
+5094	6	0	5095	Macabre Cellar 3-7
+5095	0	7	5096	Macabre Cellar 3-8
+5095	2	1	5088	Macabre Study 3-4
+5095	6	19	5094	Macabre Cellar 3-6
+5096	0	4	5089	Macabre Cellar 3-1
+5096	19	15	5095	Macabre Cellar 3-7
+5097	4	3	5099	Macabre Cellar 4-3
+5097	4	4	5099	Macabre Cellar 4-3
+5097	19	16	2049	
+5097	19	17	2049	
+5098	1	2	5101	Macabre Cellar 4-5
+5098	2	2	5101	Macabre Cellar 4-5
+5098	19	4	2049	
+5098	19	5	2049	
+5099	1	2	5097	Macabre Study 4-1
+5099	10	0	5001	Cthonic Remains 1
+5099	19	10	5100	Macabre Cellar 4-4
+5100	0	8	5099	Macabre Cellar 4-3
+5100	0	15	5001	Cthonic Remains 1
+5100	6	0	5101	Macabre Cellar 4-5
+5101	0	4	5001	Cthonic Remains 1
+5101	2	1	5098	Macabre Study 4-2
+5101	6	19	5100	Macabre Cellar 4-4
+5109	3	0	5111	Lynith Sea 1
+5109	4	0	5111	Lynith Sea 1
+5109	5	0	5111	Lynith Sea 1
+5109	6	0	5111	Lynith Sea 1
+5109	7	0	5111	Lynith Sea 1
+5109	8	0	5111	Lynith Sea 1
+5109	37	0	5111	Lynith Sea 1
+5109	38	0	5111	Lynith Sea 1
+5109	39	0	5111	Lynith Sea 1
+5109	40	0	5111	Lynith Sea 1
+5109	41	0	5111	Lynith Sea 1
+5109	42	0	5111	Lynith Sea 1
+5110	0	14	6626	Northern Beach
+5110	49	31	5111	Lynith Sea 1
+5110	49	32	5111	Lynith Sea 1
+5110	49	33	5111	Lynith Sea 1
+5110	49	34	5111	Lynith Sea 1
+5111	0	32	5110	Lynith Sea
+5111	0	33	5110	Lynith Sea
+5111	2	49	5109	Lynith Sea 9
+5111	3	49	5109	Lynith Sea 9
+5111	4	49	5109	Lynith Sea 9
+5111	5	49	5109	Lynith Sea 9
+5111	6	49	5109	Lynith Sea 9
+5111	7	49	5109	Lynith Sea 9
+5111	8	49	5109	Lynith Sea 9
+5111	17	0	5116	Lynith Sea 6
+5111	38	49	5109	Lynith Sea 9
+5111	39	49	5109	Lynith Sea 9
+5111	40	49	5109	Lynith Sea 9
+5111	41	49	5109	Lynith Sea 9
+5111	42	49	5109	Lynith Sea 9
+5111	43	49	5109	Lynith Sea 9
+5111	44	49	5109	Lynith Sea 9
+5111	49	13	5112	Lynith Sea 2
+5111	49	14	5112	Lynith Sea 2
+5111	49	19	5112	Lynith Sea 2
+5111	49	31	5112	Lynith Sea 2
+5111	49	32	5112	Lynith Sea 2
+5111	49	33	5112	Lynith Sea 2
+5111	49	34	5112	Lynith Sea 2
+5111	49	35	5112	Lynith Sea 2
+5111	49	36	5112	Lynith Sea 2
+5112	0	16	5111	Lynith Sea 1
+5112	0	17	5111	Lynith Sea 1
+5112	0	18	5111	Lynith Sea 1
+5112	0	19	5111	Lynith Sea 1
+5112	0	20	5111	Lynith Sea 1
+5112	0	27	5111	Lynith Sea 1
+5112	0	28	5111	Lynith Sea 1
+5112	0	29	5111	Lynith Sea 1
+5112	0	30	5111	Lynith Sea 1
+5112	0	31	5111	Lynith Sea 1
+5112	0	32	5111	Lynith Sea 1
+5112	0	33	5111	Lynith Sea 1
+5112	2	0	5117	Lynith Sea 7
+5112	3	0	5117	Lynith Sea 7
+5112	4	0	5117	Lynith Sea 7
+5112	5	0	5117	Lynith Sea 7
+5112	6	0	5117	Lynith Sea 7
+5112	7	0	5117	Lynith Sea 7
+5112	8	0	5117	Lynith Sea 7
+5112	9	0	5117	Lynith Sea 7
+5112	10	0	5117	Lynith Sea 7
+5112	11	0	5117	Lynith Sea 7
+5112	12	0	5117	Lynith Sea 7
+5112	13	0	5117	Lynith Sea 7
+5112	14	0	5117	Lynith Sea 7
+5112	15	0	5117	Lynith Sea 7
+5112	16	0	5117	Lynith Sea 7
+5112	17	0	5117	Lynith Sea 7
+5112	18	0	5117	Lynith Sea 7
+5112	19	0	5117	Lynith Sea 7
+5112	20	0	5117	Lynith Sea 7
+5112	21	0	5117	Lynith Sea 7
+5112	22	0	5117	Lynith Sea 7
+5112	23	0	5117	Lynith Sea 7
+5112	24	0	5117	Lynith Sea 7
+5112	24	49	5113	Lynith Sea 3
+5112	25	0	5117	Lynith Sea 7
+5112	25	49	5113	Lynith Sea 3
+5112	26	0	5117	Lynith Sea 7
+5112	26	49	5113	Lynith Sea 3
+5112	27	0	5117	Lynith Sea 7
+5112	27	49	5113	Lynith Sea 3
+5112	28	0	5117	Lynith Sea 7
+5112	28	49	5113	Lynith Sea 3
+5112	29	0	5117	Lynith Sea 7
+5112	30	0	5117	Lynith Sea 7
+5112	30	49	5113	Lynith Sea 3
+5112	31	0	5117	Lynith Sea 7
+5112	32	0	5117	Lynith Sea 7
+5112	33	0	5117	Lynith Sea 7
+5112	34	0	5117	Lynith Sea 7
+5112	35	0	5117	Lynith Sea 7
+5112	36	0	5117	Lynith Sea 7
+5112	37	0	5117	Lynith Sea 7
+5112	38	0	5117	Lynith Sea 7
+5112	39	0	5117	Lynith Sea 7
+5112	49	22	5114	Lynith Sea 4
+5112	49	23	5114	Lynith Sea 4
+5112	49	24	5114	Lynith Sea 4
+5112	49	25	5114	Lynith Sea 4
+5112	49	26	5114	Lynith Sea 4
+5113	31	0	5112	Lynith Sea 2
+5113	32	0	5112	Lynith Sea 2
+5113	33	0	5112	Lynith Sea 2
+5113	34	0	5112	Lynith Sea 2
+5114	17	0	5115	Lynith Sea 5
+5115	0	16	5117	Lynith Sea 7
+5115	0	17	5117	Lynith Sea 7
+5115	1	49	5114	Lynith Sea 4
+5115	2	49	5114	Lynith Sea 4
+5115	3	49	5114	Lynith Sea 4
+5115	4	49	5114	Lynith Sea 4
+5115	49	18	5118	Lynith Sea 8
+5116	20	49	5111	Lynith Sea 1
+5116	21	49	5111	Lynith Sea 1
+5116	22	49	5111	Lynith Sea 1
+5116	23	49	5111	Lynith Sea 1
+5117	2	49	5112	Lynith Sea 2
+5117	3	49	5112	Lynith Sea 2
+5117	4	49	5112	Lynith Sea 2
+5117	5	49	5112	Lynith Sea 2
+5117	6	49	5112	Lynith Sea 2
+5117	7	49	5112	Lynith Sea 2
+5117	8	49	5112	Lynith Sea 2
+5117	9	49	5112	Lynith Sea 2
+5117	10	49	5112	Lynith Sea 2
+5117	11	49	5112	Lynith Sea 2
+5117	12	49	5112	Lynith Sea 2
+5117	13	49	5112	Lynith Sea 2
+5117	14	49	5112	Lynith Sea 2
+5117	15	49	5112	Lynith Sea 2
+5117	16	49	5112	Lynith Sea 2
+5117	17	49	5112	Lynith Sea 2
+5117	18	49	5112	Lynith Sea 2
+5117	19	49	5112	Lynith Sea 2
+5117	20	49	5112	Lynith Sea 2
+5117	21	49	5112	Lynith Sea 2
+5117	22	49	5112	Lynith Sea 2
+5117	23	49	5112	Lynith Sea 2
+5117	24	49	5112	Lynith Sea 2
+5117	25	49	5112	Lynith Sea 2
+5117	26	49	5112	Lynith Sea 2
+5117	27	49	5112	Lynith Sea 2
+5117	28	49	5112	Lynith Sea 2
+5117	29	49	5112	Lynith Sea 2
+5117	30	49	5112	Lynith Sea 2
+5117	31	49	5112	Lynith Sea 2
+5117	32	49	5112	Lynith Sea 2
+5117	33	49	5112	Lynith Sea 2
+5117	34	49	5112	Lynith Sea 2
+5117	35	49	5112	Lynith Sea 2
+5117	36	49	5112	Lynith Sea 2
+5117	37	49	5112	Lynith Sea 2
+5117	38	49	5112	Lynith Sea 2
+5117	39	49	5112	Lynith Sea 2
+5117	40	49	5112	Lynith Sea 2
+5117	49	19	5115	Lynith Sea 5
+5117	49	20	5115	Lynith Sea 5
+5117	49	21	5115	Lynith Sea 5
+5117	49	22	5115	Lynith Sea 5
+5118	0	21	5115	Lynith Sea 5
+5118	0	22	5115	Lynith Sea 5
+5218	3	1	5219	
+5218	4	1	5219	
+5232	6	0	5233	Team Arena Entrance
+5232	7	0	5233	Team Arena Entrance
+5232	8	0	5233	Team Arena Entrance
+5233	6	29	5232	Arena Entrance
+5233	7	29	5232	Arena Entrance
+5233	8	29	5232	Arena Entrance
+5252	5	12	662	Tagor Village
+5252	6	12	662	Tagor Village
+5252	7	12	662	Tagor Village
+5269	9	18	717	Mileth Training Center
+6179	9	11	6179	Pirate Ship
+6179	9	12	6179	Pirate Ship
+6179	10	10	6633	Pirate Hall 1
+6179	10	15	6634	Pirate Hall 2
+6179	18	12	6635	Pirate Hall 3
+6179	18	17	6196	Navigation Room
+6180	0	5	6633	Pirate Hall 1
+6180	0	11	6634	Pirate Hall 2
+6180	12	7	6635	Pirate Hall 3
+6180	16	2	6194	Officer's Quarters
+6180	18	19	6193	Pirate Quarters
+6180	23	2	6200	Pirate Galley
+6180	25	19	6192	Officer's Lounge
+6180	30	2	6195	Pirate Shop
+6180	32	19	6191	First Mate's Quarters
+6180	41	2	6631	Officer's Quarters 2
+6191	9	1	6180	Pirate Main Hall
+6192	5	1	6180	Pirate Main Hall
+6193	5	1	6180	Pirate Main Hall
+6194	9	19	6180	Pirate Main Hall
+6195	9	19	6180	Pirate Main Hall
+6196	14	8	6179	Pirate Ship
+6200	9	24	6180	Pirate Main Hall
+6228	28	0	6600	Oren Island Path
+6228	29	0	6600	Oren Island Path
+6228	30	0	6600	Oren Island Path
+6228	31	0	6600	Oren Island Path
+6228	32	0	6600	Oren Island Path
+6228	33	0	6600	Oren Island Path
+6228	34	0	6600	Oren Island Path
+6228	48	0	6525	Oren Island Ruins
+6228	49	0	6525	Oren Island Ruins
+6228	50	0	6525	Oren Island Ruins
+6228	51	0	6525	Oren Island Ruins
+6228	67	0	6525	Oren Island Ruins
+6228	68	0	6525	Oren Island Ruins
+6228	69	0	6525	Oren Island Ruins
+6228	70	0	6525	Oren Island Ruins
+6228	71	0	6525	Oren Island Ruins
+6228	72	0	6525	Oren Island Ruins
+6228	75	91	6520	Oren Bank
+6228	76	77	6513	Octavio's Armory
+6228	76	91	6520	Oren Bank
+6228	82	77	6521	Oren Combat Shop
+6513	8	19	6228	Oren Island City
+6513	9	19	6228	Oren Island City
+6513	10	19	6228	Oren Island City
+6513	11	19	6228	Oren Island City
+6520	19	8	6228	Oren Island City
+6520	19	9	6228	Oren Island City
+6520	19	10	6228	Oren Island City
+6520	19	11	6228	Oren Island City
+6521	8	19	6228	Oren Island City
+6521	9	19	6228	Oren Island City
+6521	10	19	6228	Oren Island City
+6521	11	19	6228	Oren Island City
+6525	28	17	6924	Oren Ruins Gateway
+6525	29	17	6924	Oren Ruins Gateway
+6525	31	149	6228	Oren Island City
+6525	32	149	6228	Oren Island City
+6525	33	149	6228	Oren Island City
+6525	34	149	6228	Oren Island City
+6525	35	149	6228	Oren Island City
+6525	36	149	6228	Oren Island City
+6525	59	149	6228	Oren Island City
+6525	60	149	6228	Oren Island City
+6525	61	149	6228	Oren Island City
+6525	62	149	6228	Oren Island City
+6525	63	149	6228	Oren Island City
+6525	64	149	6228	Oren Island City
+6530	1	0	6531	Oren Ruins 1-2
+6530	2	0	6531	Oren Ruins 1-2
+6530	3	0	6531	Oren Ruins 1-2
+6530	4	0	6531	Oren Ruins 1-2
+6530	5	0	6531	Oren Ruins 1-2
+6530	6	0	6531	Oren Ruins 1-2
+6530	7	0	6531	Oren Ruins 1-2
+6530	8	0	6531	Oren Ruins 1-2
+6530	9	0	6531	Oren Ruins 1-2
+6530	10	0	6531	Oren Ruins 1-2
+6530	11	0	6531	Oren Ruins 1-2
+6530	12	0	6531	Oren Ruins 1-2
+6530	13	0	6531	Oren Ruins 1-2
+6530	14	0	6531	Oren Ruins 1-2
+6530	15	0	6531	Oren Ruins 1-2
+6530	16	0	6531	Oren Ruins 1-2
+6530	17	0	6531	Oren Ruins 1-2
+6530	18	0	6531	Oren Ruins 1-2
+6530	19	0	6531	Oren Ruins 1-2
+6530	20	0	6531	Oren Ruins 1-2
+6530	27	0	6531	Oren Ruins 1-2
+6530	28	0	6531	Oren Ruins 1-2
+6530	29	0	6531	Oren Ruins 1-2
+6530	30	0	6531	Oren Ruins 1-2
+6530	31	0	6531	Oren Ruins 1-2
+6530	32	0	6531	Oren Ruins 1-2
+6530	33	0	6531	Oren Ruins 1-2
+6530	35	0	6531	Oren Ruins 1-2
+6530	36	0	6531	Oren Ruins 1-2
+6530	37	0	6531	Oren Ruins 1-2
+6530	38	0	6531	Oren Ruins 1-2
+6530	39	0	6531	Oren Ruins 1-2
+6530	39	74	6700	Nobis Village
+6530	40	0	6531	Oren Ruins 1-2
+6530	40	74	6700	Nobis Village
+6530	41	0	6531	Oren Ruins 1-2
+6530	41	74	6700	Nobis Village
+6530	42	0	6531	Oren Ruins 1-2
+6530	43	0	6531	Oren Ruins 1-2
+6530	45	0	6531	Oren Ruins 1-2
+6530	46	0	6531	Oren Ruins 1-2
+6530	47	0	6531	Oren Ruins 1-2
+6530	48	0	6531	Oren Ruins 1-2
+6530	49	0	6531	Oren Ruins 1-2
+6530	50	0	6531	Oren Ruins 1-2
+6530	51	0	6531	Oren Ruins 1-2
+6530	52	0	6531	Oren Ruins 1-2
+6530	53	0	6531	Oren Ruins 1-2
+6530	54	0	6531	Oren Ruins 1-2
+6530	55	0	6531	Oren Ruins 1-2
+6530	56	0	6531	Oren Ruins 1-2
+6530	57	0	6531	Oren Ruins 1-2
+6530	58	0	6531	Oren Ruins 1-2
+6530	59	0	6531	Oren Ruins 1-2
+6530	60	0	6531	Oren Ruins 1-2
+6530	74	1	6532	Oren Ruins 1-3
+6530	74	2	6532	Oren Ruins 1-3
+6530	74	3	6532	Oren Ruins 1-3
+6530	74	4	6532	Oren Ruins 1-3
+6530	74	5	6532	Oren Ruins 1-3
+6530	74	16	6532	Oren Ruins 1-3
+6530	74	17	6532	Oren Ruins 1-3
+6530	74	18	6532	Oren Ruins 1-3
+6530	74	19	6532	Oren Ruins 1-3
+6530	74	20	6532	Oren Ruins 1-3
+6530	74	21	6532	Oren Ruins 1-3
+6530	74	22	6532	Oren Ruins 1-3
+6530	74	23	6532	Oren Ruins 1-3
+6530	74	24	6532	Oren Ruins 1-3
+6530	74	26	6532	Oren Ruins 1-3
+6530	74	27	6532	Oren Ruins 1-3
+6530	74	28	6532	Oren Ruins 1-3
+6530	74	29	6532	Oren Ruins 1-3
+6530	74	30	6532	Oren Ruins 1-3
+6530	74	31	6532	Oren Ruins 1-3
+6530	74	32	6532	Oren Ruins 1-3
+6530	74	33	6532	Oren Ruins 1-3
+6530	74	34	6532	Oren Ruins 1-3
+6530	74	36	6532	Oren Ruins 1-3
+6530	74	37	6532	Oren Ruins 1-3
+6530	74	38	6532	Oren Ruins 1-3
+6530	74	39	6532	Oren Ruins 1-3
+6530	74	40	6532	Oren Ruins 1-3
+6530	74	41	6532	Oren Ruins 1-3
+6530	74	42	6532	Oren Ruins 1-3
+6530	74	43	6532	Oren Ruins 1-3
+6530	74	44	6532	Oren Ruins 1-3
+6530	74	45	6532	Oren Ruins 1-3
+6530	74	46	6532	Oren Ruins 1-3
+6530	74	48	6532	Oren Ruins 1-3
+6530	74	49	6532	Oren Ruins 1-3
+6530	74	50	6532	Oren Ruins 1-3
+6530	74	51	6532	Oren Ruins 1-3
+6530	74	52	6532	Oren Ruins 1-3
+6530	74	53	6532	Oren Ruins 1-3
+6530	74	54	6532	Oren Ruins 1-3
+6530	74	55	6532	Oren Ruins 1-3
+6530	74	56	6532	Oren Ruins 1-3
+6530	74	57	6532	Oren Ruins 1-3
+6530	74	61	6532	Oren Ruins 1-3
+6530	74	62	6532	Oren Ruins 1-3
+6530	74	63	6532	Oren Ruins 1-3
+6530	74	64	6532	Oren Ruins 1-3
+6530	74	65	6532	Oren Ruins 1-3
+6530	74	66	6532	Oren Ruins 1-3
+6530	74	68	6532	Oren Ruins 1-3
+6530	74	69	6532	Oren Ruins 1-3
+6530	74	70	6532	Oren Ruins 1-3
+6530	74	71	6532	Oren Ruins 1-3
+6530	74	72	6532	Oren Ruins 1-3
+6530	74	73	6532	Oren Ruins 1-3
+6531	1	74	6530	Oren Ruins 1-1
+6531	2	74	6530	Oren Ruins 1-1
+6531	3	74	6530	Oren Ruins 1-1
+6531	4	74	6530	Oren Ruins 1-1
+6531	5	74	6530	Oren Ruins 1-1
+6531	6	74	6530	Oren Ruins 1-1
+6531	7	74	6530	Oren Ruins 1-1
+6531	8	74	6530	Oren Ruins 1-1
+6531	9	74	6530	Oren Ruins 1-1
+6531	10	74	6530	Oren Ruins 1-1
+6531	11	74	6530	Oren Ruins 1-1
+6531	12	74	6530	Oren Ruins 1-1
+6531	13	74	6530	Oren Ruins 1-1
+6531	14	74	6530	Oren Ruins 1-1
+6531	15	74	6530	Oren Ruins 1-1
+6531	16	74	6530	Oren Ruins 1-1
+6531	17	74	6530	Oren Ruins 1-1
+6531	18	74	6530	Oren Ruins 1-1
+6531	19	74	6530	Oren Ruins 1-1
+6531	20	74	6530	Oren Ruins 1-1
+6531	21	74	6530	Oren Ruins 1-1
+6531	22	74	6530	Oren Ruins 1-1
+6531	23	74	6530	Oren Ruins 1-1
+6531	24	74	6530	Oren Ruins 1-1
+6531	25	74	6530	Oren Ruins 1-1
+6531	27	74	6530	Oren Ruins 1-1
+6531	28	74	6530	Oren Ruins 1-1
+6531	29	74	6530	Oren Ruins 1-1
+6531	30	74	6530	Oren Ruins 1-1
+6531	31	74	6530	Oren Ruins 1-1
+6531	32	74	6530	Oren Ruins 1-1
+6531	33	74	6530	Oren Ruins 1-1
+6531	35	74	6530	Oren Ruins 1-1
+6531	36	74	6530	Oren Ruins 1-1
+6531	37	74	6530	Oren Ruins 1-1
+6531	38	74	6530	Oren Ruins 1-1
+6531	39	74	6530	Oren Ruins 1-1
+6531	40	74	6530	Oren Ruins 1-1
+6531	41	74	6530	Oren Ruins 1-1
+6531	42	74	6530	Oren Ruins 1-1
+6531	43	74	6530	Oren Ruins 1-1
+6531	45	74	6530	Oren Ruins 1-1
+6531	46	74	6530	Oren Ruins 1-1
+6531	47	74	6530	Oren Ruins 1-1
+6531	48	74	6530	Oren Ruins 1-1
+6531	49	74	6530	Oren Ruins 1-1
+6531	50	74	6530	Oren Ruins 1-1
+6531	51	74	6530	Oren Ruins 1-1
+6531	52	74	6530	Oren Ruins 1-1
+6531	53	74	6530	Oren Ruins 1-1
+6531	54	74	6530	Oren Ruins 1-1
+6531	55	74	6530	Oren Ruins 1-1
+6531	56	74	6530	Oren Ruins 1-1
+6531	57	74	6530	Oren Ruins 1-1
+6531	58	74	6530	Oren Ruins 1-1
+6531	59	74	6530	Oren Ruins 1-1
+6531	60	74	6530	Oren Ruins 1-1
+6531	74	32	6533	Oren Ruins 1-4
+6531	74	33	6533	Oren Ruins 1-4
+6531	74	34	6533	Oren Ruins 1-4
+6531	74	35	6533	Oren Ruins 1-4
+6531	74	36	6533	Oren Ruins 1-4
+6531	74	37	6533	Oren Ruins 1-4
+6531	74	38	6533	Oren Ruins 1-4
+6531	74	39	6533	Oren Ruins 1-4
+6531	74	40	6533	Oren Ruins 1-4
+6531	74	42	6533	Oren Ruins 1-4
+6531	74	43	6533	Oren Ruins 1-4
+6531	74	44	6533	Oren Ruins 1-4
+6531	74	45	6533	Oren Ruins 1-4
+6531	74	46	6533	Oren Ruins 1-4
+6531	74	56	6533	Oren Ruins 1-4
+6531	74	57	6533	Oren Ruins 1-4
+6531	74	58	6533	Oren Ruins 1-4
+6531	74	59	6533	Oren Ruins 1-4
+6531	74	60	6533	Oren Ruins 1-4
+6531	74	61	6533	Oren Ruins 1-4
+6531	74	62	6533	Oren Ruins 1-4
+6531	74	63	6533	Oren Ruins 1-4
+6531	74	65	6533	Oren Ruins 1-4
+6531	74	66	6533	Oren Ruins 1-4
+6531	74	67	6533	Oren Ruins 1-4
+6531	74	68	6533	Oren Ruins 1-4
+6531	74	69	6533	Oren Ruins 1-4
+6531	74	70	6533	Oren Ruins 1-4
+6531	74	71	6533	Oren Ruins 1-4
+6531	74	72	6533	Oren Ruins 1-4
+6531	74	73	6533	Oren Ruins 1-4
+6532	0	1	6530	Oren Ruins 1-1
+6532	0	2	6530	Oren Ruins 1-1
+6532	0	3	6530	Oren Ruins 1-1
+6532	0	4	6530	Oren Ruins 1-1
+6532	0	6	6530	Oren Ruins 1-1
+6532	0	7	6530	Oren Ruins 1-1
+6532	0	8	6530	Oren Ruins 1-1
+6532	0	9	6530	Oren Ruins 1-1
+6532	0	10	6530	Oren Ruins 1-1
+6532	0	11	6530	Oren Ruins 1-1
+6532	0	12	6530	Oren Ruins 1-1
+6532	0	13	6530	Oren Ruins 1-1
+6532	0	14	6530	Oren Ruins 1-1
+6532	0	16	6530	Oren Ruins 1-1
+6532	0	17	6530	Oren Ruins 1-1
+6532	0	18	6530	Oren Ruins 1-1
+6532	0	19	6530	Oren Ruins 1-1
+6532	0	20	6530	Oren Ruins 1-1
+6532	0	21	6530	Oren Ruins 1-1
+6532	0	22	6530	Oren Ruins 1-1
+6532	0	23	6530	Oren Ruins 1-1
+6532	0	24	6530	Oren Ruins 1-1
+6532	0	26	6530	Oren Ruins 1-1
+6532	0	27	6530	Oren Ruins 1-1
+6532	0	28	6530	Oren Ruins 1-1
+6532	0	29	6530	Oren Ruins 1-1
+6532	0	30	6530	Oren Ruins 1-1
+6532	0	31	6530	Oren Ruins 1-1
+6532	0	32	6530	Oren Ruins 1-1
+6532	0	33	6530	Oren Ruins 1-1
+6532	0	34	6530	Oren Ruins 1-1
+6532	0	36	6530	Oren Ruins 1-1
+6532	0	37	6530	Oren Ruins 1-1
+6532	0	38	6530	Oren Ruins 1-1
+6532	0	39	6530	Oren Ruins 1-1
+6532	0	40	6530	Oren Ruins 1-1
+6532	0	41	6530	Oren Ruins 1-1
+6532	0	42	6530	Oren Ruins 1-1
+6532	0	43	6530	Oren Ruins 1-1
+6532	0	44	6530	Oren Ruins 1-1
+6532	0	45	6530	Oren Ruins 1-1
+6532	0	46	6530	Oren Ruins 1-1
+6532	0	56	6530	Oren Ruins 1-1
+6532	0	57	6530	Oren Ruins 1-1
+6532	0	58	6530	Oren Ruins 1-1
+6532	0	59	6530	Oren Ruins 1-1
+6532	0	60	6530	Oren Ruins 1-1
+6532	0	68	6530	Oren Ruins 1-1
+6532	0	69	6530	Oren Ruins 1-1
+6532	0	70	6530	Oren Ruins 1-1
+6532	0	71	6530	Oren Ruins 1-1
+6532	0	72	6530	Oren Ruins 1-1
+6532	0	73	6530	Oren Ruins 1-1
+6532	4	0	6533	Oren Ruins 1-4
+6532	5	0	6533	Oren Ruins 1-4
+6532	6	0	6533	Oren Ruins 1-4
+6532	7	0	6533	Oren Ruins 1-4
+6532	8	0	6533	Oren Ruins 1-4
+6532	9	0	6533	Oren Ruins 1-4
+6532	10	0	6533	Oren Ruins 1-4
+6532	11	0	6533	Oren Ruins 1-4
+6532	12	0	6533	Oren Ruins 1-4
+6532	13	0	6533	Oren Ruins 1-4
+6532	14	0	6533	Oren Ruins 1-4
+6532	15	0	6533	Oren Ruins 1-4
+6532	30	0	6533	Oren Ruins 1-4
+6532	31	0	6533	Oren Ruins 1-4
+6532	32	0	6533	Oren Ruins 1-4
+6532	33	0	6533	Oren Ruins 1-4
+6532	34	0	6533	Oren Ruins 1-4
+6532	35	0	6533	Oren Ruins 1-4
+6532	36	0	6533	Oren Ruins 1-4
+6532	37	0	6533	Oren Ruins 1-4
+6532	38	0	6533	Oren Ruins 1-4
+6532	39	0	6533	Oren Ruins 1-4
+6532	40	0	6533	Oren Ruins 1-4
+6532	41	0	6533	Oren Ruins 1-4
+6532	42	0	6533	Oren Ruins 1-4
+6532	43	0	6533	Oren Ruins 1-4
+6532	44	0	6533	Oren Ruins 1-4
+6532	46	0	6533	Oren Ruins 1-4
+6532	47	0	6533	Oren Ruins 1-4
+6532	48	0	6533	Oren Ruins 1-4
+6532	49	0	6533	Oren Ruins 1-4
+6532	50	0	6533	Oren Ruins 1-4
+6532	52	0	6533	Oren Ruins 1-4
+6532	53	0	6533	Oren Ruins 1-4
+6532	54	0	6533	Oren Ruins 1-4
+6532	55	0	6533	Oren Ruins 1-4
+6532	56	0	6533	Oren Ruins 1-4
+6532	57	0	6533	Oren Ruins 1-4
+6532	58	0	6533	Oren Ruins 1-4
+6532	59	0	6533	Oren Ruins 1-4
+6532	60	0	6533	Oren Ruins 1-4
+6532	61	0	6533	Oren Ruins 1-4
+6532	62	0	6533	Oren Ruins 1-4
+6532	63	0	6533	Oren Ruins 1-4
+6532	64	0	6533	Oren Ruins 1-4
+6532	65	0	6533	Oren Ruins 1-4
+6532	68	0	6533	Oren Ruins 1-4
+6532	69	0	6533	Oren Ruins 1-4
+6532	70	0	6533	Oren Ruins 1-4
+6532	71	0	6533	Oren Ruins 1-4
+6532	72	0	6533	Oren Ruins 1-4
+6532	73	0	6533	Oren Ruins 1-4
+6533	0	32	6531	Oren Ruins 1-2
+6533	0	33	6531	Oren Ruins 1-2
+6533	0	34	6531	Oren Ruins 1-2
+6533	0	35	6531	Oren Ruins 1-2
+6533	0	36	6531	Oren Ruins 1-2
+6533	0	37	6531	Oren Ruins 1-2
+6533	0	38	6531	Oren Ruins 1-2
+6533	0	39	6531	Oren Ruins 1-2
+6533	0	40	6531	Oren Ruins 1-2
+6533	0	42	6531	Oren Ruins 1-2
+6533	0	43	6531	Oren Ruins 1-2
+6533	0	44	6531	Oren Ruins 1-2
+6533	0	45	6531	Oren Ruins 1-2
+6533	0	46	6531	Oren Ruins 1-2
+6533	0	56	6531	Oren Ruins 1-2
+6533	0	57	6531	Oren Ruins 1-2
+6533	0	58	6531	Oren Ruins 1-2
+6533	0	59	6531	Oren Ruins 1-2
+6533	0	60	6531	Oren Ruins 1-2
+6533	0	61	6531	Oren Ruins 1-2
+6533	0	62	6531	Oren Ruins 1-2
+6533	0	63	6531	Oren Ruins 1-2
+6533	0	65	6531	Oren Ruins 1-2
+6533	0	66	6531	Oren Ruins 1-2
+6533	0	67	6531	Oren Ruins 1-2
+6533	0	68	6531	Oren Ruins 1-2
+6533	0	69	6531	Oren Ruins 1-2
+6533	0	70	6531	Oren Ruins 1-2
+6533	0	71	6531	Oren Ruins 1-2
+6533	0	72	6531	Oren Ruins 1-2
+6533	0	73	6531	Oren Ruins 1-2
+6533	19	74	6532	Oren Ruins 1-3
+6533	20	74	6532	Oren Ruins 1-3
+6533	21	74	6532	Oren Ruins 1-3
+6533	22	74	6532	Oren Ruins 1-3
+6533	23	74	6532	Oren Ruins 1-3
+6533	24	74	6532	Oren Ruins 1-3
+6533	25	74	6532	Oren Ruins 1-3
+6533	26	74	6532	Oren Ruins 1-3
+6533	27	74	6532	Oren Ruins 1-3
+6533	28	74	6532	Oren Ruins 1-3
+6533	34	74	6532	Oren Ruins 1-3
+6533	35	74	6532	Oren Ruins 1-3
+6533	36	74	6532	Oren Ruins 1-3
+6533	37	74	6532	Oren Ruins 1-3
+6533	38	74	6532	Oren Ruins 1-3
+6533	40	74	6532	Oren Ruins 1-3
+6533	41	74	6532	Oren Ruins 1-3
+6533	42	74	6532	Oren Ruins 1-3
+6533	43	74	6532	Oren Ruins 1-3
+6533	44	74	6532	Oren Ruins 1-3
+6533	52	74	6532	Oren Ruins 1-3
+6533	53	74	6532	Oren Ruins 1-3
+6533	54	74	6532	Oren Ruins 1-3
+6533	55	74	6532	Oren Ruins 1-3
+6533	56	74	6532	Oren Ruins 1-3
+6533	57	74	6532	Oren Ruins 1-3
+6533	58	74	6532	Oren Ruins 1-3
+6533	59	74	6532	Oren Ruins 1-3
+6533	60	74	6532	Oren Ruins 1-3
+6533	61	74	6532	Oren Ruins 1-3
+6533	62	74	6532	Oren Ruins 1-3
+6533	63	74	6532	Oren Ruins 1-3
+6533	64	74	6532	Oren Ruins 1-3
+6533	65	74	6532	Oren Ruins 1-3
+6533	66	74	6532	Oren Ruins 1-3
+6533	68	74	6532	Oren Ruins 1-3
+6533	69	74	6532	Oren Ruins 1-3
+6533	70	74	6532	Oren Ruins 1-3
+6533	71	74	6532	Oren Ruins 1-3
+6533	72	74	6532	Oren Ruins 1-3
+6533	73	74	6532	Oren Ruins 1-3
+6600	0	13	6603	Oren Jungle 1-2
+6600	0	14	6603	Oren Jungle 1-2
+6600	0	15	6603	Oren Jungle 1-2
+6600	6	0	6605	Oren Jungle 4
+6600	7	0	6605	Oren Jungle 4
+6600	7	24	6228	Oren Island City
+6600	8	0	6605	Oren Jungle 4
+6600	8	24	6228	Oren Island City
+6600	9	24	6228	Oren Island City
+6600	10	24	6228	Oren Island City
+6600	11	24	6228	Oren Island City
+6600	14	0	6607	Oren Jungle 6
+6600	15	0	6607	Oren Jungle 6
+6600	16	0	6607	Oren Jungle 6
+6600	22	0	6613	Oren Jungle 12
+6600	23	0	6613	Oren Jungle 12
+6600	24	0	6613	Oren Jungle 12
+6600	29	12	6601	Oren Jungle 20
+6600	29	13	6601	Oren Jungle 20
+6600	29	14	6601	Oren Jungle 20
+6600	29	15	6601	Oren Jungle 20
+6600	29	16	6601	Oren Jungle 20
+6601	0	28	6600	Oren Island Path
+6601	0	29	6600	Oren Island Path
+6601	0	30	6600	Oren Island Path
+6601	0	31	6600	Oren Island Path
+6601	0	32	6600	Oren Island Path
+6601	0	33	6600	Oren Island Path
+6601	0	34	6600	Oren Island Path
+6601	69	30	6602	Oren Jungle 21
+6601	69	31	6602	Oren Jungle 21
+6601	69	32	6602	Oren Jungle 21
+6601	69	33	6602	Oren Jungle 21
+6601	69	34	6602	Oren Jungle 21
+6601	69	35	6602	Oren Jungle 21
+6602	0	11	6601	Oren Jungle 20
+6602	0	12	6601	Oren Jungle 20
+6602	0	13	6601	Oren Jungle 20
+6602	0	14	6601	Oren Jungle 20
+6603	0	30	6604	Oren Jungle 3
+6603	0	31	6604	Oren Jungle 3
+6603	0	32	6604	Oren Jungle 3
+6603	0	33	6604	Oren Jungle 3
+6603	0	34	6604	Oren Jungle 3
+6603	0	35	6604	Oren Jungle 3
+6603	69	25	6600	Oren Island Path
+6603	69	26	6600	Oren Island Path
+6603	69	27	6600	Oren Island Path
+6603	69	28	6600	Oren Island Path
+6603	69	29	6600	Oren Island Path
+6603	69	30	6600	Oren Island Path
+6604	69	17	6603	Oren Jungle 1-2
+6604	69	18	6603	Oren Jungle 1-2
+6604	69	19	6603	Oren Jungle 1-2
+6604	69	20	6603	Oren Jungle 1-2
+6604	69	21	6603	Oren Jungle 1-2
+6605	0	20	6606	Oren Jungle 5
+6605	0	21	6606	Oren Jungle 5
+6605	0	22	6606	Oren Jungle 5
+6605	0	23	6606	Oren Jungle 5
+6605	0	24	6606	Oren Jungle 5
+6605	50	69	6600	Oren Island Path
+6605	51	69	6600	Oren Island Path
+6605	52	69	6600	Oren Island Path
+6605	53	69	6600	Oren Island Path
+6605	54	69	6600	Oren Island Path
+6606	49	23	6605	Oren Jungle 4
+6606	49	24	6605	Oren Jungle 4
+6606	49	25	6605	Oren Jungle 4
+6606	49	26	6605	Oren Jungle 4
+6606	49	27	6605	Oren Jungle 4
+6607	26	0	6608	Oren Jungle 7
+6607	27	0	6608	Oren Jungle 7
+6607	28	0	6608	Oren Jungle 7
+6607	29	0	6608	Oren Jungle 7
+6607	30	0	6608	Oren Jungle 7
+6607	42	69	6600	Oren Island Path
+6607	43	69	6600	Oren Island Path
+6607	44	69	6600	Oren Island Path
+6607	45	69	6600	Oren Island Path
+6607	46	69	6600	Oren Island Path
+6608	0	11	6609	Oren Jungle 8
+6608	0	12	6609	Oren Jungle 8
+6608	0	13	6609	Oren Jungle 8
+6608	0	14	6609	Oren Jungle 8
+6608	45	69	6607	Oren Jungle 6
+6608	46	69	6607	Oren Jungle 6
+6608	47	69	6607	Oren Jungle 6
+6608	48	69	6607	Oren Jungle 6
+6609	0	17	6610	Oren Jungle 9
+6609	0	18	6610	Oren Jungle 9
+6609	0	19	6610	Oren Jungle 9
+6609	0	20	6610	Oren Jungle 9
+6609	0	21	6610	Oren Jungle 9
+6609	69	47	6608	Oren Jungle 7
+6609	69	48	6608	Oren Jungle 7
+6609	69	49	6608	Oren Jungle 7
+6609	69	50	6608	Oren Jungle 7
+6609	69	51	6608	Oren Jungle 7
+6610	0	22	6611	Oren Jungle 10-11
+6610	0	23	6611	Oren Jungle 10-11
+6610	0	24	6611	Oren Jungle 10-11
+6610	0	25	6611	Oren Jungle 10-11
+6610	0	26	6611	Oren Jungle 10-11
+6610	69	48	6609	Oren Jungle 8
+6610	69	49	6609	Oren Jungle 8
+6610	69	50	6609	Oren Jungle 8
+6610	69	51	6609	Oren Jungle 8
+6610	69	52	6609	Oren Jungle 8
+6611	25	11	6623	Oren Jungle Armorer
+6611	49	24	6610	Oren Jungle 9
+6611	49	25	6610	Oren Jungle 9
+6611	49	26	6610	Oren Jungle 9
+6611	49	27	6610	Oren Jungle 9
+6611	49	28	6610	Oren Jungle 9
+6612	14	6	6616	Oren Jungle 15
+6612	14	7	6616	Oren Jungle 15
+6612	14	8	6616	Oren Jungle 15
+6613	25	0	6614	Oren Jungle 13
+6613	26	0	6614	Oren Jungle 13
+6613	27	0	6614	Oren Jungle 13
+6613	28	0	6614	Oren Jungle 13
+6613	32	49	6600	Oren Island Path
+6613	33	49	6600	Oren Island Path
+6613	34	49	6600	Oren Island Path
+6614	8	0	6615	Oren Jungle 14
+6614	9	0	6615	Oren Jungle 14
+6614	10	0	6615	Oren Jungle 14
+6614	20	49	6613	Oren Jungle 12
+6614	21	49	6613	Oren Jungle 12
+6614	22	49	6613	Oren Jungle 12
+6614	23	49	6613	Oren Jungle 12
+6615	0	15	6616	Oren Jungle 15
+6615	0	16	6616	Oren Jungle 15
+6615	0	17	6616	Oren Jungle 15
+6615	0	18	6616	Oren Jungle 15
+6615	25	49	6614	Oren Jungle 13
+6615	26	49	6614	Oren Jungle 13
+6616	0	52	6617	Oren Jungle 16
+6616	0	53	6617	Oren Jungle 16
+6616	0	54	6617	Oren Jungle 16
+6616	9	43	6612	Oren Jungle Blacksmith
+6616	49	34	6615	Oren Jungle 14
+6616	49	35	6615	Oren Jungle 14
+6616	49	36	6615	Oren Jungle 14
+6616	49	37	6615	Oren Jungle 14
+6616	49	38	6615	Oren Jungle 14
+6617	35	69	6618	Oren Jungle 17
+6617	36	69	6618	Oren Jungle 17
+6617	37	69	6618	Oren Jungle 17
+6617	38	69	6618	Oren Jungle 17
+6617	69	12	6616	Oren Jungle 15
+6617	69	13	6616	Oren Jungle 15
+6617	69	14	6616	Oren Jungle 15
+6617	69	15	6616	Oren Jungle 15
+6617	69	16	6616	Oren Jungle 15
+6618	0	12	6620	Oren Jungle 18
+6618	0	13	6620	Oren Jungle 18
+6618	0	14	6620	Oren Jungle 18
+6618	18	0	6617	Oren Jungle 16
+6618	19	0	6617	Oren Jungle 16
+6618	20	0	6617	Oren Jungle 16
+6618	21	0	6617	Oren Jungle 16
+6620	14	16	6701	Oren Ruins Gateway
+6620	47	14	6618	Oren Jungle 17
+6620	47	15	6618	Oren Jungle 17
+6620	47	16	6618	Oren Jungle 17
+6620	47	17	6618	Oren Jungle 17
+6620	47	18	6618	Oren Jungle 17
+6623	14	6	6611	Oren Jungle 10-11
+6623	14	7	6611	Oren Jungle 10-11
+6623	14	8	6611	Oren Jungle 10-11
+6625	0	14	6626	Northern Beach
+6625	0	15	6626	Northern Beach
+6625	0	16	6626	Northern Beach
+6625	10	49	6628	Lynith Beach Access
+6625	11	49	6628	Lynith Beach Access
+6625	12	49	6628	Lynith Beach Access
+6625	13	49	6628	Lynith Beach Access
+6625	14	49	6628	Lynith Beach Access
+6625	15	49	6628	Lynith Beach Access
+6626	20	0	7900	
+6626	21	0	7900	
+6626	49	44	6625	North Lynith Beach
+6626	49	45	6625	North Lynith Beach
+6626	49	46	6625	North Lynith Beach
+6627	63	0	6628	Lynith Beach Access
+6627	64	0	6628	Lynith Beach Access
+6627	65	0	6628	Lynith Beach Access
+6627	66	0	6628	Lynith Beach Access
+6627	67	0	6628	Lynith Beach Access
+6627	68	0	6628	Lynith Beach Access
+6627	69	0	6628	Lynith Beach Access
+6628	7	0	6625	North Lynith Beach
+6628	8	0	6625	North Lynith Beach
+6628	9	0	6625	North Lynith Beach
+6628	10	0	6625	North Lynith Beach
+6628	11	0	6625	North Lynith Beach
+6628	12	0	6625	North Lynith Beach
+6628	13	0	6625	North Lynith Beach
+6631	9	19	6180	Pirate Main Hall
+6633	9	1	6179	Pirate Ship
+6633	9	2	6179	Pirate Ship
+6633	9	3	6179	Pirate Ship
+6633	9	6	6180	Pirate Main Hall
+6633	9	7	6180	Pirate Main Hall
+6633	9	8	6180	Pirate Main Hall
+6634	9	1	6180	Pirate Main Hall
+6634	9	2	6180	Pirate Main Hall
+6634	9	3	6180	Pirate Main Hall
+6634	9	6	6179	Pirate Ship
+6634	9	7	6179	Pirate Ship
+6634	9	8	6179	Pirate Ship
+6635	9	1	6179	Pirate Ship
+6635	9	2	6179	Pirate Ship
+6635	9	3	6179	Pirate Ship
+6635	9	6	6180	Pirate Main Hall
+6635	9	7	6180	Pirate Main Hall
+6635	9	8	6180	Pirate Main Hall
+6700	26	0	6530	Oren Ruins 1-1
+6700	27	0	6530	Oren Ruins 1-1
+6700	28	0	6530	Oren Ruins 1-1
+6700	28	26	6719	Nobis Tavern
+6700	29	0	6530	Oren Ruins 1-1
+6700	29	49	6721	Nobis House
+6700	29	69	6702	Oren Ruins Gateway
+6700	30	0	6530	Oren Ruins 1-1
+6700	30	69	6702	Oren Ruins Gateway
+6700	31	25	6719	Nobis Tavern
+6700	31	69	6702	Oren Ruins Gateway
+6700	32	42	6720	Nobis House
+6700	32	69	6702	Oren Ruins Gateway
+6700	33	69	6702	Oren Ruins Gateway
+6700	34	69	6702	Oren Ruins Gateway
+6700	35	69	6702	Oren Ruins Gateway
+6700	44	25	6718	Nobis Bank
+6700	48	51	6717	Nobis Restaurant
+6700	50	25	6716	Nobis Weapon Shop
+6700	69	25	6701	Oren Ruins Gateway
+6700	69	26	6701	Oren Ruins Gateway
+6700	69	27	6701	Oren Ruins Gateway
+6700	69	28	6701	Oren Ruins Gateway
+6700	69	29	6701	Oren Ruins Gateway
+6700	69	30	6701	Oren Ruins Gateway
+6700	69	31	6701	Oren Ruins Gateway
+6701	0	10	6700	Nobis Village
+6701	0	11	6700	Nobis Village
+6701	0	12	6700	Nobis Village
+6701	0	13	6700	Nobis Village
+6701	36	9	6924	Oren Ruins Gateway
+6702	6	0	6700	Nobis Village
+6702	7	0	6700	Nobis Village
+6702	8	0	6700	Nobis Village
+6702	9	0	6700	Nobis Village
+6702	45	30	6924	Oren Ruins Gateway
+6716	8	19	6700	Nobis Village
+6716	9	19	6700	Nobis Village
+6716	10	19	6700	Nobis Village
+6716	11	19	6700	Nobis Village
+6717	19	3	6700	Nobis Village
+6717	19	4	6700	Nobis Village
+6717	19	5	6700	Nobis Village
+6717	19	6	6700	Nobis Village
+6718	8	19	6700	Nobis Village
+6718	9	19	6700	Nobis Village
+6718	10	19	6700	Nobis Village
+6718	11	19	6700	Nobis Village
+6719	19	8	6700	Nobis Village
+6719	19	9	6700	Nobis Village
+6719	19	10	6700	Nobis Village
+6719	19	11	6700	Nobis Village
+6720	12	14	6700	Nobis Village
+6720	13	14	6700	Nobis Village
+6720	14	14	6700	Nobis Village
+6720	15	14	6700	Nobis Village
+6721	12	4	6700	Nobis Village
+6721	12	5	6700	Nobis Village
+6721	12	6	6700	Nobis Village
+6721	12	7	6700	Nobis Village
+6907	3	13	6907	Test Town
+6907	4	13	6907	Test Town
+6924	22	31	6701	Oren Ruins Gateway
+6924	27	49	6525	Oren Island Ruins
+6924	28	49	6525	Oren Island Ruins
+6924	29	49	6525	Oren Island Ruins
+6924	30	49	6525	Oren Island Ruins
+6925	4	30	6927	Loures Harbor West Shop
+6925	4	31	6927	Loures Harbor West Shop
+6925	19	29	6926	Loures Harbor East Shop
+6925	20	29	6926	Loures Harbor East Shop
+6926	6	13	6925	Loures Harbor
+6926	7	13	6925	Loures Harbor
+6926	8	13	6925	Loures Harbor
+6926	9	13	6925	Loures Harbor
+6927	0	11	6933	Loures Harbor Tavern
+6927	13	6	6925	Loures Harbor
+6927	13	7	6925	Loures Harbor
+6927	13	8	6925	Loures Harbor
+6933	19	8	6927	Loures Harbor West Shop
+6933	19	9	6927	Loures Harbor West Shop
+6933	19	10	6927	Loures Harbor West Shop
+6933	19	11	6927	Loures Harbor West Shop
+6946	8	0	2053	Filth Forest 5
+6946	9	0	2053	Filth Forest 5
+6946	10	0	2053	Filth Forest 5
+6946	11	0	2053	Filth Forest 5
+6946	19	9	2041	Filth Forest 4
+6946	19	10	2041	Filth Forest 4
+7050	9	11	7051	Toy Factory
+7050	16	1	137	Mileth Inn Room 1
+7050	17	1	137	Mileth Inn Room 1
+7050	18	1	137	Mileth Inn Room 1
+7050	19	1	137	Mileth Inn Room 1
+7050	20	8	7055	Lift Room
+7050	27	1	7065	Mount Merry 4-1
+7050	33	8	7062	Mount Merry 3
+7050	33	13	7059	Mount Merry 2-1
+7050	33	18	7056	Mount Merry 1-1
+7051	0	15	7053	Elf Room
+7051	13	18	7050	North Pole
+7051	18	5	7052	Santa's Room
+7052	0	12	7051	Toy Factory
+7053	10	8	7051	Toy Factory
+7054	12	15	7052	Santa's Room
+7054	13	15	7052	Santa's Room
+7055	11	7	7050	North Pole
+7055	11	8	7050	North Pole
+7055	11	9	7050	North Pole
+7056	1	19	7050	North Pole
+7056	20	1	7058	Mount Merry 1-3
+7056	31	48	7057	Mount Merry 1-2
+7057	24	1	7056	Mount Merry 1-1
+7058	30	48	7056	Mount Merry 1-1
+7059	1	11	7050	North Pole
+7059	30	48	7066	Mount Merry 2-3
+7059	48	26	7060	Mount Merry 2-2
+7060	1	18	7059	Mount Merry 2-1
+7061	48	26	7065	Mount Merry 4-1
+7062	1	21	7050	North Pole
+7063	12	15	7052	Santa's Room
+7063	13	15	7052	Santa's Room
+7065	1	21	7061	Mount Merry 4-2
+7065	24	1	7067	Mount Merry 4-3
+7065	30	48	7050	North Pole
+7066	5	1	7059	Mount Merry 2-1
+7067	1	3	7068	Mount Merry 5
+7067	43	48	7065	Mount Merry 4-1
+7068	38	1	7069	Mount Merry 6
+7068	48	26	7067	Mount Merry 4-3
+7069	1	19	7071	Frozen Tundra
+7069	1	20	7071	Frozen Tundra
+7069	15	48	7068	Mount Merry 5
+7069	20	1	7070	Mount Merry 7
+7070	13	18	7069	Mount Merry 6
+7071	33	18	7069	Mount Merry 6
+7071	33	19	7069	Mount Merry 6
+7401	0	35	7422	Loures Sewer Canal 22
+7401	0	36	7422	Loures Sewer Canal 22
+7401	3	5	3935	Citadel Bank
+7401	3	6	3935	Citadel Bank
+7401	4	5	3935	Citadel Bank
+7401	4	6	3935	Citadel Bank
+7422	0	17	7423	Loures Sewer Canal 23
+7422	0	18	7423	Loures Sewer Canal 23
+7422	19	8	7401	Loures Sewer Canal 1
+7422	19	9	7401	Loures Sewer Canal 1
+7423	10	19	7424	Loures Sewer Canal 24
+7423	11	19	7424	Loures Sewer Canal 24
+7423	19	10	7422	Loures Sewer Canal 22
+7423	19	11	7422	Loures Sewer Canal 22
+7424	14	0	7423	Loures Sewer Canal 23
+7424	19	15	7425	Loures Sewer Canal 25
+7424	19	16	7425	Loures Sewer Canal 25
+7425	0	5	7424	Loures Sewer Canal 24
+7425	0	6	7424	Loures Sewer Canal 24
+7425	12	19	7442	Loures Sewer Canal 42
+7425	13	19	7442	Loures Sewer Canal 42
+7425	14	0	7422	Loures Sewer Canal 22
+7425	15	0	7422	Loures Sewer Canal 22
+7437	6	0	7438	Loures Sewer Canal 38
+7437	7	0	7438	Loures Sewer Canal 38
+7437	19	10	7405	Loures Sewer Canal 5
+7437	19	11	7405	Loures Sewer Canal 5
+7438	0	6	7441	Loures Sewer Canal 41
+7438	0	7	7441	Loures Sewer Canal 41
+7438	8	0	7439	Loures Sewer Canal 39
+7438	9	0	7439	Loures Sewer Canal 39
+7438	15	19	7437	Loures Sewer Canal 37
+7438	16	19	7437	Loures Sewer Canal 37
+7439	0	2	7440	Loures Sewer Canal 40
+7439	0	3	7440	Loures Sewer Canal 40
+7439	10	0	7442	Loures Sewer Canal 42
+7439	11	0	7442	Loures Sewer Canal 42
+7440	9	19	7441	Loures Sewer Canal 41
+7440	10	19	7441	Loures Sewer Canal 41
+7440	19	10	7439	Loures Sewer Canal 39
+7440	19	11	7439	Loures Sewer Canal 39
+7441	9	0	7440	Loures Sewer Canal 40
+7441	10	0	7440	Loures Sewer Canal 40
+7441	19	16	7438	Loures Sewer Canal 38
+7441	19	17	7438	Loures Sewer Canal 38
+7442	8	0	7425	Loures Sewer Canal 25
+7442	9	0	7425	Loures Sewer Canal 25
+7442	15	19	7439	Loures Sewer Canal 39
+7442	16	19	7439	Loures Sewer Canal 39
+10288	7	5	2049	Test2
+11301	75	99	11302	Goblin Mines
+11301	76	99	11302	Goblin Mines
+11301	77	99	11302	Goblin Mines
+11301	78	99	11302	Goblin Mines
+11301	79	99	11302	Goblin Mines
+11302	8	3	11301	Gobleregan
+11302	9	3	11301	Gobleregan
