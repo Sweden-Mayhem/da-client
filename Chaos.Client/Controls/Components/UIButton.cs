@@ -1,4 +1,5 @@
 #region
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -50,6 +51,43 @@ public class UIButton : UIElement
 
             return NormalTexture;
         }
+    }
+
+    public static UIButton CreateWithTexture(string? name, Texture2D normalTexture, Texture2D? pressedTexture = null, Texture2D? hoverTexture = null)
+    {
+        return new UIButton
+        {
+            Name = name ?? string.Empty,
+            Width = normalTexture.Width,
+            Height = normalTexture.Height,
+            NormalTexture = normalTexture,
+            PressedTexture = pressedTexture ?? ImageUtil.BuildButtonPressTint(ChaosGame.Device, normalTexture),
+            HoverTexture = hoverTexture ?? ImageUtil.BuildButtonHoverTint(ChaosGame.Device, normalTexture)
+        };
+    }
+
+    public static UIButton CreateTransparent(string? name, int width, int height)
+    {
+        return new UIButton
+        {
+            Name = name ?? string.Empty,
+            Width = width,
+            Height = height,
+            PressedTexture = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, width, height),
+            HoverTexture = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, width, height)
+        };
+    }
+
+    public static UIButton CreateTransparentMasked(string? name, Texture2D mask)
+    {
+        return new UIButton
+        {
+            Name = name ?? string.Empty,
+            Width = mask.Width,
+            Height = mask.Height,
+            PressedTexture = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, mask),
+            HoverTexture = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, mask)
+        };
     }
 
     public override void Dispose()

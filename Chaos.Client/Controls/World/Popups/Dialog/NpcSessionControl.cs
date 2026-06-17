@@ -158,28 +158,16 @@ public sealed class NpcSessionControl : PrefabPanel
 
         if (CloseButton is not null)
         {
-            ScrollDownButton = new UIButton
-            {
-                Name = "ScrollDown",
-                NormalTexture = downArrowTexture,
-                X = CloseButton.X + CloseButton.Width - downArrowTexture.Width - 3,
-                Y = CloseButton.Y - downArrowTexture.Height - 1,
-                Width = downArrowTexture.Width,
-                Height = downArrowTexture.Height,
-                Visible = false
-            };
+            ScrollDownButton = UIButton.CreateWithTexture("ScrollDown", downArrowTexture);
+            ScrollDownButton.X = CloseButton.X + CloseButton.Width - downArrowTexture.Width - 3;
+            ScrollDownButton.Y = CloseButton.Y - downArrowTexture.Height - 1;
+            ScrollDownButton.Visible = false;
 
-            ScrollUpButton = new UIButton
-            {
-                Name = "ScrollUp",
-                NormalTexture = upArrowTexture,
-                //center the up arrow over the down arrow in case the two frames differ in width
-                X = ScrollDownButton.X + ((downArrowTexture.Width - upArrowTexture.Width) / 2),
-                Y = ScrollDownButton.Y - upArrowTexture.Height - 27,
-                Width = upArrowTexture.Width,
-                Height = upArrowTexture.Height,
-                Visible = false
-            };
+            ScrollUpButton = UIButton.CreateWithTexture("ScrollUp", upArrowTexture);
+            //center the up arrow over the down arrow in case the two frames differ in width
+            ScrollUpButton.X = ScrollDownButton.X + ((downArrowTexture.Width - upArrowTexture.Width) / 2);
+            ScrollUpButton.Y = ScrollDownButton.Y - upArrowTexture.Height - 27;
+            ScrollUpButton.Visible = false;
 
             AddChild(ScrollDownButton);
             AddChild(ScrollUpButton);

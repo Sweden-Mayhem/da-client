@@ -2,6 +2,7 @@
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Data;
 using Chaos.Client.Extensions;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -77,15 +78,9 @@ public sealed class OkPopupMessageControl : UIPanel
 
             var cancelWidth = cancelNormalTex.Width;
 
-            CancelButton = new UIButton
-            {
-                Name = "Cancel",
-                X = rightButtonX - cancelWidth,
-                Width = cancelWidth,
-                Height = cancelNormalTex.Height,
-                NormalTexture = cancelNormalTex,
-                PressedTexture = cancelPressedTex
-            };
+            CancelButton = UIButton.CreateWithTexture("Cancel", cancelNormalTex, cancelPressedTex);
+            CancelButton.X = rightButtonX - cancelWidth;
+
             CancelButton.Clicked += () => OnCancel?.Invoke();
             AddChild(CancelButton);
 
@@ -94,15 +89,8 @@ public sealed class OkPopupMessageControl : UIPanel
             okX = rightButtonX - okWidth;
 
         //ok button sits left of cancel, or slides right when cancel is absent
-        OkButton = new UIButton
-        {
-            Name = "OK",
-            X = okX,
-            Width = okWidth,
-            Height = OkHeight,
-            NormalTexture = okNormalTex,
-            PressedTexture = okPressedTex
-        };
+        OkButton = UIButton.CreateWithTexture("OK", okNormalTex, okPressedTex);
+        OkButton.X = okX;
         OkButton.Clicked += () => OnOk?.Invoke();
         AddChild(OkButton);
 

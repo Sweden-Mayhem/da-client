@@ -1,6 +1,7 @@
 #region
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Extensions;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Utilities;
 using Chaos.Client.ViewModel;
 using Microsoft.Xna.Framework;
@@ -60,17 +61,14 @@ public sealed class SettingsControl : PrefabPanel
             var normalIdx = i * 2;
             var pressedIdx = i * 2 + 1;
 
-            var btn = new UIButton
-            {
-                Name = $"Setting{i}",
-                X = BUTTON_X + col * COLUMN_OFFSET,
-                Y = BUTTON_Y + row * ROW_HEIGHT,
-                Width = BUTTON_SIZE,
-                Height = BUTTON_SIZE,
-                NormalTexture = cache.GetSpfTexture("_nsettb.spf", normalIdx),
-                PressedTexture = cache.GetSpfTexture("_nsettb.spf", pressedIdx)
-            };
+            var normalTexture = cache.GetSpfTexture("_nsettb.spf", normalIdx);
+            var pressedTexture = cache.GetSpfTexture("_nsettb.spf", pressedIdx);
 
+            var btn = UIButton.CreateWithTexture($"Setting{i}", normalTexture, pressedTexture);
+            btn.X = BUTTON_X + col * COLUMN_OFFSET;
+            btn.Y = BUTTON_Y + row * ROW_HEIGHT;
+            btn.Width = BUTTON_SIZE;
+            btn.Height = BUTTON_SIZE;
             btn.Clicked += () => Options.Toggle(settingIndex);
 
             AddChild(btn);

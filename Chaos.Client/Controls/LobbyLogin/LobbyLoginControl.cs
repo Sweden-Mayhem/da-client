@@ -1,6 +1,8 @@
 #region
 using System.Reflection;
 using Chaos.Client.Controls.Components;
+using Chaos.Client.Rendering.Utility;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
@@ -14,6 +16,9 @@ namespace Chaos.Client.Controls.LobbyLogin;
 /// </summary>
 public sealed class LobbyLoginControl : UIPanel
 {
+	private readonly Texture2D ButtonMaskHover;
+	private readonly Texture2D ButtonMaskPress;
+
     public HotspotButton? SubmitCreateButton { get; }
     public HotspotButton? ContinueButton { get; }
     public HotspotButton? PasswordButton { get; }
@@ -31,33 +36,38 @@ public sealed class LobbyLoginControl : UIPanel
         Width = ChaosGame.VIRTUAL_WIDTH;
         Height = ChaosGame.VIRTUAL_HEIGHT;
 
-        Background = LoadBackground();
+        Background = LoadTexture("da_login.png");
+
+        var buttonHotspotArea = LoadTexture("da_login_button_mask.png");
+        ButtonMaskHover = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, buttonHotspotArea);
+        ButtonMaskPress = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, buttonHotspotArea);
 
         //left column (icon + plate), measured against the art and scaled to 640x480
-        //rows sit at ~41px pitch, 32px tall to cover each wooden plate
-        SubmitCreateButton = AddHotspot("Create", 29, 155, 138, 32);
-        ContinueButton = AddHotspot("Continue", 29, 197, 138, 32);
-        PasswordButton = AddHotspot("Password", 29, 241, 138, 32);
-        ExitButton = AddHotspot("Exit", 29, 286, 138, 32);
+        SubmitCreateButton = AddHotspot("Create", 31, 155-3, ButtonMaskHover, ButtonMaskPress);
+        ContinueButton = AddHotspot("Continue", 31, 197-3, ButtonMaskHover, ButtonMaskPress);
+        PasswordButton = AddHotspot("Password", 31, 241-3, ButtonMaskHover, ButtonMaskPress);
+        ExitButton = AddHotspot("Exit", 31, 285-3, ButtonMaskHover, ButtonMaskPress);
 
         //right column (same rows)
-        CreditButton = AddHotspot("Credit", 462, 155, 135, 32);
-        HomepageButton = AddHotspot("Homepage", 462, 197, 135, 32);
-        OptionsButton = AddHotspot("Options", 462, 241, 135, 32);
-        NewsButton = AddHotspot("News", 462, 286, 135, 32);
+        CreditButton = AddHotspot("Credit", 465, 155-3, ButtonMaskHover, ButtonMaskPress);
+        HomepageButton = AddHotspot("Homepage", 465, 197-3, ButtonMaskHover, ButtonMaskPress);
+        OptionsButton = AddHotspot("Options", 465, 241-3, ButtonMaskHover, ButtonMaskPress);
+        NewsButton = AddHotspot("News", 465, 285-3, ButtonMaskHover, ButtonMaskPress);
 
         SetButtonsEnabled(false);
     }
 
-    private HotspotButton AddHotspot(string name, int x, int y, int width, int height)
+    private HotspotButton AddHotspot(string name, int x, int y, Texture2D hover, Texture2D press)
     {
         var button = new HotspotButton
         {
             Name = name,
             X = x,
             Y = y,
-            Width = width,
-            Height = height,
+            Width = hover.Width,
+            Height = hover.Height,
+            HoverTexture = hover,
+            PressedTexture = press,
             Enabled = false
         };
 
@@ -66,12 +76,11 @@ public sealed class LobbyLoginControl : UIPanel
         return button;
     }
 
-    private static Texture2D LoadBackground()
+    private static Texture2D LoadTexture(String path)
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        using var stream = assembly.GetManifestResourceStream("da_login.png")
-                           ?? throw new InvalidOperationException("Embedded resource 'da_login.png' not found");
+        using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
 
         return Texture2D.FromStream(ChaosGame.Device, stream);
     }

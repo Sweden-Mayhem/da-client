@@ -39,32 +39,22 @@ public sealed class ItemAmountControl : PrefabPanel
 
         //ok button, positioned from prefab rect, textured from butt001.epf
         var okRect = GetRect("OK");
-        OkButton = new UIButton
-        {
-            Name = "OK",
-            X = okRect.X,
-            Y = okRect.Y,
-            Width = okRect.Width,
-            Height = okRect.Height,
-            NormalTexture = cache.GetEpfTexture("butt001.epf", OK_NORMAL),
-            PressedTexture = cache.GetEpfTexture("butt001.epf", OK_PRESSED),
-            DisabledTexture = cache.GetEpfTexture("butt001.epf", OK_DISABLED),
-            Enabled = false
-        };
+        OkButton = UIButton.CreateWithTexture("OK", cache.GetEpfTexture("butt001.epf", OK_NORMAL), cache.GetEpfTexture("butt001.epf", OK_PRESSED));
+        OkButton.DisabledTexture = cache.GetEpfTexture("butt001.epf", OK_DISABLED);
+        OkButton.X = okRect.X;
+        OkButton.Y = okRect.Y;
+        OkButton.Width = okRect.Width;
+        OkButton.Height = okRect.Height;
+        OkButton.Enabled = false;
         AddChild(OkButton);
 
         //cancel button
         var cancelRect = GetRect("Cancel");
-        CancelButton = new UIButton
-        {
-            Name = "Cancel",
-            X = cancelRect.X,
-            Y = cancelRect.Y,
-            Width = cancelRect.Width,
-            Height = cancelRect.Height,
-            NormalTexture = cache.GetEpfTexture("butt001.epf", CANCEL_NORMAL),
-            PressedTexture = cache.GetEpfTexture("butt001.epf", CANCEL_PRESSED)
-        };
+        CancelButton = UIButton.CreateWithTexture("Cancel", cache.GetEpfTexture("butt001.epf", CANCEL_NORMAL), cache.GetEpfTexture("butt001.epf", CANCEL_PRESSED));
+        CancelButton.X = cancelRect.X;
+        CancelButton.Y = cancelRect.Y;
+        CancelButton.Width = cancelRect.Width;
+        CancelButton.Height = cancelRect.Height;
         AddChild(CancelButton);
 
         AmountTextBox = CreateTextBox("Text", 3);

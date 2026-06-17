@@ -141,17 +141,10 @@ public sealed class ChantEditControl : PrefabPanel
         var normalTex = cache.GetEpfTexture("butt001.epf", normalFrame);
         var pressedTex = cache.GetEpfTexture("butt001.epf", pressedFrame);
 
-        var button = new UIButton
-        {
-            Name = name,
-            X = x,
-            Y = y,
-            Width = normalTex.Width,
-            Height = normalTex.Height,
-            NormalTexture = normalTex,
-            PressedTexture = pressedTex,
-            ZIndex = 1
-        };
+        var button = UIButton.CreateWithTexture(name, normalTex, pressedTex);
+        button.X = x;
+        button.Y = y;
+        button.ZIndex = 1;
 
         AddChild(button);
 

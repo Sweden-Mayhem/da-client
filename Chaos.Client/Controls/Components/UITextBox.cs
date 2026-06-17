@@ -1,4 +1,5 @@
 #region
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -69,6 +70,9 @@ public class UITextBox : UIElement, INativeTextDrawer
     ///     <see cref="CustomFontSize" /> &gt; 0 (use <see cref="Native" />). Off by default, so every other box is unaffected.
     /// </summary>
     public bool RenderNative { get; set; }
+
+    public bool IsHovered { get; private set; }
+    public bool IsPressed { get; private set; }
 
     /// <summary>Marks this box for crisp native-resolution TTF rendering (see <see cref="RenderNative" />) at the given base
     ///     pixel size, and returns it so it can be chained at creation.</summary>
@@ -345,13 +349,15 @@ public class UITextBox : UIElement, INativeTextDrawer
 
         //a native-text root paints this box's glyphs/caret/selection crisply at native resolution (see DrawNativeText),
         //so skip the would-be-upscaled in-place render. base.Draw kept the clip/hit area + focused background.
-        if (RendersNatively)
-            return;
+        if (!RendersNatively)
+        {
+            if (IsMultiLine)
+                DrawMultiLine(spriteBatch);
+            else
+                DrawSingleLine(spriteBatch);
+        }
 
-        if (IsMultiLine)
-            DrawMultiLine(spriteBatch);
-        else
-            DrawSingleLine(spriteBatch);
+        DrawOverlay(spriteBatch);
     }
 
     //── native-resolution TTF rendering (INativeTextDrawer) ──
@@ -571,26 +577,26 @@ public class UITextBox : UIElement, INativeTextDrawer
                     ColorCodesEnabled);
         }
 
-        if (!IsFocused || !CursorVisible || IsReadOnly)
-            return;
-
-        var cursorLine = GetLineForPosition(CursorPosition);
-
-        if ((cursorLine >= firstLine) && (cursorLine < lastLine))
+        if (IsFocused && CursorVisible && !IsReadOnly)
         {
-            //raw line text up to the cursor (GetLineText trims trailing spaces, freezing the caret on an end-of-line space)
-            var caretText = CaretLineText(cursorLine);
-            var cursorX = textX + (caretText.Length > 0 ? TextRenderer.MeasureWidth(caretText) + 1 : 0);
-            var cursorY = textY + (cursorLine - firstLine) * TextRenderer.CHAR_HEIGHT;
-
-            DrawRectClipped(
-                spriteBatch,
-                new Rectangle(
-                    cursorX,
-                    cursorY,
-                    CURSOR_WIDTH,
-                    TextRenderer.CHAR_HEIGHT),
-                ForegroundColor);
+            var cursorLine = GetLineForPosition(CursorPosition);
+    
+            if ((cursorLine >= firstLine) && (cursorLine < lastLine))
+            {
+                //raw line text up to the cursor (GetLineText trims trailing spaces, freezing the caret on an end-of-line space)
+                var caretText = CaretLineText(cursorLine);
+                var cursorX = textX + (caretText.Length > 0 ? TextRenderer.MeasureWidth(caretText) + 1 : 0);
+                var cursorY = textY + (cursorLine - firstLine) * TextRenderer.CHAR_HEIGHT;
+    
+                DrawRectClipped(
+                    spriteBatch,
+                    new Rectangle(
+                        cursorX,
+                        cursorY,
+                        CURSOR_WIDTH,
+                        TextRenderer.CHAR_HEIGHT),
+                    ForegroundColor);
+            }
         }
     }
 
@@ -660,25 +666,36 @@ public class UITextBox : UIElement, INativeTextDrawer
         } else
             DrawText(spriteBatch, new Vector2(textStartX, textY), displayText, ForegroundColor);
 
-        if (!IsFocused || !CursorVisible || IsReadOnly)
-            return;
-
-        var cursorX = textStartX;
-        var clampedPos = Math.Min(CursorPosition, displayText.Length);
-
-        if (clampedPos > 0)
-            cursorX += MeasureText(displayText[..clampedPos]) + CaretGap;
-
-        DrawRectClipped(
-            spriteBatch,
-            new Rectangle(
-                cursorX,
-                textY,
-                CURSOR_WIDTH,
-                fontHeight),
-            ForegroundColor);
+        if (IsFocused && CursorVisible && !IsReadOnly)
+        {
+            var cursorX = textStartX;
+            var clampedPos = Math.Min(CursorPosition, displayText.Length);
+    
+            if (clampedPos > 0)
+                cursorX += MeasureText(displayText[..clampedPos]) + CaretGap;
+    
+            DrawRectClipped(
+                spriteBatch,
+                new Rectangle(
+                    cursorX,
+                    textY,
+                    CURSOR_WIDTH,
+                    fontHeight),
+                ForegroundColor);
+        }
     }
 
+    private void DrawOverlay(SpriteBatch spriteBatch)
+    {
+        if (IsHovered)
+        {
+            if (IsPressed)
+                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonPressTint);
+            else if (!IsFocused)
+                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonHoverTint);
+        }
+    }
+    
     private void EnsureCursorVisible()
     {
         var cursorLine = GetLineForPosition(CursorPosition);
@@ -1121,10 +1138,22 @@ public class UITextBox : UIElement, INativeTextDrawer
 
     //── event handlers ──
 
+    public override void OnMouseEnter()
+    {
+        IsHovered = true;
+    }
+
+    public override void OnMouseLeave()
+    {
+        IsHovered = false;
+    }
+
     public override void OnMouseDown(MouseDownEvent e)
     {
         if (e.Button != MouseButton.Left)
             return;
+
+        IsPressed = true;
 
         var clickPos = HitTestFromScreenPos(e.ScreenX, e.ScreenY);
 
@@ -1215,7 +1244,10 @@ public class UITextBox : UIElement, INativeTextDrawer
     public override void OnMouseUp(MouseUpEvent e)
     {
         if (e.Button == MouseButton.Left)
+        {
             Dragging = false;
+            IsPressed = false;
+        }
     }
 
     public override void OnMouseScroll(MouseScrollEvent e)
