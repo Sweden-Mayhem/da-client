@@ -19,8 +19,8 @@ public sealed class OptionsWindow : DraggableWindow
     //wide enough that the TrueType (Cinzel) slider labels (e.g. "Chat window fade after") fit without clipping,
     //plus DEFAULT_WIDTH extra on the right for the scrollbar
     private const int W = 452 + ScrollBarControl.DEFAULT_WIDTH;
-    // max window height, matched to the Controls window so the long option list shows more rows per screen;
-    // ChromeHeight for wood (non-flush) = FRAME + TITLE_H + FRAME = 38
+    //max window height, matched to the Controls window so the long option list shows more rows per screen
+    //ChromeHeight for wood (non-flush) = FRAME + TITLE_H + FRAME = 38
     private const int H_MAX = 544;
 
     private const int PAD = 12;
@@ -34,7 +34,7 @@ public sealed class OptionsWindow : DraggableWindow
     private static readonly Color LabelColor = new(200, 198, 190);
     private static readonly Color ValueColor = new(196, 168, 110);
 
-    //row panel and scrollbar, rows go into RowsHost, Viewport clips the visible area
+    //row panel and scrollbar - rows go into RowsHost, Viewport clips the visible area
     private readonly UIPanel Viewport;
     private readonly UIPanel RowsHost;
     private readonly ScrollBarControl ScrollBar;
@@ -268,7 +268,7 @@ public sealed class OptionsWindow : DraggableWindow
     ///     pre-game settings (Sound, Music, VSync) and shows a "More options in-game" note instead of the keybind button;
     ///     pass false in the world for the full menu.
     /// </summary>
-    public static OptionsWindow Create(ChaosGame game, ControlsWindow controls, Action<float>? applyWindowScale, bool compact = false)
+    public static OptionsWindow Create(ChaosGame game, ControlsWindow controls, Action<float>? applyWindowScale, bool compact = false, Action? onChatRefresh = null)
     {
         var win = new OptionsWindow();
 
@@ -287,7 +287,7 @@ public sealed class OptionsWindow : DraggableWindow
                 v =>
                 {
                     if (applyWindowScale is not null)
-                        applyWindowScale(v); //world: rescales the open hud windows live (and sets WindowScale)
+                        applyWindowScale(v); //rescales the open hud windows live in the world (and sets WindowScale)
                     else
                         ClientSettings.WindowScale = v;
 
@@ -336,7 +336,7 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             //(the per-step "Step 1..4" debug toggles were removed from the menu; the FootstepStepsEnabled flags + their
-            //persistence stay, so they can be added back to the menu later if needed.)
+            //persistence stay, so they can be added back later if needed.)
         }
 
         if (!compact)
@@ -491,6 +491,22 @@ public sealed class OptionsWindow : DraggableWindow
                     ClientSettings.Save();
                 });
 
+            win.AddCheckbox(
+                "Allow dragging minimap", ClientSettings.AllowDragMinimap,
+                v =>
+                {
+                    ClientSettings.AllowDragMinimap = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Allow dragging menu button", ClientSettings.AllowDragMenuButton,
+                v =>
+                {
+                    ClientSettings.AllowDragMenuButton = v;
+                    ClientSettings.Save();
+                });
+
             win.AddSlider(
                 "Minimap size", 0.1f, 4f, ClientSettings.MinimapScale, 0.1f, v => $"{v:0.0#}x",
                 v =>
@@ -525,6 +541,15 @@ public sealed class OptionsWindow : DraggableWindow
                 {
                     ClientSettings.RecordNpcChat = v;
                     ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Show chat timestamps", ClientSettings.ShowChatTimestamp,
+                v =>
+                {
+                    ClientSettings.ShowChatTimestamp = v;
+                    ClientSettings.Save();
+                    onChatRefresh?.Invoke(); //re-wrap all stored lines so timestamps appear/disappear immediately
                 });
 
             win.AddSlider(

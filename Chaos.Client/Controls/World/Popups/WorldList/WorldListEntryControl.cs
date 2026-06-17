@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Chaos.Client.Controls.World.Popups.WorldList;
 
 /// <summary>
-///     A single row in the world list panel, title and name with a social status icon on the far right
+///     A single row in the world list panel: title + name + social status icon (far right).
 /// </summary>
 public sealed class WorldListEntryControl : UIPanel
 {
@@ -23,40 +23,41 @@ public sealed class WorldListEntryControl : UIPanel
     public WorldListEntryControl(int rowWidth)
     {
         Width = rowWidth;
-        Height = 12;
+        Height = 14;
 
-        //crisp TTF at native res, the who's-online window is hosted in a magnifier
+        //crisp TTF at native res via WorldScreen's generic menu-text pass (the who's-online window is hosted in a magnifier)
         TitleLabel = new UILabel
         {
             Name = "Title",
             X = 0,
             Y = 0,
             Width = TITLE_WIDTH,
-            Height = 12,
+            Height = 14,
             HorizontalAlignment = HorizontalAlignment.Right,
             PaddingLeft = 0
-        }.Native(11);
+        }.Native(10);
 
         AddChild(TitleLabel);
 
         NameLabel = new UILabel
         {
             Name = "Name",
-            X = TITLE_WIDTH,
-            Y = -1, //up a pixel to sit level with the title
-            Width = NAME_WIDTH,
-            Height = 12,
+            AutoFitWidth = true,
+            X = TITLE_WIDTH + 20,
+            Y = -1,
+            Width = NAME_WIDTH - 24,
+            Height = 14,
             HorizontalAlignment = HorizontalAlignment.Right,
             PaddingLeft = 0
-        }.Native(11);
+        }.Native(10);
 
         AddChild(NameLabel);
 
         Icon = new UIImage
         {
             Name = "StatusIcon",
-            X = rowWidth - ICON_SIZE,
-            Y = (12 - ICON_SIZE) / 2,
+            X = rowWidth - ICON_SIZE - 4,
+            Y = (14 - ICON_SIZE) / 2,
             Width = ICON_SIZE,
             Height = ICON_SIZE
         };

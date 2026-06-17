@@ -3,6 +3,7 @@ using Chaos.Client.Controls.Components;
 using Chaos.Client.Definitions;
 using Chaos.Client.Systems;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Chaos.Client.Controls.World.Menu;
@@ -68,6 +69,11 @@ public sealed class MenuButton : UIPanel
     public Color TextColor
     {
         set => Label.ForegroundColor = value;
+    }
+
+    public override void Draw(SpriteBatch spriteBatch)
+    {
+        base.Draw(spriteBatch);
     }
 
     public override void OnMouseEnter() => BackgroundColor = HoverBg;

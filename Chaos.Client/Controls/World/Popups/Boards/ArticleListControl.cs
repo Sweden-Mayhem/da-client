@@ -11,15 +11,17 @@ using Microsoft.Xna.Framework.Input;
 namespace Chaos.Client.Controls.World.Popups.Boards;
 
 /// <summary>
-///     Scrollable list of board posts with author, date and subject
-///     Free-floating window dragged by its background art, rows stay clickable
+///     Public board article list panel using _narlist prefab. Displays a scrollable list of board posts with author, date,
+///     and subject. Buttons: View, New, Delete, Hilight, Up (back to boards), Close. Hosted in a draggable ScaleHost (a
+///     free-floating window like Group/Equipment): follows the Window size scale, opens centered with no animation, and is
+///     dragged by its background art (the row labels stay hit-testable so clicking a row selects it).
 /// </summary>
 public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
 {
-    //server caps board responses at sbyte max posts per page
+    //server caps board responses at sbyte.maxvalue posts per page
     private const int MAX_POSTS_PER_PAGE = 127;
     private const int ROW_HEIGHT = Constants.BOARD_ROW_HEIGHT;
-    private const int ROW_INDENT = 8; //small left reading margin for the rows
+    private const int ROW_INDENT = 8; //rows sit 8px in from the left edge (and 8px narrower) for a small reading margin
     private const int POSTID_CHARS = 5;
     private const int AUTHOR_CHARS = 12;
     private const int DATE_CHARS = 5;
@@ -31,7 +33,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     private readonly int MaxSubjectChars;
     private readonly int MaxVisibleRows;
     private readonly UILabel[] RowLabels;
-    private readonly int[] ColumnXs; //native-px left edges of the id, author, date and subject columns
+    private readonly int[] ColumnXs; //native-px left edges of the id / author / date / subject columns
     private readonly ScrollBarControl ScrollBar;
     private int DataVersion;
 
@@ -56,7 +58,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         Visible = false;
         UsesControlStack = true;
 
-        //pass-through so clicks on empty background art reach the draggable host
+        //pass-through so empty background art falls through to the draggable ScaleHost that wraps this window
         IsPassThrough = true;
 
         ViewButton = CreateButton("View");
@@ -120,12 +122,13 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         ArticleListRect = GetRect("ArticleList");
         MaxVisibleRows = ArticleListRect.Height > 0 ? ArticleListRect.Height / ROW_HEIGHT : 0;
 
+        //scrollbar
         ScrollBar = new ScrollBarControl
         {
             Name = "ScrollBar",
             X = ArticleListRect.X + ArticleListRect.Width - ScrollBarControl.DEFAULT_WIDTH,
-            Y = ArticleListRect.Y,
-            Height = ArticleListRect.Height
+            Y = ArticleListRect.Y - 5,
+            Height = ArticleListRect.Height + 10
         };
 
         ScrollBar.OnValueChanged += v =>
@@ -136,11 +139,11 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
 
         AddChild(ScrollBar);
 
-        //one label per visible row, columns via fixed-width string formatting
+        //row labels -one per visible row, columns via fixed-width string formatting
         var usableWidth = ArticleListRect.Width - ScrollBarControl.DEFAULT_WIDTH;
         MaxSubjectChars = Math.Max(0, usableWidth / TextRenderer.CHAR_WIDTH - PREFIX_CHARS);
 
-        //fixed column left-edges so rows line up despite the proportional font
+        //fixed column left-edges (native px) so every row's id / author / date / subject line up despite the proportional font
         ColumnXs = [0, (int)(usableWidth * 0.12f), (int)(usableWidth * 0.40f), (int)(usableWidth * 0.52f)];
 
         RowLabels = new UILabel[MaxVisibleRows];
@@ -155,8 +158,8 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
                 Height = ROW_HEIGHT,
                 PaddingLeft = 0,
                 PaddingTop = 0,
-                //row text is painted by DrawNativeText as crisp TTF, skip the bitmap glyphs here
-                //but keep the label layout and clip
+                //the row text is painted by DrawNativeText (crisp TTF at native res); skip the bitmap glyphs in the
+                //magnified ScaleHost pass while keeping the label's layout/clip
                 SuppressGlyphs = true
             };
 
@@ -164,8 +167,8 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         }
     }
 
-    /// <summary>Draws the row text at native resolution
-    ///     Call from the native pass with the wrapping host position, scale and alpha</summary>
+    /// <summary>Draws the row text at native (unscaled) resolution. Call from WorldScreen's native pass with the wrapping
+    ///     ScaleHost's ScreenX/Y, Scale and OpenFraction (as alpha).</summary>
     public void DrawNativeText(SpriteBatch spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
         => BoardRowText.DrawColumns(spriteBatch, RowLabels, ColumnXs, ROW_HEIGHT, originX, originY, scale, alpha);
 
@@ -191,7 +194,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     {
         var subject = entry.Subject.Length > MaxSubjectChars ? entry.Subject[..MaxSubjectChars] : entry.Subject;
 
-        //tab-separated columns, DrawColumns lays them out at fixed offsets so rows align
+        //tab-separated columns; BoardRowText.DrawColumns lays them out at fixed x-offsets so rows align
         return $"{entry.PostId}\t{entry.Author}\t{entry.Month}/{entry.Day}\t{subject}";
     }
 
@@ -206,8 +209,8 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     public event HighlightPostHandler? OnHighlight;
 
     /// <summary>
-    ///     Fired when the user clicks the "Load More" row at the bottom of a full page
-    ///     The value is the last visible PostId, used as the start for the next page request
+    ///     Fired when the user clicks the "Load More" row at the bottom of a full page. The short is the last visible PostId
+    ///     to use as the startPostId for the next page request.
     /// </summary>
     public event LoadMorePostsHandler? OnLoadMorePosts;
 
@@ -245,7 +248,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Removes a post from the list by id
+    ///     Appends additional entries from a subsequent page to the existing list.
     /// </summary>
     public void RemoveEntry(short postId)
     {
@@ -276,7 +279,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Shows or hides the Highlight button based on GM status
+    ///     Shows or hides the Highlight button based on GM status.
     /// </summary>
     public void SetHighlightEnabled(bool enabled)
     {
@@ -284,7 +287,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Opens the window, the wrapping host owns placement and scale
+    ///     Opens the window. Placement and scale are owned by the wrapping ScaleHost (it centers on first open).
     /// </summary>
     public override void Show()
     {
@@ -296,7 +299,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Fills the article list from server data (first page)
+    ///     Populates the article list from server data (first page).
     /// </summary>
     public void ShowArticles(ushort boardId, List<MailEntry> entries)
     {
@@ -375,7 +378,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         SelectedIndex = entryIndex;
         DataVersion++;
         UpdateButtonStates();
-        SoundSystem.PlayUiClick(); //same click sound as the View button
+        SoundSystem.PlayUiClick(); //navigating IN makes the same click as the View button
         OnViewPost?.Invoke(Entries[entryIndex].PostId);
     }
 
@@ -383,13 +386,13 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
     {
         switch (Keybindings.Resolve(e.Key, e.Modifiers))
         {
-            case GameAction.ToggleBulletinBoard: //board key backs out one level to the board list
+            case GameAction.ToggleBulletinBoard: //the bound board key backs out one level (to the board list)
                 SoundSystem.PlayUiClick();
                 OnUp?.Invoke();
                 e.Handled = true;
 
                 return;
-            case GameAction.MoveUp: //walk-up key moves the selection up
+            case GameAction.MoveUp: //the player's walk-up key moves the selection up
                 MoveSelection(-1);
                 e.Handled = true;
 
@@ -399,7 +402,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
                 e.Handled = true;
 
                 return;
-            case GameAction.Assail: //space opens the selected row, same as View or double-click
+            case GameAction.Assail: //space = open the selected row, same as View / double-click
                 ActivateSelected();
                 e.Handled = true;
 
@@ -413,7 +416,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         }
     }
 
-    //move the highlighted row by delta and keep it scrolled into view
+    //keyboard selection: move the highlighted row by delta, keeping it scrolled into view
     private void MoveSelection(int delta)
     {
         if (Entries.Count == 0)
@@ -438,7 +441,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
         UpdateButtonStates();
     }
 
-    //open the selected post
+    //space / View / double-click: open the selected post
     private void ActivateSelected()
     {
         if ((SelectedIndex < 0) || (SelectedIndex >= Entries.Count))
@@ -479,7 +482,7 @@ public sealed class ArticleListControl : PrefabPanel, INativeTextDrawer
 
     private void UpdateScrollBar()
     {
-        //add a virtual row for the "load more" indicator when more posts exist
+        //add 1 virtual row for the "load more" indicator when more posts exist
         var totalRows = Entries.Count + (HasMorePosts ? 1 : 0);
 
         ScrollBar.TotalItems = totalRows;

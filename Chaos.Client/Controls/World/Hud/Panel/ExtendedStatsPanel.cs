@@ -1,6 +1,7 @@
 #region
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Data.Models;
+using Chaos.Client.Definitions;
 using Chaos.Client.Extensions;
 using Chaos.DarkAges.Definitions;
 using Chaos.Networking.Entities.Server;
@@ -23,6 +24,7 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
     private const int IDX_DMG = 4;
     private const int IDX_HIT = 5;
     private const int LABEL_COUNT = 6;
+    private const int STAT_FONT = 11; //matches StatsPanel.STAT_FONT so both sections read at the same size
 
     private static readonly string[] LABEL_NAMES =
     [
@@ -41,7 +43,7 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
     private Element OffenseElement = (Element)byte.MaxValue;
     private Element DefenseElement = (Element)byte.MaxValue;
 
-    //expand repositioning, compact and expanded label layouts
+    //expand repositioning -compact and expanded label layouts
     private LabelLayout[]? CompactLayouts;
     private bool[]? ExistsInCompact;
     private LabelLayout[]? ExpandedLayouts;
@@ -73,7 +75,7 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
                 Background = UiRenderer.Instance!.GetPrefabTexture(statusPrefabSet.Name, "ExtraStatus", 0);
         }
 
-        //extended stat labels (e_ prefix) positioned relative to extrastatus origin
+        //extended stat labels (e_ prefix) -positioned relative to extrastatus origin
         for (var i = 0; i < LABEL_COUNT; i++)
             Labels[i] = CreateOffsetLabel(
                 statusPrefabSet,
@@ -82,6 +84,7 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
                 extraTop);
 
         Array.Fill(StatValues, long.MinValue);
+        BuildInfoHotspots();
     }
 
     private static string[] BuildElementNames()
@@ -197,6 +200,8 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
             HorizontalAlignment = HorizontalAlignment.Right
         };
 
+        label.Native(STAT_FONT); //crisp TTF at native resolution via WorldScreen's menu-text pass
+
         AddChild(label);
 
         return label;
@@ -266,6 +271,57 @@ public sealed class ExtendedStatsPanel : ExpandablePanel
 
             if (Labels[IDX_DEFENSE] is { } label)
                 label.Text = ElementNames[(int)attrs.DefenseElement];
+        }
+    }
+
+    ///<summary>Returns the stat kind at the given (panel-local, scaled) screen position, or null if no label is hit.
+    ///Used by the tooltip resolver in WorldScreen to show hover help over value labels.</summary>
+    public StatInfoKind? HitStatInfo(int x, int y)
+    {
+        for (var i = 0; i < LABEL_COUNT; i++)
+            if ((Labels[i] is { Visible: true } label) && label.ContainsPoint(x, y) && (LabelInfoKind(i) is { } kind))
+                return kind;
+
+        return null;
+    }
+
+    private static StatInfoKind? LabelInfoKind(int index)
+        => index switch
+        {
+            IDX_ATTACK  => StatInfoKind.OffenseElement,
+            IDX_DEFENSE => StatInfoKind.DefenseElement,
+            IDX_MAGIC   => StatInfoKind.MagicResistance,
+            IDX_AC      => StatInfoKind.ArmorClass,
+            IDX_DMG     => StatInfoKind.Damage,
+            IDX_HIT     => StatInfoKind.HitChance,
+            _           => null
+        };
+
+    //adds a transparent InfoHotspot over the icon/text area to the LEFT of each value label, giving the same hover
+    //tooltip on the art as on the number. Called after all labels are created so X positions are final.
+    private void BuildInfoHotspots()
+    {
+        for (var i = 0; i < LABEL_COUNT; i++)
+        {
+            if ((Labels[i] is not { } label) || (LabelInfoKind(i) is not { } kind))
+                continue;
+
+            var right = label.X - 1;
+
+            if (right <= 0)
+                continue;
+
+            var (title, body) = StatInfo.Get(kind);
+
+            AddChild(
+                new InfoHotspot(title, body)
+                {
+                    Name = $"info_{LABEL_NAMES[i]}",
+                    X = 0,
+                    Y = label.Y - 2,
+                    Width = right,
+                    Height = label.Height + 4
+                });
         }
     }
 

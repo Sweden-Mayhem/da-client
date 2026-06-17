@@ -13,7 +13,7 @@ namespace Chaos.Client.Rendering;
 
 /// <summary>
 ///     Cached UI texture renderer. Deduplicates GPU textures across all UI callers via a dictionary-backed cache. All
-///     returned textures are <see cref="CachedTexture2D" /> whose Dispose is a no-op, only this renderer can release GPU
+///     returned textures are <see cref="CachedTexture2D" /> whose Dispose is a no-op - only this renderer can release GPU
 ///     memory. Single instance owned by ChaosGame, available via <see cref="Instance" />.
 /// </summary>
 public sealed class UiRenderer : IDisposable
@@ -45,7 +45,7 @@ public sealed class UiRenderer : IDisposable
     /// <summary>
     ///     Builds a texture atlas from all currently cached UI textures. Textures larger than 512px in either dimension are
     ///     skipped. After building, CachedTexture2D entries have their AtlasRegion set so AtlasHelper.Draw() can route draws
-    ///     through the atlas. Safe to call multiple times, rebuilds from scratch each time.
+    ///     through the atlas. Safe to call multiple times -rebuilds from scratch each time.
     /// </summary>
     public void BuildAtlas()
     {
@@ -157,12 +157,31 @@ public sealed class UiRenderer : IDisposable
         if (Cache.TryGetValue(key, out var cached))
             return cached;
 
-        using var image = DataContext.UserControls.GetFieldImage(fieldName);
+        SKImage? image = null;
+        SKBitmap? overrideBmp = null;
+
+        var overridePath = Path.Combine(DataContext.DataPath, $"{fieldName}.png");
+
+        if (File.Exists(overridePath))
+        {
+            overrideBmp = SKBitmap.Decode(overridePath);
+
+            if (overrideBmp is not null)
+                image = SKImage.FromBitmap(overrideBmp);
+        }
+
+        image ??= DataContext.UserControls.GetFieldImage(fieldName);
 
         if (image is null)
+        {
+            overrideBmp?.Dispose();
+
             return MissingTexture;
+        }
 
         var texture = Convert(image);
+        image.Dispose();
+        overrideBmp?.Dispose();
         Cache[key] = texture;
 
         return texture;

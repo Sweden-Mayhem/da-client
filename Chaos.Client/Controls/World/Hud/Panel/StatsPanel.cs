@@ -33,6 +33,8 @@ public sealed class StatsPanel : ExpandablePanel
     private const int IDX_AB = 15;
     private const int IDX_NEXT_AB = 16;
     private const int LABEL_COUNT = 17;
+    private const int STAT_FONT = 11;     //default native TTF size for stat values (matches EQUIP_FONT)
+    private const int STAT_FONT_MIN = 7;  //smallest the value text will shrink to before it just clips
     private const int STAT_BUTTON_COUNT = 5;
     private const int STAT_BUTTON_X = 71;
     private const int STAT_BUTTON_Y = 6;
@@ -78,7 +80,7 @@ public sealed class StatsPanel : ExpandablePanel
     private int UnspentPointsCount;
     private bool IsHovered;
 
-    //expand repositioning, compact and expanded label layouts
+    //expand repositioning -compact and expanded label layouts
     private LabelLayout[]? CompactLayouts;
     private bool[]? ExistsInCompact;
     private LabelLayout[]? ExpandedLayouts;
@@ -114,7 +116,7 @@ public sealed class StatsPanel : ExpandablePanel
 
         Array.Fill(StatValues, long.MinValue);
 
-        //levelup stat raise buttons, load levelup.epf frames and create clickable arrows
+        //level-up stat raise buttons - load levelup.epf frames and create clickable arrows
         var cache = UiRenderer.Instance!;
         var frameCount = cache.GetEpfFrameCount(LEVELUP_EPF);
 
@@ -190,7 +192,7 @@ public sealed class StatsPanel : ExpandablePanel
                         Height = exRect.Height,
                         HorizontalAlignment = HorizontalAlignment.Right,
                         Visible = false
-                    }.Native(11);
+                    }.Native(STAT_FONT);
 
                     AddChild(Labels[i]!);
                 }
@@ -239,7 +241,7 @@ public sealed class StatsPanel : ExpandablePanel
 
         //crisp TTF at native res via WorldScreen's generic menu-text pass (the Stats window is hosted in a magnifier).
         //11 matches the U-menu equipment book's EQUIP_FONT so both stat readouts render at the same size.
-        return label.Native(11);
+        return label.Native(STAT_FONT);
     }
 
     public override void SetExpanded(bool expanded)
@@ -316,7 +318,7 @@ public sealed class StatsPanel : ExpandablePanel
     //the _nstatus art has the field NAMES (STR, INT, HP, GOLD, Level, ...) painted into the background image, with no
     //control to hover - so the player could read the values' tooltips but not the labels'. Lay a transparent
     //InfoHotspot over each baked word (the gap from the column's left edge to its value box) that shows the SAME stat
-    //help as hovering the value. Geometry comes from the value-label rects so it tracks the prefab; the leftBound is
+    //help as hovering the value. Geometry derives from the value-label rects so it tracks the prefab; the leftBound is
     //the per-column left edge of the word area, eyeballed from the rendered art (nudge a column if a word is missed).
     private void BuildInfoHotspots()
     {
@@ -374,8 +376,24 @@ public sealed class StatsPanel : ExpandablePanel
 
         StatValues[index] = value;
 
-        if (Labels[index] is { } label)
-            label.Text = value.ToString();
+        if (Labels[index] is not { } label)
+            return;
+
+        var text = value.ToString();
+
+        //start at the default size and step down until the text fits the label width, so large numbers
+        //(e.g. high EXP) never overflow -the minimum is STAT_FONT_MIN so there is always a floor
+        if (TtfTextRenderer.Available && (label.Width > 0))
+        {
+            var size = STAT_FONT;
+
+            while ((size > STAT_FONT_MIN) && (TtfTextRenderer.MeasureWidth(text, size) > label.Width))
+                size--;
+
+            label.CustomFontSize = size;
+        }
+
+        label.Text = text;
     }
 
     public override void Update(GameTime gameTime)

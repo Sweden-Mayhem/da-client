@@ -26,7 +26,7 @@ public sealed class TownMapControl : UIPanel
     private const float BANNER_START = 0.4f;  //fraction of the unroll at which the banner starts unfurling
     private const float FADE_SPAN = 0.5f;     //the whole window fades in over this fraction of the unroll (masks roll seams)
 
-    //--- scroll art geometry (fractions of map_scroll.png; knobs if the art is ever swapped) ---
+    //--- scroll art geometry (fractions of map_scroll.png, knobs if the art is ever swapped) ---
     private const float ROLLER_FRAC = 0.095f;   //width of each end strip (the wooden roller + its curl) in the art
     private const float INNER_L = 0.125f;       //usable parchment area the map content draws inside (clear of the wood)
     private const float INNER_R = 0.86f;
@@ -46,7 +46,8 @@ public sealed class TownMapControl : UIPanel
     //--- marks / text ---
     private const int PLAYER_ICON_SCALE = 2;      //the animated "you are here" icon, at this multiple of native size
     private const int TOOLTIP_FONT = 15;          //warp destination tooltip (main UI font)
-    private const float WARP_HOVER_RADIUS = 17f;  //cursor proximity (px) to a warp mark to hover/click it
+    private const float WARP_HOVER_RADIUS           = 17f;  //cursor proximity (px) to a warp mark to hover/click it
+    private const float WORLDMAP_ARROW_HOVER_RADIUS = 38f;  //radius covering the edge-line + arrowhead footprint
     private const float DIM_ALPHA = 0.38f;        //world dim behind the scroll at full open
     private const float WALL_SHADE = 0.62f;       //extra multiply on WALL tiles (collision data): floors stay light, walls press dark
 
@@ -65,8 +66,8 @@ public sealed class TownMapControl : UIPanel
     private static int ScrollTexW;
     private static int ScrollTexH;
 
-    //open/close unroll: OpenT eases 0..1; Closing runs it back to 0 then truly tears down (Hide). The scroll keeps
-    //drawing while it rolls back in (removed from the input stack at BeginClose so it no longer captures clicks/keys).
+    //OpenT eases 0..1; when Closing it runs back to 0 and the scroll is torn down (Hide) once it reaches 0
+    //the scroll keeps drawing while rolling back in; input capture is removed at BeginClose
     private float OpenT;
     private bool Closing;
 
@@ -86,8 +87,8 @@ public sealed class TownMapControl : UIPanel
     private int InkedGen = -1;
     private int InkedRevision = -1; //the DebugSettings.MapInkRevision the current InkedMap was baked with
 
-    //the heavy parchment recolor runs on a background thread; when the result lands we upload it and fade it in. The map
-    //is kept across opens (not disposed on Hide) so reopening the SAME map at the same size is instant (cache).
+    //the heavy parchment recolor runs on a background thread; when done the result is uploaded and faded in
+    //kept across opens (not disposed on Hide) so reopening the same map at the same size is instant
     private System.Threading.Tasks.Task<Color[]>? InkBuildTask;
     private int InkBuildW, InkBuildH;
     private Rectangle InkBuildContentRect, InkBuildScrollRect;
@@ -96,7 +97,7 @@ public sealed class TownMapControl : UIPanel
     private const float INK_FADE_SECONDS = 0.35f;
 
     //CPU copy of the baked inked pixels + the tile->pixel projection, kept so the corner minimap can sample a circular
-    //crop around the player without re-rendering. Set on each upload; the projection matches LastInked* exactly.
+    //crop around the player without re-rendering; the projection always matches LastInked*
     private Color[]? LastInkedPixels;
     private int LastInkedW, LastInkedH, LastInkedGen = -1;
     private Vector2 InkedP00, InkedEx, InkedEy;                 //ACTIVE projection (matches LastInkedPixels)
@@ -156,7 +157,7 @@ public sealed class TownMapControl : UIPanel
         Layout(); //size + position before the first draw
         InputDispatcher.Instance?.PushControl(this);
 
-        //unroll from wherever we are: 0 on a fresh open, or the current progress if we are reversing a close mid-roll
+        //unroll from wherever we are - 0 on a fresh open, or the current progress when reversing a close mid-roll
         OpenT = Closing ? OpenT : 0f;
         Closing = false;
         Visible = true;
@@ -182,8 +183,8 @@ public sealed class TownMapControl : UIPanel
 
     public void Hide()
     {
-        //a DIRECT hide of an open map (map change, warp confirm) announces the close; the Hide at the end of an
-        //animated close does not (BeginClose already did)
+        //a direct hide (map change, warp confirm) announces the close
+        //an animated close does not - BeginClose already did
         var announce = Visible && !Closing;
 
         InputDispatcher.Instance?.RemoveControl(this);
@@ -195,9 +196,8 @@ public sealed class TownMapControl : UIPanel
         Warps = [];
         HoveredWarp = -1;
 
-        //NOTE: the baked InkedMap is deliberately KEPT across closes - reopening the same map at the same size is then a
-        //free cache hit (no rebuild, no fade). It is replaced on a genuine cache miss (different map/size/knobs) and freed
-        //in Dispose. The build task (if any) is harmless to leave; it is key-checked on upload.
+        //the baked InkedMap is kept across closes so reopening the same map is a free cache hit
+        //it is replaced on a genuine miss and freed in Dispose; the in-flight build task is key-checked on upload
 
         if (announce)
             Closed?.Invoke();
@@ -235,9 +235,8 @@ public sealed class TownMapControl : UIPanel
 
     public override void OnMouseDown(MouseDownEvent e)
     {
-        //while rolling closed the panel still hit-tests (it covers the screen as it fades) - eat the click so it
-        //cannot reach the world, but no interaction: a warp clicked mid-close would pop the travel confirm over
-        //a map that is no longer there
+        //while rolling closed the panel still hit-tests (it covers the screen as it fades) - eat the click
+        //a warp clicked mid-close would pop the travel confirm over a map that is no longer there
         PressedWarp = Closing ? -1 : HoveredWarp;
         e.Handled = true;
     }
@@ -256,7 +255,7 @@ public sealed class TownMapControl : UIPanel
         if (Closing)
             return;
 
-        //clicked (pressed and released on) a warp mark: raise it and keep the map open for the confirm dialog
+        //clicked (pressed and released on) a warp mark - raise it and keep the map open for the confirm dialog
         //(if the confirm is already up, this re-targets it to the new destination)
         if ((PressedWarp >= 0) && (PressedWarp < Warps.Count) && (PressedWarp == HoveredWarp))
         {
@@ -320,25 +319,43 @@ public sealed class TownMapControl : UIPanel
         Layout();
         EnsureInkedMap();
 
-        //ease the baked map in once it's ready (a cache hit keeps it at 1; a fresh build reset it to 0)
+        //ease the baked map in once it's ready (a cache hit keeps it at 1, a fresh build resets it to 0)
         if (InkedMap is not null)
             InkedReadyFade = Math.Min(1f, InkedReadyFade + (dt / INK_FADE_SECONDS));
 
         //highlight the warp mark nearest the cursor (within the hover radius) so clumped warps don't fight for it.
         //none while rolling closed - the marks are leaving with the map.
         HoveredWarp = -1;
-        var bestSq = Closing ? -1f : WARP_HOVER_RADIUS * WARP_HOVER_RADIUS;
+        var bestSq = float.MaxValue;
 
-        for (var i = 0; i < Warps.Count; i++)
+        if (!Closing)
         {
-            float dx = InputBuffer.MouseX - WarpIconX[i];
-            float dy = InputBuffer.MouseY - WarpIconY[i];
-            var sq = dx * dx + dy * dy;
-
-            if (sq <= bestSq)
+            for (var i = 0; i < Warps.Count; i++)
             {
-                bestSq = sq;
-                HoveredWarp = i;
+                float hx, hy;
+
+                if (Warps[i].DestMapId == -1)
+                {
+                    var ang = GetIsometricArrowAngle(WarpIconX[i], WarpIconY[i], ContentRect);
+                    hx = WarpIconX[i] + (MathF.Cos(ang) * 17f);
+                    hy = WarpIconY[i] + (MathF.Sin(ang) * 17f);
+                }
+                else
+                {
+                    hx = WarpIconX[i];
+                    hy = WarpIconY[i];
+                }
+
+                float dx = InputBuffer.MouseX - hx;
+                float dy = InputBuffer.MouseY - hy;
+                var   sq = (dx * dx) + (dy * dy);
+                var   r  = Warps[i].DestMapId == -1 ? WORLDMAP_ARROW_HOVER_RADIUS : WARP_HOVER_RADIUS;
+
+                if ((sq < r * r) && (sq < bestSq))
+                {
+                    bestSq = sq;
+                    HoveredWarp = i;
+                }
             }
         }
 
@@ -402,7 +419,7 @@ public sealed class TownMapControl : UIPanel
     /// <summary>
     ///     Draws a scroll texture unrolling horizontally from its center: the two end strips (rollers / curls, each
     ///     <paramref name="endFrac" /> of the texture width) slide apart, UNCOVERING the stationary middle. The middle
-    ///     is drawn at a CONSTANT float scale with its position calculated linearly from the source offset, so every
+    ///     is drawn at a CONSTANT float scale with its position derived linearly from the source offset, so every
     ///     texel maps to mathematically the same screen position on every frame - only the crop boundary moves. (Int
     ///     dest rects looked "anchored" but their width rounded independently of the source width, so the effective
     ///     scale breathed frame-to-frame = the jitter.) Returns the revealed middle (the writable area).
@@ -476,8 +493,8 @@ public sealed class TownMapControl : UIPanel
         if (InkedMap is null || (ContentRect.Width <= 0))
             return;
 
-        //never draw a baked map from a DIFFERENT map (changed maps): the cache is keyed by Overview.Generation, so a
-        //stale-generation InkedMap is the previous level - skip it until the current map's build lands and fades in
+        //never draw a baked map from a DIFFERENT map - the cache is keyed by Overview.Generation
+        //a stale-generation InkedMap is the previous level; skip it until the current map's build lands
         if ((Overview is not null) && (InkedGen != Overview.Generation))
             return;
 
@@ -506,27 +523,33 @@ public sealed class TownMapControl : UIPanel
 
     private void DrawMarks(SpriteBatch spriteBatch, Rectangle reveal, float alpha)
     {
-        //warp marks: small red X over a soft drop shadow (they sat hard to spot on the busy ink), brighter under
-        //the cursor
-        if (MapMarkers.RedMark is { } mark)
+        Texture2D? mark = MapMarkers.RedMark;
+        var markW = mark is not null ? Math.Clamp(ContentRect.Width / 34, 12, 22) : 0;
+        var markH = mark is not null ? Math.Max(1, (int)(markW * (mark.Height / (float)mark.Width))) : 0;
+
+        for (var i = 0; i < Warps.Count; i++)
         {
-            var w = Math.Clamp(ContentRect.Width / 34, 12, 22);
-            var h = Math.Max(1, (int)(w * (mark.Height / (float)mark.Width)));
+            if ((WarpIconX[i] < reveal.Left) || (WarpIconX[i] > reveal.Right))
+                continue;
 
-            for (var i = 0; i < Warps.Count; i++)
+            if (Warps[i].DestMapId == -1)
             {
-                if ((WarpIconX[i] < reveal.Left) || (WarpIconX[i] > reveal.Right))
-                    continue;
+                var seed = unchecked((uint)(((int)Warps[i].TileX * 1664525) + ((int)Warps[i].TileY * 214013))) ^ 0xDEADBEEFu;
+                DrawWorldMapArrow(spriteBatch, WarpIconX[i], WarpIconY[i], ContentRect, i == HoveredWarp, alpha, seed);
 
-                var tint = i == HoveredWarp ? Color.White : new Color(235, 235, 235) * 0.9f;
-                var rect = new Rectangle(WarpIconX[i] - (w / 2), WarpIconY[i] - (h / 2), w, h);
-
-                spriteBatch.Draw(mark, new Rectangle(rect.X + 2, rect.Y + 2, w, h), Color.Black * (0.55f * alpha));
-                spriteBatch.Draw(mark, rect, tint * alpha);
+                continue;
             }
+
+            if (mark is null)
+                continue;
+
+            var tint = i == HoveredWarp ? Color.White : new Color(235, 235, 235) * 0.9f;
+            var rect = new Rectangle(WarpIconX[i] - (markW / 2), WarpIconY[i] - (markH / 2), markW, markH);
+
+            spriteBatch.Draw(mark, new Rectangle(rect.X + 2, rect.Y + 2, markW, markH), Color.Black * (0.55f * alpha));
+            spriteBatch.Draw(mark, rect, tint * alpha);
         }
 
-        //the player: the retail animated icon, standing ON its tile (bottom-center anchored, fixed native multiple)
         if ((MapMarkers.PlayerFrames is { Length: > 0 } frames)
             && (MarkerX >= reveal.Left)
             && (MarkerX <= reveal.Right))
@@ -540,6 +563,108 @@ public sealed class TownMapControl : UIPanel
                 new Rectangle(MarkerX - (pw / 2), MarkerY - ph, pw, ph),
                 Color.White * alpha);
         }
+    }
+
+    private static void DrawWorldMapArrow(
+        SpriteBatch spriteBatch,
+        int x,
+        int y,
+        Rectangle contentRect,
+        bool hovered,
+        float alpha,
+        uint seed)
+    {
+        if (MapMarkers.Pixel is not { } pixel)
+            return;
+
+        var angle = GetIsometricArrowAngle(x, y, contentRect);
+        var cos   = MathF.Cos(angle);
+        var sin   = MathF.Sin(angle);
+
+        var arrowPerpX = MathF.Abs(cos) > MathF.Abs(sin) ? -cos : cos;
+        var arrowPerpY = MathF.Abs(cos) > MathF.Abs(sin) ? sin : -sin;
+
+        const float HEAD_HALF = 30f;
+        const float HEAD_LEN  = 33f;
+        const float ARROW_W   = 5f;
+        const int   SLICES    = 20;
+
+        var color = (hovered ? Color.White : new Color(240, 240, 235)) * 0.7f * alpha;
+        var shadow = Color.Black * 0.35f * alpha;
+
+        var sx = x + 3;
+        var sy = y + 4;
+
+        for (var i = 0; i < SLICES; i++)
+        {
+            var t    = i / (float)SLICES;
+            var half = HEAD_HALF * (1f - t);
+            var cx   = sx + cos * HEAD_LEN * t;
+            var cy   = sy + sin * HEAD_LEN * t;
+
+            DrawLine(spriteBatch, pixel,
+                new Vector2(cx + arrowPerpX * half, cy + arrowPerpY * half),
+                new Vector2(cx - arrowPerpX * half, cy - arrowPerpY * half),
+                ARROW_W, shadow);
+        }
+
+        for (var i = 0; i < SLICES; i++)
+        {
+            var t    = i / (float)SLICES;
+            var half = HEAD_HALF * (1f - t);
+            var cx   = x + cos * HEAD_LEN * t;
+            var cy   = y + sin * HEAD_LEN * t;
+
+            DrawLine(spriteBatch, pixel,
+                new Vector2(cx + arrowPerpX * half, cy + arrowPerpY * half),
+                new Vector2(cx - arrowPerpX * half, cy - arrowPerpY * half),
+                ARROW_W, color);
+        }
+    }
+
+    // DA isometric: +X tile -> screen(28,14), +Y tile -> screen(-28,14).
+    // Project onto the two basis vectors to find the dominant isometric axis, then
+    // return the screen-space angle toward the nearest map corner in that direction.
+    private static float GetIsometricArrowAngle(int x, int y, Rectangle contentRect)
+    {
+        var cx   = contentRect.X + contentRect.Width / 2f;
+        var cy   = contentRect.Y + contentRect.Height / 2f;
+        var dx   = x - cx;
+        var dy   = y - cy;
+
+        var dotX = dx * 28f + dy * 14f;
+        var dotY = dx * -28f + dy * 14f;
+
+        if (Math.Abs(dotX) >= Math.Abs(dotY))
+            return dotX >= 0
+                ? MathF.Atan2(14f, 28f)
+                : MathF.Atan2(-14f, -28f);
+        else
+            return dotY >= 0
+                ? MathF.Atan2(14f, -28f)
+                : MathF.Atan2(-14f, 28f);
+    }
+
+    // Draws a rotated 1-pixel-wide rectangle between two points, used to build procedural lines.
+    private static void DrawLine(SpriteBatch sb, Texture2D pixel, Vector2 from, Vector2 to, float width, Color color)
+    {
+        var dx  = to.X - from.X;
+        var dy  = to.Y - from.Y;
+        var len = MathF.Sqrt((dx * dx) + (dy * dy));
+
+        if (len < 0.5f)
+            return;
+
+        sb.Draw(
+            pixel,
+            new Vector2((from.X + to.X) * 0.5f, (from.Y + to.Y) * 0.5f),
+            null,
+            color,
+            MathF.Atan2(dy, dx),
+            new Vector2(0.5f, 0.5f),
+            new Vector2(len, width),
+            SpriteEffects.None,
+            0f);
     }
 
     //a soft dark falloff just inside each roller, as if the parchment is still curving off the roll. Only while the
@@ -563,7 +688,7 @@ public sealed class TownMapControl : UIPanel
         var top = ScrollRect.Y + (int)(ScrollRect.Height * 0.07f);
         var height = (int)(ScrollRect.Height * 0.86f);
 
-        //left edge: shadow falls off rightward (texture is dark at x=0); right edge: mirrored
+        //left edge shadow falls off rightward (texture is dark at x=0), right edge is mirrored
         spriteBatch.Draw(
             CurlShadeTexture,
             new Rectangle(reveal.Left, top, w, height),
@@ -735,10 +860,8 @@ public sealed class TownMapControl : UIPanel
         }
     }
 
-    //rebuilds the ink-on-parchment copy of the map content when the layout or the overview generation changes.
-    //This is a TRUE MULTIPLY, baked on the CPU: each map pixel samples the parchment directly underneath its
-    //on-screen position and multiplies a luminance-driven ink factor into it - bright floors all but vanish into
-    //the paper, walls/trees press in as brown ink - so the level reads as drawn ON the scroll, not pasted over it.
+    //rebuilds the ink-on-parchment copy of the map when the layout or the overview changes -
+    //TRUE MULTIPLY baked on the CPU, each pixel multiplied by a luminance-driven ink factor into the parchment
     /// <summary>The baked inked pixels for the CURRENT map (for the corner minimap). False until a build for THIS map has
     ///     landed - so the minimap never samples a stale (previous-map) texture with the new projection (which flickered).</summary>
     public bool TryGetMinimapPixels(out Color[] pixels, out int w, out int h)
@@ -796,9 +919,8 @@ public sealed class TownMapControl : UIPanel
         EnsureInkedMap();
     }
 
-    //orchestrates the (cached, async) parchment recolor. Runs on the main thread (Update): a cache-hit returns instantly,
-    //a finished background build is uploaded + faded in, otherwise the GPU prep happens here and the heavy CPU work is
-    //launched on the thread pool. The baked map is kept across opens, so reopening the same map+size is a free cache hit.
+    //orchestrates the (cached, async) parchment recolor on the main thread - cache hits return instantly,
+    //otherwise GPU prep runs here and the heavy CPU array work is launched on the thread pool
     private void EnsureInkedMap()
     {
         if (Device is null || Overview is null || (ContentRect.Width <= 0) || (ContentRect.Height <= 0) || (ScrollPixels is null))
@@ -807,12 +929,12 @@ public sealed class TownMapControl : UIPanel
         var gen = Overview.Generation;
         var rev = DebugSettings.MapInkRevision;
 
-        //cache hit: the baked map already matches this map + size + tuning knobs
+        //cache hit - the baked map already matches this map + size + tuning knobs
         if ((InkedMap is not null) && (InkedContentRect == ContentRect) && (InkedScrollRect == ScrollRect)
             && (InkedGen == gen) && (InkedRevision == rev))
             return;
 
-        //a background build finished: upload it (main thread) if it still matches what we want, then fade it in
+        //a background build finished - upload it if it still matches what we want, then fade it in
         if (InkBuildTask is { IsCompleted: true })
         {
             var done = InkBuildTask;
@@ -850,8 +972,8 @@ public sealed class TownMapControl : UIPanel
         StartInkedBuild(gen, rev);
     }
 
-    //main-thread GPU prep (downscale + readback + the wall mask, which calls the collision lambda), then launch the pure
-    //array math on the thread pool. Replacing a stale in-flight build just abandons its result (key-checked on upload).
+    //main-thread GPU prep (downscale + readback + wall mask), then launches the heavy array math on the thread pool
+    //a stale in-flight build is abandoned; results are key-checked on upload
     private void StartInkedBuild(int gen, int rev)
     {
         if (Device is null || Overview is null || (ScrollPixels is null))
@@ -867,8 +989,8 @@ public sealed class TownMapControl : UIPanel
         var src = new Color[w * h];
         source.GetData(src);
 
-        //cache the tile->inked-pixel projection for THIS build (applied to the active fields on upload, so the projection
-        //the minimap reads always matches the pixels it reads - no transient mismatch / flicker on map change)
+        //cache the tile->inked-pixel projection for this build and apply it on upload,
+        //so the minimap never reads a projection that doesn't match the pixels it sees
         var proj0 = Overview.Project(0, 0);
         InkBuildP00 = proj0;
         InkBuildEx = Overview.Project(1, 0) - proj0;
@@ -1208,7 +1330,7 @@ public sealed class TownMapControl : UIPanel
 
     private static float SmoothStep01(float t) => t * t * (3f - (2f * t));
 
-    //plain repeated 3x3 box blur (edge-clamped). Used on the floor coverage mask so it ramps 1 -> 0 across the boundary.
+    //plain repeated 3x3 box blur (edge-clamped); used on the floor coverage mask so it ramps from 1 to 0 across the boundary
     private static void BoxBlur(float[] data, int w, int h, int passes)
     {
         var tmp = new float[data.Length];

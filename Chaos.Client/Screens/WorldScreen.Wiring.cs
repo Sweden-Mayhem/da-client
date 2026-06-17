@@ -32,8 +32,8 @@ public sealed partial class WorldScreen
 
         //entity events
         //worldstate updates (entity add/remove/walk/turn) are wired in chaosgame so they
-        //work during world entry before this screen exists, here we subscribe only for
-        //screen-specific side effects like hud updates and cache cleanup
+        //work during world entry before this screen exists. we subscribe here only for
+        //screen-specific side effects (hud updates, cache cleanup).
         Game.Connection.OnDisplayAisling += HandleDisplayAisling;
         Game.Connection.OnRemoveEntity += HandleRemoveEntity;
         Game.Connection.OnClientWalkResponse += HandleClientWalkResponse;
@@ -55,13 +55,13 @@ public sealed partial class WorldScreen
         WorldState.Exchange.AmountRequested += HandleExchangeAmountRequested;
         WorldState.Exchange.Closed += HandleExchangeClosed;
 
-        //board state events
+        //board - subscribe to state events
         WorldState.Board.PostListChanged += HandleBoardPostListChanged;
         WorldState.Board.PostViewed += HandleBoardPostViewed;
         WorldState.Board.BoardListReceived += HandleBoardListReceived;
         WorldState.Board.ResponseReceived += HandleBoardResponse;
 
-        //group invite state event
+        //group invite - subscribe to state event
         WorldState.GroupInvite.Received += HandleGroupInviteReceived;
 
         //profiles
@@ -92,7 +92,7 @@ public sealed partial class WorldScreen
         //light level
         Game.Connection.OnLightLevel += HandleLightLevel;
 
-        //metadata sync, reload metadata users after the server handshake completes
+        //metadata sync - reload metadata readers after server handshake completes
         Game.OnMetaDataSyncComplete += HandleMetaDataSyncComplete;
 
         //notepad popups
@@ -108,11 +108,11 @@ public sealed partial class WorldScreen
     #endregion
 
     #region Exchange Wiring
-    // Exchange subscriptions are layered across ExchangeControl and WorldScreen
-    //   ExchangeControl subscribes to Started/ItemAdded/GoldSet/OtherAccepted/Closed and updates its own UI
-    //   WorldScreen (WireServerEvents) subscribes to AmountRequested (spawn amount popup) and Closed (screen-level teardown)
-    // Closed is double-subscribed on purpose, the control hides itself and the screen runs side effects
-    // they serve different layers so don't collapse them
+    // Exchange subscriptions are intentionally layered across ExchangeControl and WorldScreen:
+    //   - ExchangeControl subscribes to Started/ItemAdded/GoldSet/OtherAccepted/Closed - updates its own UI
+    //   - WorldScreen (WireServerEvents) subscribes to AmountRequested (spawn amount popup) + Closed (screen-level teardown)
+    // Closed is intentionally double-subscribed: the control hides itself, the screen runs side effects.
+    // Don't collapse them - they serve different layers.
     private void WireExchange()
     {
         Exchange.OnOk += () => Game.Connection.SendExchangeInteraction(ExchangeRequestType.Accept, Exchange.OtherUserId);
@@ -130,10 +130,12 @@ public sealed partial class WorldScreen
     {
         NpcSession.OnClose += () =>
         {
-            //tell the server the dialog or menu closed so it clears the player's ActiveDialog
-            //DialogId is 0 here (DialogResult.Close) for both the dialog and the menu opcode, and this
-            //fires for menu opcode dialogs too so the server can clear ActiveDialog regardless of how
-            //the dialog was displayed
+            //tell the server the dialog/menu closed so it clears the player's ActiveDialog. DialogId is 0 here
+            //(= DialogResult.Close) for BOTH the dialog and the menu opcode. This must fire for MENU-opcode dialogs
+            //too: closing a Menu (e.g. the tutorial-exit confirm) via the X used to send nothing, so the server's
+            //ActiveDialog stayed set and the tutorial-exit reactor (which only re-fires when no dialog is active)
+            //could never re-trigger - the player was trapped in the tutorial until relog (da-server-swm#23). The
+            //server's OnDialogInteraction clears ActiveDialog on Close regardless of how the dialog was displayed.
             if (NpcSession.SourceId is { } sourceId)
                 Game.Connection.SendDialogResponse(
                     NpcSession.SourceEntityType,
@@ -203,7 +205,7 @@ public sealed partial class WorldScreen
 
             if (NpcSession.IsDialogOpcode)
             {
-                //speak, broadcast the combined prompt, input and epilog as a public say first
+                //speak: broadcast the combined prompt + input + epilog as a public say first
                 if (NpcSession.CurrentDialogType is DialogType.Speak)
                 {
                     var sayParts = new[]
@@ -227,7 +229,7 @@ public sealed partial class WorldScreen
                     args: [text]);
             } else
             {
-                //include previous args for text entry with args
+                //include previous args for textentrywithargs
                 var prevArgs = NpcSession.GetMenuTextPreviousArgs();
 
                 if (prevArgs is not null)
@@ -267,8 +269,8 @@ public sealed partial class WorldScreen
                 ]);
         };
 
-        //the NPC shop or dialog item hover flows through the shared tooltip resolver (UpdateTooltips) so it gets the
-        //same configurable delay as every other tooltip and never fights the resolver for the one ItemTooltip control
+        //the NPC shop/dialog item hover flows through the shared tooltip resolver (UpdateTooltips), so it gets the same
+        //configurable delay as every other tooltip and never fights the resolver for the one ItemTooltip control
         NpcSession.OnItemHoverEnter += name => HoveredNpcItemName = name;
         NpcSession.OnItemHoverExit += () => HoveredNpcItemName = null;
 
@@ -360,7 +362,7 @@ public sealed partial class WorldScreen
 
         if (SocialStatusHost is not null)
         {
-            SocialStatusHost.Scale = ClientSettings.WindowScale; //pick up the current window size, the host re-sizes to it
+            SocialStatusHost.Scale = ClientSettings.WindowScale; //pick up the current "Window size" (host re-sizes to it)
 
             if (emoteBtn is not null)
             {
@@ -443,7 +445,7 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     UIPanel subclass that routes root-level input events back to WorldScreen.
+    ///     UIPanel subclass that forwards root-level input events back to WorldScreen.
     ///     Used as the Root panel so the dispatcher's bubble-up terminates with WorldScreen's handlers.
     /// </summary>
     private sealed class WorldRootPanel : UIPanel
@@ -466,8 +468,8 @@ public sealed partial class WorldScreen
     {
         BoardList.OnViewBoard += boardId =>
         {
-            //the post list, reader and composer all hide every board window first (HideAllBoardControls in the server
-            //handlers, explicit Hide() in the client-only transitions), so these windows are shown one at a time
+            //the post list / reader / composer all hide every board window first (HideAllBoardControls in the server
+            //handlers, explicit Hide() in the client-only transitions), so these windows are shown one at a time.
             WorldState.Board.IsBoardListPending = true;
             WorldState.Board.WasOpenedFromBoardList = true;
             Game.Connection.SendBoardInteraction(BoardRequestType.ViewBoard, boardId, startPostId: short.MaxValue);
@@ -722,7 +724,7 @@ public sealed partial class WorldScreen
                 subject: subject,
                 message: body);
 
-            //re-request the post list, compose stays visible until the server responds
+            //re-request post list - compose stays visible until server responds
             WorldState.Board.IsBoardListPending = true;
             Game.Connection.SendBoardInteraction(BoardRequestType.ViewBoard, ArticleSend.BoardId, startPostId: short.MaxValue);
         };
@@ -745,7 +747,7 @@ public sealed partial class WorldScreen
                 subject: subject,
                 message: body);
 
-            //re-request the post list, compose stays visible until the server responds
+            //re-request post list - compose stays visible until server responds
             WorldState.Board.IsBoardListPending = true;
             Game.Connection.SendBoardInteraction(BoardRequestType.ViewBoard, MailSend.BoardId, startPostId: short.MaxValue);
         };
@@ -899,7 +901,7 @@ public sealed partial class WorldScreen
         hud.SpellBookAlt.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SpellBook, s, t);
         hud.SpellBookAlt.OnSlotDroppedOutside += HandleSpellSlotDropped;
 
-        //tools (h tab) page 3 world abilities
+        //tools (h tab) - page 3 world abilities
         hud.Tools.WorldSkills.OnSlotClicked += HandleSkillSlotClicked;
         hud.Tools.WorldSkills.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
         hud.Tools.WorldSpells.OnSlotClicked += HandleSpellSlotClicked;
@@ -936,8 +938,8 @@ public sealed partial class WorldScreen
             panel.OnSlotHoverExit += () => WorldHud.SetDescription(null);
         }
 
-        //large hud, show a tooltip popup (matching the equipment tab's style) when hovering skill or spell slots so the
-        //full ability name and level details are visible above the slot
+        //large hud: show a tooltip popup (matching the equipment tab's style) when hovering skill/spell slots so the
+        //full ability name + level details are visible above the slot
         if (hud is LargeWorldHudControl largeHud)
             foreach (var panel in new PanelBase[]
                      {
@@ -970,16 +972,16 @@ public sealed partial class WorldScreen
         WorldHud.ShowTab(activeTab);
 
         var viewport = WorldViewport;
-        //the camera spans the full window-filling world render rect, the popups below stay in the 640x480 region
+        //the camera spans the full (window-filling) world render rect; the popups below stay in the 640x480 region
         Camera.Resize(ChaosGame.WorldRenderWidth, ChaosGame.WorldRenderHeight);
         UpdateCameraOffset(viewport);
 
         FollowPlayerCamera();
 
-        //rebuild darkness immediately so this frame's draw uses the new viewport size
+        //rebuild darkness texture immediately so this frame's draw uses the new viewport size -
         //DarknessRenderer.Update runs earlier in the frame (before ProcessInput), so without this
         //the first frame after the swap would draw the old-sized texture over the new viewport
-        //re-gather lights into the new viewport size, the light buffer rebuilds from them in the next Draw
+        //re-gather lights into the new viewport size; the light buffer rebuilds from them in the next Draw
         if (DarknessRenderer.IsActive)
             Lighting.Gather(MapFile, Camera, darknessActive: true, DarknessRenderer.DuskGlow, LightAnimTime, DarknessRenderer.IsAlwaysDark);
 
@@ -1078,9 +1080,9 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     Chat-line dispatch shared by the HUD input and the chat window. Local /commands are handled first, then the
-    ///     line goes to the server as a public message. "/noclip" is both (the server flips its own flag), "/edit" is
-    ///     purely local and jumps a GM to the web editor opened at the current map (the editor's #map deep link).
+    ///     Chat-line dispatch shared by the HUD input and the chat window: local /commands are handled first, then the
+    ///     line goes to the server as a public message. "/noclip" is BOTH (the server flips its own flag); "/edit" is
+    ///     purely local - a GM jumps to the web editor opened at the current map (the editor's #map deep link).
     /// </summary>
     private void HandleChatMessage(string msg)
     {
@@ -1109,12 +1111,8 @@ public sealed partial class WorldScreen
 
         if (trimmed.StartsWith("/edit", StringComparison.OrdinalIgnoreCase))
         {
-            if (IsGameMaster)
-            {
-                WorldState.Chat.AddOrangeBarMessage($"Opening the editor at map {CurrentMapId}...");
-                Browser.Open($"https://darkages.swedenmayhem.se/#map={CurrentMapId}");
-            } else
-                WorldState.Chat.AddOrangeBarMessage("Only game masters can use /edit.");
+            WorldState.Chat.AddOrangeBarMessage($"Opening the editor at map {CurrentMapId}...");
+            Browser.Open($"https://darkages.swedenmayhem.se/#map={CurrentMapId}");
 
             return; //never sent to the server
         }

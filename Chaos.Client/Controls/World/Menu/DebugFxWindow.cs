@@ -10,8 +10,11 @@ using Microsoft.Xna.Framework;
 namespace Chaos.Client.Controls.World.Menu;
 
 /// <summary>
-///     A scrollable live tuning panel for render FX, opened by the "/debugOptions" chat command
-///     Each row drives a real knob and shows its value, so numbers can be dialled in by eye then hard-coded
+///     A scrollable live tuning panel for render FX, opened by the "/debugOptions" chat command (anyone can use it).
+///     Each row drives a real knob (<see cref="DebugSettings" />, <see cref="DarknessRenderer" />,
+///     <see cref="SilhouetteRenderer" />, <see cref="ClientSettings" />) and shows the raw value, so good numbers can
+///     be dialled in by eye and then hard-coded. The DebugSettings/Darkness knobs are NOT persisted; the
+///     ClientSettings rows are (they're the same fields the normal Options window writes).
 /// </summary>
 public sealed class DebugFxWindow : DraggableWindow
 {
@@ -108,7 +111,7 @@ public sealed class DebugFxWindow : DraggableWindow
         AddSlider("Large lantern (dark)", 0f, 1f, DarknessRenderer.LanternReliefDarkLarge, 0.05f, v => $"{v:0.00}", v => DarknessRenderer.LanternReliefDarkLarge = v);
         AddSlider("Glow mult (dark map)", 0f, 1f, LightingSystem.LanternGlowDarkMapMultiplier, 0.05f, v => $"{v:0.00}", v => LightingSystem.LanternGlowDarkMapMultiplier = v);
 
-        AddHeader("Town map (parchment) (rebuilds on change)");
+        AddHeader("Town map (parchment) - rebuilds on change");
         AddSlider("Floor colour tint", 0f, 0.6f, DebugSettings.MapFloorTint, 0.02f, v => $"{v:0.00}", v => { DebugSettings.MapFloorTint = v; DebugSettings.MapInkRevision++; });
         AddSlider("Structure colour tint", 0f, 0.6f, DebugSettings.MapForegroundTint, 0.02f, v => $"{v:0.00}", v => { DebugSettings.MapForegroundTint = v; DebugSettings.MapInkRevision++; });
         AddSlider("Collision strength", 0f, 1f, DebugSettings.MapCollisionStrength, 0.05f, v => $"{v:0.00}", v => { DebugSettings.MapCollisionStrength = v; DebugSettings.MapInkRevision++; });
@@ -116,6 +119,10 @@ public sealed class DebugFxWindow : DraggableWindow
         AddSlider("Sketch contrast", 0.5f, 4f, DebugSettings.MapSketchContrast, 0.1f, v => $"{v:0.0}", v => { DebugSettings.MapSketchContrast = v; DebugSettings.MapInkRevision++; });
         AddSlider("Edge squiggle", 0f, 3f, DebugSettings.MapEdgeSquiggle, 0.1f, v => $"{v:0.0}x", v => { DebugSettings.MapEdgeSquiggle = v; DebugSettings.MapInkRevision++; });
         AddSlider("Floor edge fade", 1f, 20f, DebugSettings.MapFloorFadePasses, 1f, v => $"{v:0}", v => { DebugSettings.MapFloorFadePasses = (int)v; DebugSettings.MapInkRevision++; });
+
+        AddHeader("UI glow");
+        AddSlider("Glow layers", 0f, 12f, DebugSettings.GlowLayers, 1f, v => $"{v:0}", v => DebugSettings.GlowLayers = (int)v);
+        AddSlider("Glow strength", 0f, 3f, DebugSettings.GlowStrength, 0.01f, v => $"{v:0.00}", v => DebugSettings.GlowStrength = v);
 
         AddHeader("Misc");
         AddCheckbox("Extend background", MapRenderer.ExtendBackground, v => MapRenderer.ExtendBackground = v);

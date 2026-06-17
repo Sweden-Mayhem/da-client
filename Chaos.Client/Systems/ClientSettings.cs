@@ -1,8 +1,8 @@
 namespace Chaos.Client.Systems;
 
 /// <summary>
-///     Reads and writes the client settings file in the original DarkAges format. The file is a line-delimited
-///     key-value format, "Key : Value" or "Key: Value", saved next to the executable.
+///     Reads and writes the client settings file (Darkages.cfg) in the original DarkAges format. File is a line-delimited
+///     key-value format: "Key : Value" or "Key: Value". Saved next to the executable.
 /// </summary>
 public static class ClientSettings
 {
@@ -10,35 +10,56 @@ public static class ClientSettings
     public static bool UseGroupWindow { get; set; } = true;
     public static int ChattingMode { get; set; }
     public static bool DoGroundAnimation { get; set; } = true;
-    //clicking another non-hostile player opens their profile, on by default
-    //the legacy UserClickMode key is deliberately not read so old configs do not force this off
+    //clicking another (non-hostile) player opens their profile. Default on. Persisted via the SWM key
+    //"SwmProfileClick" (NOT the legacy "UserClickMode" - the retail settings menu that wrote it is unreachable,
+    //so existing configs carry the old default-off value, never a user choice; reading it would force this back off)
     public static bool EnableProfileClick { get; set; } = true;
 
-    //the inventory grid cell the gold bag sits in (it is draggable), -1 means the last visible cell
+    //the inventory grid cell the gold bag sits in (it is draggable, unlike retail). -1 = default (last visible cell).
     public static int GoldSlotIndex { get; set; } = -1;
 
-    //corner minimap on/off plus its dragged position (-1 means not placed yet, anchor to a default corner)
-    public static bool ShowMinimap { get; set; } = true;
-    public static int MinimapX { get; set; } = -1;
-    public static int MinimapY { get; set; } = -1;
-    public static float MinimapScale { get; set; } = 1f; //scales the circle size only, same tiles shown
-    public static bool GroupOpen { get; set; }
-    public static int MusicVolume { get; set; } = 3; //30% by default on a 0-10 scale, quieter than sound
+    //menu button dragging - attachment side (0=below, 1=above, 2=left, 3=right, -1=detached/independent)
+    //and the center-relative offset used when detached
+    public static bool AllowDragMenuButton { get; set; } = true;
+    public static int MenuButtonAttachSide { get; set; } = 0; //default: attached below the minimap
+    public static int MenuButtonOffsetX { get; set; } = int.MinValue; //only used when AttachSide == -1
+    public static int MenuButtonOffsetY { get; set; } = int.MinValue;
 
-    //show NPC dialog and ambient chatter in the chat window, off filters it out
-    //the legacy MonsterSayRecordMode key is deliberately not read so old configs do not force this on
+    //corner minimap - dragging enabled + on/off + center-relative offset
+    public static bool AllowDragMinimap { get; set; } = true;
+    public static bool ShowMinimap { get; set; } = true;
+    public static int MinimapOffsetX { get; set; } = int.MinValue;
+    public static int MinimapOffsetY { get; set; } = int.MinValue;
+    public static float MinimapScale { get; set; } = 1f; //scales the circle's SIZE only (same tiles shown)
+    public static bool GroupOpen { get; set; }
+    public static int MusicVolume { get; set; } = 3; //30% by default (0-10 scale); quieter than sound
+
+    //show NPC dialog/ambient chatter in the chat window. Off filters it out so only player/system messages appear.
+    //Default off. Persisted via the SWM key "SwmShowNpcChat" (NOT the legacy "MonsterSayRecordMode", whose old
+    //default-on value in existing configs would otherwise force this back on).
     public static bool RecordNpcChat { get; set; }
 
-    //a chat line stays fully readable for this many seconds then fades by age
-    //0 means lines never fade
+    //show "[HH:mm] " timestamp before every chat line; toggling on retroactively shows times
+    //for all messages already in the current session (timestamps are always recorded)
+    public static bool ShowChatTimestamp { get; set; }
+
+    //chat line fade - each line stays fully readable for this many seconds then fades by age
+    //0 = lines never fade; Options "Chat line fade" slider
     public static int ChatFadeDelaySeconds { get; set; } = 15;
 
-    //once the cursor leaves the chat window (and you are not typing or pinned) it stays for this many seconds
-    //then the window chrome fades out and becomes click-through, 0 means never fade
+    //chat window fade - seconds before the chrome fades out and becomes click-through after the cursor leaves
+    //0 = never fade; cursor inside resets it; only Enter, pinning, or 0 can reveal a hidden window
     public static int ChatWindowFadeSeconds { get; set; } = 3;
 
-    //chat tabs whose highlight was turned off, they never pulse on a new message
-    //keyed by tab key (built-in channel name or a custom channel)
+    //chat window position (center-relative X, anchor-relative Y) and saved size
+    //int.MinValue = not yet placed; first run uses the default position beside the HP orb
+    public static int ChatWindowOffsetX { get; set; } = int.MinValue;
+    public static int ChatWindowOffsetY { get; set; } = int.MinValue;
+    public static int ChatWindowWidth { get; set; } = int.MinValue;
+    public static int ChatWindowHeight { get; set; } = int.MinValue;
+
+    //chat tabs whose "Highlight" was turned off (right-click a tab) - they never pulse/flag on a new message
+    //keyed by tab name (e.g. "Public", "Group", or a custom "!channel"); persisted as a comma list (SwmMutedTabs)
     public static readonly HashSet<string> MutedChatTabs = new(StringComparer.OrdinalIgnoreCase);
 
     public static bool IsChatTabMuted(string key) => MutedChatTabs.Contains(key);
@@ -53,37 +74,44 @@ public static class ClientSettings
         Save();
     }
 
-    //smooth bilinear filtering for the town map overview instead of crisp point sampling
+    //smooth (bilinear) filtering for the town-map (T) overview instead of crisp point sampling. Options checkbox.
     public static bool SmoothMapView { get; set; } = true;
 
-    //screen scroll smoothing, above 0 is smooth, 0 is rough
+    //screen scroll smoothing - >0 = Smooth, 0 = Rough; default Smooth; read live in WorldScreen.Update
     public static int ScrollLevel { get; set; } = 1;
 
-    //smooth pixel-interpolated movement for other entities instead of the discrete per-frame step
+    //smooth (pixel-interpolated) movement for OTHER entities (enemies, NPCs, other players) instead of the discrete
+    //per-frame step. Default on. Options "Smooth creature movement" checkbox; read live each frame in WorldScreen.Update.
     public static bool SmoothCreatureMovement { get; set; } = true;
 
-    //map change transition style, false cross-dissolves old map into new, true fades out to black then in
+    //map-change transition style - false (default) = cross-dissolve old map into new; true = fade out to black then back in
+    //read by MapTransition.BeginFadeOut at the start of each warp
     public static bool AlternativeMapFade { get; set; }
 
-    //while an NPC dialog is open, smoothly pan the camera to the speaking NPC then ease back when it closes
+    //focus speaker - while an NPC dialog is open, smoothly pan to the speaking NPC and ease back on close
+    //default on; Options "Focus speaker" checkbox; read live in WorldScreen's camera follow
     public static bool FocusSpeaker { get; set; } = true;
 
-    //subtle horizontal camera shake when the local player loses HP, 0 is off and 100 is full
+    //subtle horizontal camera shake when the local player loses HP (any source). 0 = off, 100 = full. Options slider.
     public static float CameraShake { get; set; } = 100f;
 
-    //screen-edge red pulse when the local player loses HP, plus a faint pulse at 10% HP or less, 0 is off and 100 is full
+    //screen-edge red pulse when the local player loses HP, plus a faint sustained pulse at 10% HP or less. 0 = off, 100 = full.
     public static float CameraEffects { get; set; } = 100f;
 
-    //whether the world map travel window shows the destination info panel by default
+    //whether the world-map travel window shows the destination info panel by default. Toggled by its Info button.
     public static bool WorldMapShowInfo { get; set; } = true;
 
-    //per-footstep-sample enable flags, lets you hear which sample is which
+    //per-footstep-sample enable flags (index 0..3 = step1..step4). DEBUG AID so you can hear which sample is which;
+    //the Options checkboxes for these are hidden in the released build. All enabled by default.
     public static bool[] FootstepStepsEnabled { get; } = [true, true, true, true];
 
-    //footstep loudness as a 0-100 percentage of the Sound volume, 0 is off
+    //footstep loudness as a 0-100 percentage of the Sound volume (its own "Footsteps" slider; effective = this % of the
+    //Sound slider). 0 = off. Default 15%. Pushed into SoundSystem.SetFootstepVolume at boot and when the slider changes.
     public static int FootstepVolume { get; set; } = 15;
 
-    //chat-bubble cue loudness as a 0-100 percentage of the Sound volume, 0 is off
+    //which walk-animation frames a footstep fires on - true = EVEN frame indices (0/2), false = ODD (1/3); phase-shifts the
+    //chat-bubble cue loudness as a 0-100 percentage of the Sound volume (its own "Chat" slider; effective = this % of the
+    //Sound slider). 0 = off. Default 50%. Pushed into SoundSystem.SetChatVolume at boot and when the slider changes.
     public static int ChatBubbleVolume { get; set; } = 50;
 
     //defaults match the original client
@@ -91,63 +119,72 @@ public static class ClientSettings
     public static int Speed { get; set; } = 100;
     public static bool UseShiftKeyForAltPanels { get; set; } = true;
 
-    //magnification of the on-screen hotbars, read live each frame so it is independent of the inventory window scale
+    //magnification of the on-screen hotbars (skills/spells/inventory). The collapsed 1-row art is already a good
+    //size at 1.0, so that is the default; a future options slider will drive this (intended range ~1.0 to 4.0).
+    //Read live each frame, so it is independent of the inventory window's own scale.
     public static float HotbarScale { get; set; } = 1f;
 
-    //magnification of floating windows that host pixel-art panels, driven by the Options window size slider
+    //magnification of floating windows that host retail pixel-art panels (the profile/legend/equipment book, etc.).
+    //Driven by the Options window's "Window size" slider (range 1.0 to 4.0).
     public static float WindowScale { get; set; } = 1.5f;
 
-    //scale of the chat log and input text, multiplies the base 14px size
+    //scale of the chat log + chat input text (multiplies the base 14px Cinzel size). Driven by the Options "Chat font
+    //size" slider (range 1.0 to 4.0, 0.05 step); 1.0 = the current size. ChatWindow re-lays out live when it changes.
     public static float ChatFontScale { get; set; } = 1f;
 
-    //scale of the over-head chat bubble text, multiplies the bubble base 13px size
+    //scale of the over-head chat bubble text (multiplies the bubble's base 13px Cinzel size). Options "Bubble font size"
+    //slider (1.0 to 4.0, 0.05 step); 1.0 = the current size. Read when a bubble is created.
     public static float BubbleFontScale { get; set; } = 1f;
 
-    //scale of the over-head entity name tags, multiplies the base 13px size
+    //scale of the over-head entity NAME tags (multiplies the base 13px Cinzel size). Options "Names font size" slider
+    //(1.0 to 4.0, 0.05 step); 1.0 = the current size. Read live each frame when name tags are drawn.
     public static float NameFontScale { get; set; } = 1f;
 
-    //seconds an over-head chat bubble stays before fading out, 0 disables bubbles entirely
+    //seconds an over-head chat bubble stays before fading out. Options "Bubble fade after" slider (0 to 30s, 1s step);
+    //0 disables bubbles entirely. Default 4s.
     public static int BubbleFadeSeconds { get; set; } = 4;
 
-    //run at the monitor refresh with no tearing
+    //run at the monitor refresh (no tearing). Driven by the Options "VSync" checkbox; applied via ChaosGame.SetVSync.
     public static bool VSync { get; set; } = true;
 
-    //modern click scheme, right-click always moves and left-click always interacts
-    //off uses the classic scheme where right double-click follows and assails, left double-click picks up
+    //modern click scheme - right-click always moves, left-click always interacts (pick up / attack / talk to NPC).
+    //Off = the classic scheme (right double-click follows+assails, left double-click picks up). Options checkbox.
     public static bool ModernControls { get; set; } = true;
 
-    //when on, left-click moves and right-click interacts or attacks (flips the modern-controls buttons)
+    //when on, left-click moves and right-click interacts/attacks (flips the modern-controls buttons). Default off.
     public static bool FlipWalkInteract { get; set; } = false;
 
-    //mouse target buttons, normally Mouse 3 targets self and Mouse 4 targets enemy, on swaps the two
+    //mouse target buttons - Mouse 3 = target self, Mouse 4 = target enemy. When on, the two are swapped. Default off.
     public static bool FlipMouseTargetButtons { get; set; } = false;
 
-    //opacity of the item and map hover tooltip background
+    //opacity of the item/map hover tooltip background (Options "Tooltip opacity" slider, 0.25 to 1.0). Read live.
     public static float TooltipAlpha { get; set; } = 0.85f;
 
-    //seconds the cursor must rest on something before its tooltip appears, 0 is instant
+    //seconds the cursor must rest on something before its tooltip appears (Options "Tooltip delay" slider, 0.0 to 1.0,
+    //default 0.25 = 250ms). 0 = instant. Read live by WorldScreen's tooltip resolver.
     public static float TooltipDelaySeconds { get; set; } = 0.25f;
 
-    //magnification of the tooltip font and layout
+    //magnification of the tooltip font + layout (Options "Tooltip size" slider, 1.0 to 4.0). Read live in ItemTooltipControl.
     public static float TooltipScale { get; set; } = 1.15f;
 
-    //how visible blocked entities are through walls, 0 is fully off
+    //how visible blocked entities (player/enemies/items/NPCs) are through walls (Options "Behind-walls opacity"
+    //slider, 0 to 0.85; 0 = fully off). Pushed into SilhouetteRenderer.SilhouetteAlpha at boot and whenever the slider changes.
     public static float SilhouetteAlpha { get; set; } = 0.35f;
 
-    //show friendly NPCs through walls in the behind-walls silhouette
+    //show friendly NPCs through walls in the behind-walls silhouette (Options checkbox; OFF by default). Read live.
     public static bool ShowNpcsBehindWalls { get; set; }
 
-    //draw the bezier targeting line from the hotbar slot to the cursor while selecting a spell target
+    //draw the bezier targeting line from the hotbar slot to the cursor/target while selecting a spell target. OFF by default.
     public static bool SpellTargetLine { get; set; }
 
     private static string FilePath => Path.Combine(GlobalSettings.DataPath, FILE_NAME);
 
     /// <summary>
-    ///     Loads settings into static properties. Uses defaults if the file does not exist or is corrupt.
+    ///     Loads settings from Darkages.cfg into static properties. Uses defaults if the file doesn't exist or is corrupt.
     /// </summary>
     public static void Load()
     {
-        //start from the built-in keybinding defaults, the bind lines below override them
+        //start from the built-in keybinding defaults; any SwmBind_/SwmTurnModifier lines below override them
         Keybindings.ResetDefaults();
 
         if (!File.Exists(FilePath))
@@ -203,7 +240,7 @@ public static class ClientSettings
 
                         break;
 
-                    //the legacy UserClickMode key for profile-click is deliberately not read, see EnableProfileClick
+                    //"UserClickMode" (the legacy key for profile-click) is deliberately NOT read - see EnableProfileClick
 
                     case "GroupObjectOption":
                         UseGroupWindow = value == "1";
@@ -222,7 +259,7 @@ public static class ClientSettings
 
                         break;
 
-                    //custom settings not part of the original config format
+                    //Sweden Mayhem custom settings (not part of the original Darkages.cfg format)
                     case "SwmHotbarScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var hbs))
                             HotbarScale = Math.Clamp(hbs, 1f, 4f);
@@ -312,6 +349,30 @@ public static class ClientSettings
 
                         break;
 
+                    case "SwmChatOffX":
+                        if (int.TryParse(value, out var cwox))
+                            ChatWindowOffsetX = cwox;
+
+                        break;
+
+                    case "SwmChatOffY":
+                        if (int.TryParse(value, out var cwoy))
+                            ChatWindowOffsetY = cwoy;
+
+                        break;
+
+                    case "SwmChatW":
+                        if (int.TryParse(value, out var cww))
+                            ChatWindowWidth = cww;
+
+                        break;
+
+                    case "SwmChatH":
+                        if (int.TryParse(value, out var cwh))
+                            ChatWindowHeight = cwh;
+
+                        break;
+
                     case "SwmChatFadeDelay":
                         if (int.TryParse(value, out var cfd))
                             ChatFadeDelaySeconds = Math.Clamp(cfd, 0, 60);
@@ -337,6 +398,11 @@ public static class ClientSettings
 
                         break;
 
+                    case "SwmChatTimestamp":
+                        ShowChatTimestamp = value == "1";
+
+                        break;
+
                     case "SwmProfileClick":
                         EnableProfileClick = value == "1";
 
@@ -348,20 +414,48 @@ public static class ClientSettings
 
                         break;
 
+                    case "SwmDragMenuBtn":
+                        AllowDragMenuButton = value == "1";
+
+                        break;
+
+                    case "SwmDragMinimap":
+                        AllowDragMinimap = value == "1";
+
+                        break;
+
+                    case "SwmMenuAttachSide":
+                        if (int.TryParse(value, out var mas))
+                            MenuButtonAttachSide = mas;
+
+                        break;
+
+                    case "SwmMenuBtnOffX":
+                        if (int.TryParse(value, out var mbOffX))
+                            MenuButtonOffsetX = mbOffX;
+
+                        break;
+
+                    case "SwmMenuBtnOffY":
+                        if (int.TryParse(value, out var mbOffY))
+                            MenuButtonOffsetY = mbOffY;
+
+                        break;
+
                     case "SwmMinimap":
                         ShowMinimap = value == "1";
 
                         break;
 
-                    case "SwmMinimapX":
-                        if (int.TryParse(value, out var mmx))
-                            MinimapX = mmx;
+                    case "SwmMinimapOffX":
+                        if (int.TryParse(value, out var mmOffX))
+                            MinimapOffsetX = mmOffX;
 
                         break;
 
-                    case "SwmMinimapY":
-                        if (int.TryParse(value, out var mmy))
-                            MinimapY = mmy;
+                    case "SwmMinimapOffY":
+                        if (int.TryParse(value, out var mmOffY))
+                            MinimapOffsetY = mmOffY;
 
                         break;
 
@@ -392,7 +486,7 @@ public static class ClientSettings
                         break;
 
                     case "SwmCameraShake":
-                        //old saves wrote 0 or 1 as a boolean, new saves write the percentage
+                        //old saves wrote "0"/"1" as a boolean; new saves write the percentage (5, 50, 100, ...)
                         if (value == "0")
                             CameraShake = 0f;
                         else if (value == "1")
@@ -449,7 +543,7 @@ public static class ClientSettings
 
                         break;
 
-                    //keybinding lines are owned by the Keybindings system
+                    //keybindings (SwmBind_<Action> and SwmTurnModifier) are owned by the Keybindings system
                     default:
                         Keybindings.ApplyConfigLine(key, value);
 
@@ -458,12 +552,12 @@ public static class ClientSettings
             }
         } catch
         {
-            //corrupted file, use whatever defaults or partial state was already set
+            //corrupted file - use whatever defaults/partial state was already set
         }
     }
 
     /// <summary>
-    ///     Saves the current settings in the original format.
+    ///     Saves the current settings to Darkages.cfg in the original format.
     /// </summary>
     public static void Save()
     {
@@ -491,9 +585,14 @@ public static class ClientSettings
             writer.WriteLine($"GroupObjectOption : {(UseGroupWindow ? 1 : 0)}");
             writer.WriteLine($"SwmProfileClick : {(EnableProfileClick ? 1 : 0)}");
             writer.WriteLine($"SwmGoldSlot : {GoldSlotIndex}");
+            writer.WriteLine($"SwmDragMenuBtn : {(AllowDragMenuButton ? 1 : 0)}");
+            writer.WriteLine($"SwmDragMinimap : {(AllowDragMinimap ? 1 : 0)}");
+            writer.WriteLine($"SwmMenuAttachSide : {MenuButtonAttachSide}");
+            writer.WriteLine($"SwmMenuBtnOffX : {MenuButtonOffsetX}");
+            writer.WriteLine($"SwmMenuBtnOffY : {MenuButtonOffsetY}");
             writer.WriteLine($"SwmMinimap : {(ShowMinimap ? 1 : 0)}");
-            writer.WriteLine($"SwmMinimapX : {MinimapX}");
-            writer.WriteLine($"SwmMinimapY : {MinimapY}");
+            writer.WriteLine($"SwmMinimapOffX : {MinimapOffsetX}");
+            writer.WriteLine($"SwmMinimapOffY : {MinimapOffsetY}");
             writer.WriteLine($"SwmMinimapScale : {MinimapScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmHotbarScale : {HotbarScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmWindowScale : {WindowScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
@@ -511,10 +610,15 @@ public static class ClientSettings
             writer.WriteLine($"SwmSilhouetteAlpha : {SilhouetteAlpha.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmShowNpcsBehindWalls : {(ShowNpcsBehindWalls ? 1 : 0)}");
             writer.WriteLine($"SwmSpellTargetLine : {(SpellTargetLine ? 1 : 0)}");
+            writer.WriteLine($"SwmChatOffX : {ChatWindowOffsetX}");
+            writer.WriteLine($"SwmChatOffY : {ChatWindowOffsetY}");
+            writer.WriteLine($"SwmChatW : {ChatWindowWidth}");
+            writer.WriteLine($"SwmChatH : {ChatWindowHeight}");
             writer.WriteLine($"SwmChatFadeDelay : {ChatFadeDelaySeconds}");
             writer.WriteLine($"SwmChatWindowFade : {ChatWindowFadeSeconds}");
             writer.WriteLine($"SwmMutedTabs : {string.Join(",", MutedChatTabs)}");
             writer.WriteLine($"SwmShowNpcChat : {(RecordNpcChat ? 1 : 0)}");
+            writer.WriteLine($"SwmChatTimestamp : {(ShowChatTimestamp ? 1 : 0)}");
             writer.WriteLine($"SwmSmoothMapView : {(SmoothMapView ? 1 : 0)}");
             writer.WriteLine($"SwmSmoothCreatures : {(SmoothCreatureMovement ? 1 : 0)}");
             writer.WriteLine($"SwmAltMapFade : {(AlternativeMapFade ? 1 : 0)}");
@@ -531,7 +635,7 @@ public static class ClientSettings
             Keybindings.WriteConfig(writer);
         } catch
         {
-            //best effort, do not crash on save failure
+            //best effort - don't crash on save failure
         }
     }
 }

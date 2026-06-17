@@ -126,8 +126,8 @@ public sealed class MailListControl : PrefabPanel, INativeTextDrawer
         {
             Name = "ScrollBar",
             X = MailListRect.X + MailListRect.Width - ScrollBarControl.DEFAULT_WIDTH,
-            Y = MailListRect.Y,
-            Height = MailListRect.Height
+            Y = MailListRect.Y - 5,
+            Height = MailListRect.Height + 10
         };
 
         ScrollBar.OnValueChanged += v =>
@@ -137,7 +137,7 @@ public sealed class MailListControl : PrefabPanel, INativeTextDrawer
         };
         AddChild(ScrollBar);
 
-        //row labels, one per visible row, columns via fixed-width string formatting
+        //one label per visible row; columns use fixed-width string formatting
         var usableWidth = MailListRect.Width - ScrollBarControl.DEFAULT_WIDTH;
         MaxSubjectChars = Math.Max(0, (usableWidth - TEXT_INDENT) / TextRenderer.CHAR_WIDTH - PREFIX_CHARS);
 

@@ -12,13 +12,15 @@ using Microsoft.Xna.Framework.Input;
 namespace Chaos.Client.Controls.World.Popups.Boards;
 
 /// <summary>
-///     Scrollable list of available bulletin boards, View opens one and Quit closes
-///     Free-floating window dragged by its background art, rows stay clickable
+///     Board selection panel using _nbdlist prefab. Displays a scrollable list of available bulletin boards. View button
+///     opens the selected board; Quit closes. Hosted in a draggable ScaleHost (a free-floating window like
+///     Group/Equipment): it follows the Window size scale, opens centered with no animation, and is dragged by its
+///     background art (the row labels stay hit-testable so clicking a row selects it).
 /// </summary>
 public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
 {
     private const int ROW_HEIGHT = Constants.BOARD_ROW_HEIGHT;
-    private const int ROW_INDENT = 8; //small left reading margin for the rows
+    private const int ROW_INDENT = 8; //rows sit 8px in from the left edge (and 8px narrower) for a small reading margin
 
     private readonly Rectangle BoardListRect;
     private readonly int MaxVisibleRows;
@@ -40,7 +42,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         Visible = false;
         UsesControlStack = true;
 
-        //pass-through so clicks on empty background art reach the draggable host
+        //pass-through so empty background art falls through to the draggable ScaleHost that wraps this window
         IsPassThrough = true;
 
         ViewButton = CreateButton("View");
@@ -77,7 +79,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
                 Height = ROW_HEIGHT,
                 PaddingLeft = 0,
                 PaddingTop = 0,
-                //row text painted by DrawNativeText as crisp TTF, skip the bitmap glyphs in the scaled pass
+                //row text painted by DrawNativeText (crisp TTF at native res); skip bitmap glyphs in the scaled pass
                 SuppressGlyphs = true
             };
 
@@ -87,8 +89,8 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         ScrollBar = new ScrollBarControl
         {
             X = BoardListRect.AlignRight(ScrollBarControl.DEFAULT_WIDTH),
-            Y = BoardListRect.Y,
-            Height = BoardListRect.Height
+            Y = BoardListRect.Y - 5,
+            Height = BoardListRect.Height + 10
         };
 
         ScrollBar.OnValueChanged += v => { ScrollOffset = v; DataVersion++; };
@@ -111,8 +113,8 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         base.Draw(spriteBatch);
     }
 
-    /// <summary>Draws the row text at native resolution
-    ///     Call from the native pass with the wrapping host position, scale and alpha</summary>
+    /// <summary>Draws the row text at native (unscaled) resolution. Call from WorldScreen's native pass with the wrapping
+    ///     ScaleHost's ScreenX/Y, Scale and OpenFraction (as alpha).</summary>
     public void DrawNativeText(SpriteBatch spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
         => BoardRowText.DrawRows(spriteBatch, RowLabels, ROW_HEIGHT, originX, originY, scale, alpha);
 
@@ -148,8 +150,8 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Opens the window, the wrapping host owns placement and scale
-    ///     This just makes the panel visible and takes keyboard focus
+    ///     Opens the window. Placement and scale are owned by the wrapping ScaleHost (it centers on first open),
+    ///     so this just makes the panel visible and takes keyboard focus.
     /// </summary>
     public override void Show()
     {
@@ -176,7 +178,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
     }
 
     /// <summary>
-    ///     Adds more boards, such as server boards that arrive after the list already showed help topics
+    ///     Appends additional boards (e.g. server boards arriving after the list was already shown with help topics).
     /// </summary>
     public void AppendBoards(List<(ushort BoardId, string Name)> extra)
     {
@@ -203,7 +205,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
     {
         switch (Keybindings.Resolve(e.Key, e.Modifiers))
         {
-            case GameAction.MoveUp: //walk-up key moves the selection up
+            case GameAction.MoveUp: //the player's walk-up key moves the selection up
                 MoveSelection(-1);
                 e.Handled = true;
 
@@ -213,12 +215,12 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
                 e.Handled = true;
 
                 return;
-            case GameAction.Assail: //space opens the selected board, same as View or double-click
+            case GameAction.Assail: //space = open the selected board, same as View / double-click
                 ActivateSelected();
                 e.Handled = true;
 
                 return;
-            case GameAction.ToggleBulletinBoard: //top page already, so the bound key just closes the menu
+            case GameAction.ToggleBulletinBoard: //this is the top page: the bound key just closes the whole menu
                 Close();
                 e.Handled = true;
 
@@ -232,7 +234,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         }
     }
 
-    //move the highlighted row by delta and keep it scrolled into view
+    //keyboard selection: move the highlighted row by delta, keeping it scrolled into view
     private void MoveSelection(int delta)
     {
         if (Boards.Count == 0)
@@ -257,7 +259,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         UpdateButtonStates();
     }
 
-    //open the selected board
+    //space / View / double-click: open the selected board
     private void ActivateSelected()
     {
         if ((SelectedIndex < 0) || (SelectedIndex >= Boards.Count))
@@ -338,7 +340,7 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         SelectedIndex = entryIndex;
         DataVersion++;
         UpdateButtonStates();
-        SoundSystem.PlayUiClick(); //same click sound as the View button
+        SoundSystem.PlayUiClick(); //navigating IN makes the same click as the View button
         OnViewBoard?.Invoke(Boards[entryIndex].BoardId);
     }
 

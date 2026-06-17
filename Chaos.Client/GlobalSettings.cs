@@ -10,8 +10,8 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Chaos.Client;
 
 /// <summary>
-///     Static config for the client, version, data path, lobby host and port, and sampler state
-///     The static constructor runs all the one-time setup for encoding, data archives and text colors
+///     Static configuration for the client: version, data path, lobby host/port, and sampler state. Triggers all one-time
+///     initialization (encoding providers, data archives, text colors) via the static constructor.
 /// </summary>
 public static class GlobalSettings
 {
@@ -20,19 +20,16 @@ public static class GlobalSettings
     public static readonly SamplerState Sampler = SamplerState.PointClamp; //SamplerState.LinearClamp;
     private static ushort ClientVersion => 741;
 
-    /// <summary>
-    ///     Build version sent to the server at login so it can reject out-of-date clients
-    ///     Bump this each release, this is separate from the Dark Ages protocol version above
-    /// </summary>
-    public const string CustomClientVersion = "0.6.0";
+    /// <summary>Build version sent to the server at login so it can reject out-of-date clients.</summary>
+    public const string CustomClientVersion = "0.9.1";
 
-    // The folder the executable actually lives in
-    // For a single-file build AppContext.BaseDirectory is the temp extract dir, so use the real exe path
+    // the folder the executable lives in; for a self-extracting build AppContext.BaseDirectory is the temp
+    // extraction dir, so we use the real exe path and look for the Data folder next to da-swm.exe
     private static readonly string AppDir =
         Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
 
-    // Connection details are hard-coded here, there is no config file to ship or edit
-    // The DA_* environment variables below exist only for local development and are never set on a player's machine
+    // Connection details are hard-coded here; there is no config file to ship or edit
+    // The DA_* environment variables exist only for local development and are never set on a player's machine
     private const string ServerHost = "darkages.swedenmayhem.se";
     private const int ServerPort = 4200;
 
@@ -56,8 +53,8 @@ public static class GlobalSettings
         => int.TryParse(Environment.GetEnvironmentVariable("DA_LOBBY_PORT"), out var env) ? env : ServerPort;
 
     /// <summary>
-    ///     When true, walking onto a water tile needs the GM flag or the Swimming skill
-    ///     When false (default), anyone can swim freely and pathfinding routes through water
+    ///     When true, walking onto a water tile requires either the GM flag or the "Swimming" skill.
+    ///     When false (default), any character can swim freely and pathfinding routes through water tiles.
     /// </summary>
     public static bool RequireSwimmingSkill => false;
 

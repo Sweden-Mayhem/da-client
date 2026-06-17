@@ -20,7 +20,7 @@ namespace Chaos.Client.Controls.World.Popups.WorldList;
 /// </summary>
 public sealed class WorldListControl : PrefabPanel
 {
-    private const int ROW_HEIGHT = 12;
+    private const int ROW_HEIGHT = 14;
     private const int TAB_COUNT = 9;
 
     private const int STATUS_ICON_COUNT = 8;
@@ -85,8 +85,8 @@ public sealed class WorldListControl : PrefabPanel
         {
             Name = "ScrollBar",
             X = UsersListRect.X + UsersListRect.Width - ScrollBarControl.DEFAULT_WIDTH,
-            Y = UsersListRect.Y,
-            Height = UsersListRect.Height
+            Y = UsersListRect.Y - 3,
+            Height = UsersListRect.Height + 6
         };
 
         ScrollBar.OnValueChanged += v =>
@@ -114,7 +114,7 @@ public sealed class WorldListControl : PrefabPanel
         };
 
         //crisp TTF at native res via WorldScreen's generic menu-text pass (this window is hosted in a magnifier)
-        TotalNumLabel.Native(11);
+        TotalNumLabel.Native(10);
         TotalNumLabel.ForegroundColor = Color.White;
         TotalNumLabel.Text = "0";
         AddChild(TotalNumLabel);
@@ -141,17 +141,17 @@ public sealed class WorldListControl : PrefabPanel
         //social status icons from _nemots.spf (frame 0 of each 3-frame group)
         LoadStatusIcons();
 
-        //tab buttons built from _nusersb.spf frames (9 tabs x 2 states)
+        //tab buttons -built from _nusersb.spf frames (9 tabs x 2 states)
         var countryBtnRect = GetRect("CountryBtn");
         var masterBtnRect = GetRect("MasterBtn");
 
-        //spacing taken from the y gap between the first two prefab buttons
+        //spacing derived from the y gap between the first two prefab buttons
         var tabStride = masterBtnRect.Y - countryBtnRect.Y;
 
         if (tabStride <= 0)
             tabStride = 22;
 
-        //label stride taken from the y gap between first two prefab labels (same stride)
+        //label stride derived from the y gap between first two prefab labels (same stride)
         var labelStride = tabStride;
 
         var cache = UiRenderer.Instance!;
@@ -190,7 +190,7 @@ public sealed class WorldListControl : PrefabPanel
                 IsHitTestVisible = false
             };
 
-            TabCountLabels[i].Native(11);
+            TabCountLabels[i].Native(10);
             TabCountLabels[i].ForegroundColor = Color.White;
             AddChild(TabCountLabels[i]);
         }
@@ -390,7 +390,7 @@ public sealed class WorldListControl : PrefabPanel
         RowsDirty = true;
     }
 
-    //updates the data and opens the window (placement + scale owned by the wrapping ScaleHost, it centers on first open)
+    //updates the data and opens the window (placement + scale owned by the wrapping ScaleHost; it centers on first open)
     public void Show(IReadOnlyList<WorldListEntry> entries, ushort totalOnline)
     {
         AllEntries = entries;

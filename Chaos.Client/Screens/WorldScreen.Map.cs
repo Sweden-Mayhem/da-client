@@ -30,9 +30,9 @@ public sealed partial class WorldScreen
         CurrentMapName = args.Name ?? string.Empty;
         var zoneName = CurrentMapName;
         
-        //same map (refresh), skip expensive teardown and just clear transient entity state
-        //the checksum must also match, a server-side map edit reuses the same id but changes the bytes,
-        //so a mismatch means the cached MapFile is stale and we take the full reload path
+        //same map (refresh) - skip expensive teardown, just clear transient entity state. checksum must
+        //also match: a server-side map edit reuses the same id but changes the bytes, so a mismatch means
+        //the cached MapFile is stale and we have to take the full reload path.
         if ((args.MapId == CurrentMapId) && (args.CheckSum == CurrentMapCheckSum) && MapFile is not null)
         {
             ClearTransientState();
@@ -52,14 +52,14 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //a real map change (not a same-map refresh), start the quick fade to black, FinalizeMapLoad fades the new map
-        //back in once it is preloaded. Skip on first world entry (HasEnteredWorld is set in FinalizeMapLoad) since there
-        //is no prior world frame to freeze, it would fade out stale lobby pixels. The freeze is captured next Draw from
-        //the world target's retained last frame (the old map), so it fades out even though it stops rendering now
+        //a real map change (not a same-map refresh): start the quick fade-to-black. FinalizeMapLoad fades the new map
+        //back in once it is preloaded. Skip on first world entry (HasEnteredWorld is set in FinalizeMapLoad) - there is
+        //no prior world frame to freeze, so it would fade out stale/lobby pixels. The freeze is captured next Draw from
+        //the world target's retained last frame (the old map), so it fades out even though it stops rendering now.
         if (HasEnteredWorld)
             Game.MapTransition.BeginFadeOut();
 
-        //new map, dispose old caches and load a fresh mapfile from local files
+        //new map - dispose old caches, load fresh mapfile from local files
         TownMapControl.Hide();
         MapRenderer.Dispose();
         MapRenderer = new MapRenderer();
@@ -69,7 +69,7 @@ public sealed partial class WorldScreen
             args.Width,
             args.Height,
             args.CheckSum);
-        //MapPreloaded gates every path request, stale water and door tile lists belong to the old map's dimensions,
+        //MapPreloaded gates every path request: stale water/door tile lists belong to the OLD map's dimensions,
         //so a right-click arriving before FinalizeMapLoad must not pathfind against them
         MapPreloaded = false;
         AwaitingMapData = false;
@@ -81,7 +81,7 @@ public sealed partial class WorldScreen
         MapLoading.CenterOnUi();
         MapLoading.Show();
 
-        //local file missing, corrupt or checksum mismatch, request from server
+        //local file missing, corrupt, or checksum mismatch - request from server
         if (MapFile is null)
         {
             MapFile = new MapFile(args.Width, args.Height);
@@ -90,9 +90,9 @@ public sealed partial class WorldScreen
             Game.Connection.RequestMapData();
         } else
         {
-            //snapshot tab-map walls from pristine disk state before any DoorArgs can mutate the foreground tiles
-            //FinalizeMapLoad's later rebuild of the pathfinder reflects door state on purpose, but the tab map
-            //must stay tied to the raw mapfile so clicking a door does not change how the map looks on (Tab)
+            //snapshot tab-map walls from pristine disk state before any DoorArgs can mutate the foreground tiles.
+            //FinalizeMapLoad's later rebuild of the pathfinder intentionally reflects door state, but the tab map
+            //must stay tied to the raw mapfile so clicking a door does not change how the map looks on (Tab).
             TabMapRenderer.Generate(Device, MapFile);
         }
 
@@ -104,7 +104,7 @@ public sealed partial class WorldScreen
         Game.AislingRenderer.ClearLayerImageCache();
         Game.ItemRenderer.Clear();
 
-        //reset darkness state and load the hea light map for the new map
+        //reset darkness state and load hea light map for the new map
         DarknessRenderer.OnMapChanged(args.MapId, CurrentMapFlags.HasFlag(MapFlags.Darkness));
         WeatherRenderer.OnMapChanged(CurrentMapFlags);
 
@@ -155,7 +155,7 @@ public sealed partial class WorldScreen
             };
         }
 
-        //last row received, save to disk and finalize
+        //last row received - save to disk and finalize
         if (AwaitingMapData && (y >= (MapFile.Height - 1)))
         {
             AwaitingMapData = false;
@@ -169,7 +169,7 @@ public sealed partial class WorldScreen
 
     private void HandleMapLoadComplete()
     {
-        //when awaiting server map data, ignore this, FinalizeMapLoad gets called from HandleMapData
+        //when awaiting server map data, ignore this - finalizemapload will be called from handlemapdata
         if (AwaitingMapData)
             return;
 
@@ -181,8 +181,8 @@ public sealed partial class WorldScreen
         if (MapFile is null)
             return;
 
-        //first map load is login or world entry, item-received sounds arm a grace after this so the inventory the
-        //server sends on login never triggers them (later maps are warps and never re-send the inventory)
+        //first map load = login / world entry; item-received sounds arm a grace after this so the inventory the
+        //server sends on login never triggers them (subsequent maps are warps and never re-send the inventory)
         var firstEntry = !HasEnteredWorld;
 
         if (firstEntry)
@@ -190,9 +190,9 @@ public sealed partial class WorldScreen
             HasEnteredWorld = true;
             WorldEntryTick = Environment.TickCount;
 
-            //pull the self-profile once on entry. SelfProfileRequested is false here so HandleSelfProfile only fills
-            //it in and does not open the book, this primes PlayerAbilityMetadata so skill and spell hover tooltips have
-            //their detail immediately instead of being blank until the player opens the equipment menu the first time
+            //pull the self-profile once on entry. SelfProfileRequested is false here, so HandleSelfProfile only POPULATES
+            //(it does not open the book) - this primes PlayerAbilityMetadata so skill/spell hover tooltips have their
+            //detail immediately, instead of being blank until the player opens the equipment menu the first time.
             Game.Connection.RequestSelfProfile();
         }
 
@@ -211,9 +211,9 @@ public sealed partial class WorldScreen
         MapLoading.Hide();
         FollowPlayerCamera();
 
-        //suppress hold-to-walk briefly, if the move button is still held from before the warp don't auto-path on the
-        //fresh map (the cursor may be behind the player, which would walk them straight back out), reset the baseline
-        //too. A deliberate new press still paths immediately
+        //suppress hold-to-walk briefly: if the move button is still held from before the warp, don't auto-path on the
+        //fresh map (the cursor may be behind the player, which would walk them straight back out). Reset the baseline
+        //too. A deliberate new press still paths immediately.
         HeldWalkSuppressMs = HELD_WALK_MAP_ENTRY_SUPPRESS_MS;
         HeldWalkRepathTimer = 0f;
 
@@ -224,13 +224,14 @@ public sealed partial class WorldScreen
 
         if (firstEntry)
         {
-            //login to world, the lobby faded the whole window to black and held it. Don't reveal immediately, hold the
-            //black a beat (Update counts IntroHoldRemaining down) so the map's night or darkness LightLevel snaps in
-            //while still fully black, then slow-fade the world in for a calm intro. The global fade owns this transition
+            //login -> world: the lobby faded the WHOLE WINDOW to black and held it. Don't reveal immediately - hold the
+            //black a beat (Update counts IntroHoldRemaining down) so the map's night/darkness LightLevel snaps in while
+            //still fully black, THEN slow-fade the world in. This is a calm intro and hides the old "reveal bright, then
+            //night pops in a few frames later" flash. The global fade owns this transition (no in-world map fade here).
             PendingIntroReveal = true;
             IntroHoldRemaining = INTRO_HOLD_SECONDS;
         } else
-            //a normal in-world map change, fade the new map up from black (matches the fade-out begun on the change)
+            //a normal in-world map change: fade the new map up from black (matches the fade-out begun on the change)
             Game.MapTransition.BeginFadeIn();
 
         Game.GcRequested = true;
@@ -239,12 +240,12 @@ public sealed partial class WorldScreen
     /// <summary>
     ///     Builds the static pathfinder grid. Tiles whose foreground is a door (either side) are pulled out of the wall set
     ///     and returned in <c>doorTiles</c> so <see cref="GetPathfindingBlockedPoints" /> can re-evaluate each on every
-    ///     <c>FindPath</c> call against the live foreground state, this keeps the grid immutable while still reflecting
+    ///     <c>FindPath</c> call against the live foreground state - this keeps the grid immutable while still reflecting
     ///     runtime door toggles. A static decoration that happens to use a door-side id is harmlessly captured and will be
     ///     re-blocked each call because <see cref="IsTileWall" /> always returns true for it.
     /// </summary>
-    //scans the map once for the swim-gate water tiles, walls and doors are checked live per path request
-    //(IsTilePassable, IsClosedDoorAt) so they always reflect HandleDoor swaps
+    //scans the map once for the swim-gate water tiles. Walls and doors are checked live per path request
+    //(IsTilePassable), so they always reflect HandleDoor swaps.
     private static List<IPoint> BuildPathfindingData(MapFile mapFile)
     {
         var gndAttrs = DataContext.Tiles.GroundAttributes;
@@ -275,21 +276,20 @@ public sealed partial class WorldScreen
     /// </summary>
     private List<IPoint> GetPathfindingBlockedPoints(WorldEntity? player = null)
     {
-        //GMs obey collision when click-pathfinding (entities, closed doors, walls), only manual arrow-key movement
-        //lets them clip. The swim gate is the one exception that still ignores GMs, they can always cross water
+        //GMs obey collision when CLICK-pathfinding (entities, closed doors, walls) - only manual arrow-key movement
+        //lets them clip. The swim gate is the one exception that still ignores GMs (they can always cross water).
         var blocked = WorldState.GetBlockedPoints();
 
-        //entities are only hard blockers near the player, distant creatures will have wandered on before we arrive,
-        //and planning around them caused huge detours and constant path flapping. If one is still in the way when we
-        //get close, the blocked-step recovery re-routes on the spot
+        //entities are only HARD blockers near the player: distant creatures will have wandered on before we arrive,
+        //and planning around them caused huge detours + constant path flapping (the "back and forth"). If one is
+        //still in the way when we get close, the blocked-step recovery re-routes on the spot.
         if (player is not null)
             blocked.RemoveAll(p => (Math.Abs(p.X - player.TileX) + Math.Abs(p.Y - player.TileY)) > 3);
 
         if (!IsGameMaster && GlobalSettings.RequireSwimmingSkill && !WorldState.SkillBook.HasSkillByName("swimming"))
             blocked.AddRange(MapWaterTiles);
 
-        //closed doors are NOT planning obstacles (a path may deliberately lead up to / into one); the walker simply
-        //STOPS at a closed door - opening it is the player's act (see the path executor)
+        //doors are walkable like normal ground tiles (IsTilePassable and IsTileWallBlocked both exempt them via DoorTable)
 
         return blocked;
     }
@@ -310,7 +310,7 @@ public sealed partial class WorldScreen
     /// <summary>
     ///     True when the foreground is a walk-blocking wall. Authoritative source is <c>sotp.dat</c>, indexed by the tile's
     ///     current fgIndex (after any door-swap from <see cref="HandleDoor" />). Door open/closed state is tracked entirely
-    ///     by mutating the tile's fgIndex, the open-side id's SOTP byte carries the correct walkability, so no override
+    ///     by mutating the tile's fgIndex - the open-side id's SOTP byte carries the correct walkability, so no override
     ///     is needed. Jambs and frame pieces of multi-tile doors are not in <see cref="DoorTable" /> and correctly stay
     ///     walls in both states.
     /// </summary>
@@ -344,22 +344,18 @@ public sealed partial class WorldScreen
         if (!IsTileWall(tile.LeftForeground) && !IsTileWall(tile.RightForeground))
             return false;
 
-        //a closed door is a wall until it is opened (walking into it auto-opens it, see MoveOrTurn and the path
-        //executor), a non-door warp tile (arch etc.) is enterable despite its wall art, the server's collision
-        //rule is "walls block unless a warp reactor overrides", and stepping onto it is what fires the warp
+        //doors are walkable like normal ground; non-door WARP tiles (arches) are enterable despite wall art
         if (DoorTable.IsDoorTileId(tile.LeftForeground) || DoorTable.IsDoorTileId(tile.RightForeground))
-            return true;
+            return false;
 
         return !WarpData.HasWarpAt(CurrentMapId, tileX, tileY);
     }
 
-    /// <summary>Planning walkability, everything passable now plus closed doors. A path may lead to or through
-    ///     one, but the walker stops in front of it (opening doors is the player's act).</summary>
-    private bool IsPlanWalkable(int tileX, int tileY) => IsTilePassable(tileX, tileY) || IsClosedDoorAt(tileX, tileY);
+    private bool IsPlanWalkable(int tileX, int tileY) => IsTilePassable(tileX, tileY);
 
 
-    /// <summary>True when the tile is a door whose current art is closed (reads as a wall). Such a tile can be
-    ///     planned through, opening it on approach is the walker's job.</summary>
+    /// <summary>True when the tile is a door whose current foreground is the CLOSED side of a pair.
+    ///     Uses DoorTable.GetOpenTileId: returns non-null only for closed variants that can be opened.</summary>
     private bool IsClosedDoorAt(int tileX, int tileY)
     {
         if (MapFile is null || (tileX < 0) || (tileY < 0) || (tileX >= MapFile.Width) || (tileY >= MapFile.Height))
@@ -367,10 +363,8 @@ public sealed partial class WorldScreen
 
         var tile = MapFile.Tiles[tileX, tileY];
 
-        if (!DoorTable.IsDoorTileId(tile.LeftForeground) && !DoorTable.IsDoorTileId(tile.RightForeground))
-            return false;
-
-        return IsTileWall(tile.LeftForeground) || IsTileWall(tile.RightForeground);
+        return DoorTable.GetOpenTileId(tile.LeftForeground).HasValue
+            || DoorTable.GetOpenTileId(tile.RightForeground).HasValue;
     }
 
     private bool IsTilePassable(int tileX, int tileY)
@@ -381,20 +375,20 @@ public sealed partial class WorldScreen
         if (MapFile is null)
             return true;
 
-        //check wall tiles (foreground sotp data). A closed door is a wall here, stepping requires opening it first
-        //(the walker auto-opens on approach). A non-door warp tile (arch etc.) is enterable despite wall art, the
-        //server's rule is "walls block unless a warp reactor overrides", and stepping onto it fires the warp
+        //check wall tiles (foreground sotp data). A CLOSED DOOR is a wall here - stepping requires opening it first
+        //(the walker auto-opens on approach). A non-door WARP tile (arch etc.) is enterable despite wall art: the
+        //server's rule is "walls block unless a warp reactor overrides", and stepping onto it fires the warp.
         var tile = MapFile.Tiles[tileX, tileY];
 
         if (IsTileWall(tile.LeftForeground) || IsTileWall(tile.RightForeground))
         {
             var isDoor = DoorTable.IsDoorTileId(tile.LeftForeground) || DoorTable.IsDoorTileId(tile.RightForeground);
 
-            if (isDoor || !WarpData.HasWarpAt(CurrentMapId, tileX, tileY))
+            if (!isDoor && !WarpData.HasWarpAt(CurrentMapId, tileX, tileY))
                 return false;
         }
 
-        //check gndattr walk-blocking (deep water tiles), only when the swim gate is active and the player can't swim
+        //check gndattr walk-blocking (deep water tiles) - only when swim gate active and player can't swim
         if (GlobalSettings.RequireSwimmingSkill
             && !IsGameMaster
             && !WorldState.SkillBook.HasSkillByName("swimming")
@@ -430,7 +424,7 @@ public sealed partial class WorldScreen
             if (CRC16.Calculate(fileBytes) != serverCheckSum)
                 return null;
 
-            //parse in place, file format is le int16 x3 per tile, y-major x-minor
+            //parse in-place - file format is le int16 x3 per tile, y-major x-minor
             var mapFile = new MapFile(width, height);
             var index = 0;
 
@@ -461,9 +455,9 @@ public sealed partial class WorldScreen
     {
         var path = Path.Combine(DataContext.DataPath, "maps", $"lod{mapId}.map");
 
-        //custom server maps are streamed and cached here, a retail data folder has no "maps" subdirectory,
+        //custom server maps are streamed and cached here; a retail data folder has no "maps" subdirectory,
         //so create it before saving or MapFile.Save throws DirectoryNotFoundException and FinalizeMapLoad
-        //never runs (the client hangs forever on "Loading map...")
+        //never runs (the client hangs forever on "Loading map...").
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         MapFile!.Save(path);
@@ -482,20 +476,20 @@ public sealed partial class WorldScreen
         if ((player.TileX == x) && (player.TileY == y))
             return;
 
-        //server-authoritative position correction, snap and reset visuals
-        //PredictedWalkDests is not cleared on purpose, the responses for those predicted walks are still
-        //coming, and HandleClientWalkResponse reconciles each one by tile (matching no-op, diverging resync),
+        //server-authoritative position correction - snap and reset visuals.
+        //PredictedWalkDests is intentionally NOT cleared: the responses for those predicted walks are still
+        //coming, and HandleClientWalkResponse reconciles each one by tile (matching = no-op, diverging = resync),
         //so the queue drains and self-corrects on its own. Clearing it here would make those trailing responses
-        //look like genuine server walks and snap the player to stale tiles
+        //look like genuine server walks and snap the player to stale tiles - the old F5-during-walk symptom.
         QueuedWalkDirection = null;
         player.TileX = x;
         player.TileY = y;
         WorldState.MarkSortDirty();
         AnimationSystem.ResetToIdle(player);
 
-        //a position correction throws the path away, never the chase, a monster cutting into the predicted step
+        //a position correction throws the PATH away, never the CHASE: a monster cutting into the predicted step
         //rubber-bands the player, and dropping the target here is what randomly cancelled attacks. The retarget
-        //tick re-paths from the corrected tile
+        //tick re-paths from the corrected tile.
         var chase = Pathfinding.TargetEntityId;
         Pathfinding.Clear();
 
@@ -506,9 +500,9 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     Sets Camera.Offset for the current HUD. Both HUD MAP rects share the same X origin and width, only the height
+    ///     Sets Camera.Offset for the current HUD. Both HUD MAP rects share the same X origin and width; only the height
     ///     differs (large is ~116px taller, extending downward). The small HUD is calibrated to (-28, 24). The large HUD uses
-    ///     (-28, -4) so the player appears ~30px lower than the small HUD on screen, not the naive ~58px that a fixed
+    ///     (-28, -4) so the player appears ~30px lower than the small HUD on screen - not the naive ~58px that a fixed
     ///     viewport-relative offset would produce.
     /// </summary>
     private void UpdateCameraOffset(XnaRectangle viewport)
@@ -526,7 +520,7 @@ public sealed partial class WorldScreen
         if (ComputeBaseFollow() is not { } target)
             return;
 
-        //a snap (map load or server position correction), jump straight onto the player and mark settled-following so the
+        //a snap (map load / server position correction): jump straight onto the player and mark settled-following so the
         //next frame tracks exactly (no leftover transition from a focus pan)
         CamPos = target;
         CamInitialized = true;

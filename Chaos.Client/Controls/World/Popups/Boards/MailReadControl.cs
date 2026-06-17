@@ -34,8 +34,7 @@ public sealed class MailReadControl : PrefabPanel, INativeTextDrawer
     private int MaxScrollLine;
     private int ScrollLine;
 
-    //on-screen rects of https:// links in the currently-drawn body, rebuilt each DrawNativeText; used for the hover hand
-    //cursor + click-to-open (driven by WorldScreen.Update).
+    //on-screen rects of https:// links in the body, rebuilt each DrawNativeText call for hover and click-to-open
     private readonly List<(Rectangle Rect, string Url)> LinkRects = [];
 
     /// <summary>True (with <paramref name="url" /> set) when the screen point is over an https:// link in the body.</summary>
@@ -159,16 +158,16 @@ public sealed class MailReadControl : PrefabPanel, INativeTextDrawer
         AddChild(BodyLabel);
 
         //in the TTF path the body text is painted natively (DrawNativeText), so suppress the bitmap glyphs but keep the
-        //label visible as a hit target so the mouse wheel over the body bubbles to this control's OnMouseScroll
-        //(a hidden label is skipped by hit-testing)
+        //label VISIBLE as a hit target - that way the mouse wheel over the body bubbles to this control's OnMouseScroll
+        //(a hidden label is skipped by hit-testing, which is why the wheel did nothing in the read view before).
         BodyLabel.SuppressGlyphs = TtfTextRenderer.Available;
 
         ScrollBar = new ScrollBarControl
         {
             Name = "ScrollBar",
             X = contentRect.X + contentRect.Width - ScrollBarControl.DEFAULT_WIDTH,
-            Y = contentRect.Y,
-            Height = contentRect.Height
+            Y = contentRect.Y - 5,
+            Height = contentRect.Height + 10
         };
 
         ScrollBar.OnValueChanged += v =>
@@ -233,7 +232,7 @@ public sealed class MailReadControl : PrefabPanel, INativeTextDrawer
         {
             //kept VISIBLE (glyphs suppressed) so it stays a wheel hit target; the text is drawn by DrawNativeText
             BodyLabel.Visible = true;
-            //hide header labels too, drawn natively in DrawNativeText
+            //hide header labels too - they're drawn natively in DrawNativeText
             if (AuthorLabel is not null) AuthorLabel.Visible = false;
             if (TitleLabel is not null) TitleLabel.Visible = false;
             if (DateLabel is not null) DateLabel.Visible = false;

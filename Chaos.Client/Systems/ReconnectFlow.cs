@@ -9,9 +9,9 @@ namespace Chaos.Client.Systems;
 
 /// <summary>
 ///     Drives a silent reconnect after an unexpected world disconnect. It replays the normal lobby -> login -> world
-///     handshake using the session's stored credentials, auto-selecting the only server and skipping the EULA we
-///     already accepted this session, retrying every <see cref="RetryIntervalSeconds" /> and giving up after
-///     <see cref="GiveUpSeconds" />. It owns NO UI, the <c>WorldScreen</c> shows the "Reconnecting..." overlay and reacts
+///     handshake using the session's stored credentials - auto-selecting the only server and skipping the EULA we
+///     already accepted this session - retrying every <see cref="RetryIntervalSeconds" /> and giving up after
+///     <see cref="GiveUpSeconds" />. It owns NO UI: the <c>WorldScreen</c> shows the "Reconnecting..." overlay and reacts
 ///     to <see cref="Succeeded" /> / <see cref="GaveUp" />.
 ///     The flow mirrors the proven <c>LobbyLoginScreen</c> sequence; it just runs headlessly behind the frozen world.
 /// </summary>
@@ -21,7 +21,7 @@ public sealed class ReconnectFlow
     public const float RetryIntervalSeconds = 3f;
 
     /// <summary>Total seconds to keep trying before giving up to the lobby.</summary>
-    public const float GiveUpSeconds = 30f;
+    public const float GiveUpSeconds = 60f;
 
     private enum Phase
     {
@@ -87,7 +87,7 @@ public sealed class ReconnectFlow
 
         if (Elapsed >= GiveUpSeconds)
         {
-            //plain timeout, the lobby shows its own "Cannot reach the server. Retrying..." line, so no popup message
+            //plain timeout - the lobby shows its own "Cannot reach the server. Retrying..." line, so no popup message
             Finish(false, null);
 
             return;
@@ -125,7 +125,7 @@ public sealed class ReconnectFlow
     {
         LoginSubmitted = false;
 
-        //ConnectToLobbyAsync handles its own failures (sets Disconnected + fires OnError) so this never throws
+        //ConnectToLobbyAsync handles its own failures (sets Disconnected + fires OnError), so this never throws
         _ = Connection.ConnectToLobbyAsync(Host, Port, Version);
     }
 
@@ -134,7 +134,7 @@ public sealed class ReconnectFlow
         if (State != Phase.Attempting)
             return;
 
-        //auto-select the first/only server (there is exactly one), mirroring LobbyLoginScreen
+        //auto-select the first/only server (Sweden Mayhem has exactly one), mirroring LobbyLoginScreen
         if (data.Servers.Count > 0)
         {
             Connection.ServerName = data.Servers[0].Name;
@@ -145,7 +145,7 @@ public sealed class ReconnectFlow
     private void OnLoginNotice(LoginNoticeArgs _)
     {
         //the notice arrives in the Login state, the same point a fresh login submits. We already accepted the EULA this
-        //session, so skip it and re-send the stored credentials, once per attempt
+        //session, so skip it and re-send the stored credentials
         if ((State != Phase.Attempting) || LoginSubmitted)
             return;
 
@@ -158,12 +158,12 @@ public sealed class ReconnectFlow
         if (State == Phase.Done)
             return;
 
-        //Confirm means the manager redirects us to the world, OnStateChanged(World) will fire Succeeded
+        //Confirm -> the manager redirects us to the world; OnStateChanged(World) will fire Succeeded
         if (args.LoginMessageType == LoginMessageType.Confirm)
             return;
 
-        //the server actively rejected the login (bad password, character problem). Retrying the same credentials
-        //won't help, drop to the lobby with the server's message so the player can see why
+        //the server actively rejected the login (bad password, character problem); retrying the same credentials
+        //won't help - drop to the lobby with the server's message so the player can see why
         Finish(false, args.Message ?? "Login failed.");
     }
 
@@ -181,15 +181,15 @@ public sealed class ReconnectFlow
             return;
         }
 
-        //a connect attempt died before reaching the world. The brief disconnect WHILE redirecting (lobby -> login ->
-        //world closes the old socket on purpose) is expected, not a failure, guarded by IsRedirecting
+        //a connect attempt died before reaching the world; the brief disconnect WHILE redirecting (lobby -> login ->
+        //world closes the old socket on purpose) is expected, not a failure - guarded by IsRedirecting
         if ((newState == ConnectionState.Disconnected) && !Connection.IsRedirecting)
             ScheduleRetry();
     }
 
     private void ScheduleRetry()
     {
-        //OnError and the Disconnected state change can both fire for one failed attempt, only the first transitions
+        //OnError and the Disconnected state change can both fire for one failed attempt; only the first transitions
         if (State != Phase.Attempting)
             return;
 

@@ -11,17 +11,19 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Chaos.Client.Controls.World.Hud.Panel;
 
 /// <summary>
-///     Chat display panel (F key) showing word-wrapped message history
+///     Chat display panel (F key). Shows chat message history with word-wrap. Background loaded from _nchatbk.spf (shown
+///     in tab area). Text rendered at ChatDisplayBounds (separate area of the HUD).
 /// </summary>
 public sealed class ChatPanel : ExpandablePanel
 {
     private const int MAX_CHAT_LINES = 200;
     private const int GLYPH_HEIGHT = 12;
 
-    //each line draws a 1px outline plus a drop shadow this many pixels down
+    //every chat line draws a black 1px outline plus a 50% drop shadow this many pixels down (further than the outline)
     private const int CHAT_LINE_SHADOW_Y = 3;
 
-    //extra height per line so a descender's drop shadow isn't clipped
+    //extra vertical room added to each TTF line so a descender's drop shadow (e.g. the tail of "g") isn't clipped by
+    //the line's own height. Matches the shadow offset plus a hair.
     private const int CHAT_LINE_PAD = 4;
     private readonly List<ChatLine> ChatLog = [];
     private readonly Rectangle NormalDisplayBounds;
@@ -29,28 +31,30 @@ public sealed class ChatPanel : ExpandablePanel
     private readonly int PanelOriginY;
     private readonly ScrollBarControl ScrollBar;
 
-    //0 = retail bitmap font, >0 = render lines with the TrueType font at this size
-    //mutable so the chat window can rescale the log live from the font size slider
+    //0 = retail bitmap font (HUD default, unchanged). >0 = render lines with the optional TrueType font at this size.
+    //mutable so the chat window can rescale the log live from the "Chat font size" slider (see SetCustomFontSize).
     private int CustomFontSize;
     private int LineHeight;
 
-    //un-wrapped messages kept so the log can be re-wrapped on resize or tab change
+    //raw (un-wrapped) messages kept so the log can be re-wrapped when the window is resized or the active tab changes
     private readonly List<ChatLine> RawMessages = [];
     private readonly bool IncludeOrangeBar;
 
-    //active tab filter, null = show every channel
+    //null shows all channels; otherwise only messages on this channel are shown
     private ChatChannel? ActiveChannel;
-    private string? ActiveChannelName; //when set, the active tab is a custom channel filtered by name
+    private string? ActiveChannelName; //when set, the active tab is a custom "!channel" and messages are filtered by name
 
     private Rectangle DisplayBounds;
     private Rectangle ExpandedDisplayBounds;
     private UILabel[] Lines;
 
-    //opacity of the host window chrome, 1 = shown, 0 = faded out
-    //a line shows at max(window opacity, its own recency) so recent lines stay readable while the chrome fades
+    //post time (game seconds) of the message currently shown in each line slot, parallel to Lines. Used to fade out
+    //old lines while the window is idle. Empty slots are stamped "now" so they never count as old.
+    //opacity of the host window chrome (1 = shown, 0 = faded out). A line is shown at max(window opacity, its own age
+    //recency), so a recent line stays readable even while the window chrome has faded; old lines fade by age.
     private float WindowOpacity = 1f;
 
-    //post time in game seconds of the line in each slot, drives the per-line age fade
+    //post time (game seconds) of the line currently in each slot, parallel to Lines; drives the per-line age fade.
     private double[] LineTimes;
     private double NowSeconds;
 
@@ -99,7 +103,7 @@ public sealed class ChatPanel : ExpandablePanel
 
         RepositionLabels();
 
-        //position relative to panel origin
+        //position relative to panel origin (panel is placed at panelbounds by registertab)
         var relY = displayBounds.Y - panelBounds.Y;
 
         ScrollBar = new ScrollBarControl
@@ -125,17 +129,18 @@ public sealed class ChatPanel : ExpandablePanel
         }
     }
 
-    private void OnOrangeBarMessageAdded(Chat.OrangeBarMessage msg) => AddMessage(msg.Text, msg.Color, ChatChannel.System);
+    private void OnOrangeBarMessageAdded(Chat.OrangeBarMessage msg) => AddMessage(msg.Text, msg.Color, ChatChannel.System, channelName: null, msg.Timestamp);
 
-    //friend presence lines put the name first, like "Name has come online"
+    //friend presence lines put the name first, e.g. "Name has come online." or "Name has gone offline."
     private static readonly string[] FriendPresenceMarkers = [" has come online", " has gone offline"];
     private const string FriendsOnlinePrefix = "Friends online: ";
 
     private readonly List<(string Name, int Start)> NameSpans = [];
 
     /// <summary>
-    ///     Returns the clickable player name at the given screen point in the chat log, or null
-    ///     Used for click-to-whisper and the hover hand cursor
+    ///     If a clickable player NAME is at the given SCREEN point in the chat log, returns it; else null. Used for
+    ///     click-to-whisper and the hover hand cursor. Handles the single-name lines (public/yell/whisper/channel) as well
+    ///     as friend presence ("Name has come online.") and the "Friends online: A, B, C." list, where every name clicks.
     /// </summary>
     public string? NameAt(int screenX, int screenY)
     {
@@ -144,7 +149,7 @@ public sealed class ChatPanel : ExpandablePanel
 
         foreach (var label in Lines)
         {
-            //ignore empty rows and faded ones since their names aren't really visible to click
+            //ignore empty rows and ones that have faded out (a faded chat's names aren't really visible to click)
             if (label is null || string.IsNullOrEmpty(label.Text) || (label.Opacity < 0.3f))
                 continue;
 
@@ -155,7 +160,7 @@ public sealed class ChatPanel : ExpandablePanel
 
             foreach (var (name, start) in NameSpans)
             {
-                //offset the hit area by the width of any prefix text before the name
+                //each name may sit after some prefix text, so offset the hit area by the width of what precedes it
                 var prefixWidth = start > 0 ? TtfTextRenderer.MeasureWidth(label.Text[..start], CustomFontSize) : 0;
                 var nameWidth = TtfTextRenderer.MeasureWidth(name, CustomFontSize);
                 var nameLeft = label.ScreenX + prefixWidth;
@@ -164,13 +169,13 @@ public sealed class ChatPanel : ExpandablePanel
                     return name;
             }
 
-            return null; //only one line can be on this y
+            return null; //only one line can be on this Y
         }
 
         return null;
     }
 
-    //finds every clickable player name in a chat line, each with where it starts
+    //finds every clickable player name in a chat line, each with where it starts so the hit area can be placed on it
     private static void CollectNameSpans(string text, List<(string Name, int Start)> spans)
     {
         spans.Clear();
@@ -178,56 +183,69 @@ public sealed class ChatPanel : ExpandablePanel
         if (text.Length == 0)
             return;
 
-        //friend came online or went offline, the name is the leading token before the marker
+        //strip a leading "[HH:mm] " timestamp prefix before name detection so the name parsers see the
+        //original text regardless of whether timestamps are currently shown. The offset is added back to
+        //every Start value so the click hit area lands on the correct screen position.
+        var tsOffset = 0;
+
+        if ((text.Length > 8) && (text[0] == '[') && (text[3] == ':') && (text[6] == ']') && (text[7] == ' '))
+            tsOffset = 8;
+
+        var t = tsOffset > 0 ? text[tsOffset..] : text;
+
+        //friend came online / went offline: the name is the leading token before the marker
         foreach (var marker in FriendPresenceMarkers)
         {
-            var at = text.IndexOf(marker, StringComparison.Ordinal);
+            var at = t.IndexOf(marker, StringComparison.Ordinal);
 
             if (at > 0)
             {
-                if (IsPlayerName(text[..at]))
-                    spans.Add((text[..at], 0));
+                if (IsPlayerName(t[..at]))
+                    spans.Add((t[..at], tsOffset));
 
                 return;
             }
         }
 
-        //in the friends-online list every comma separated name is clickable
-        if (text.StartsWith(FriendsOnlinePrefix, StringComparison.Ordinal))
+        //"Friends online: A, B, C." - every comma separated name is clickable
+        if (t.StartsWith(FriendsOnlinePrefix, StringComparison.Ordinal))
         {
             var i = FriendsOnlinePrefix.Length;
 
-            while (i < text.Length)
+            while (i < t.Length)
             {
-                while ((i < text.Length) && !char.IsLetter(text[i]))
+                while ((i < t.Length) && !char.IsLetter(t[i]))
                     i++;
 
                 var start = i;
 
-                while ((i < text.Length) && char.IsLetter(text[i]))
+                while ((i < t.Length) && char.IsLetter(t[i]))
                     i++;
 
                 if (i > start)
-                    spans.Add((text[start..i], start));
+                    spans.Add((t[start..i], tsOffset + start));
             }
 
             return;
         }
 
-        //everything else has at most one name
-        if (ParseChatName(text) is { } single)
-            spans.Add(single);
+        //everything else has at most one name (public/yell/whisper/channel)
+        if (ParseChatName(t) is { } single)
+            spans.Add((single.Name, tsOffset + single.Start));
     }
 
-    //finds the clickable player name in a chat line plus where it starts
-    //public and yell put the name at the start, whisper wraps it in brackets, channel tags have a space after the tag
+    //the clickable player NAME in a chat line plus where it starts in the line (so the hit area lands on the drawn name).
+    //  public / yell: "Name: msg" / "Name! msg" - name at the start
+    //  whisper:       "[Name]: msg" (received) or "[Name]> msg" (sent echo) - name is in the brackets
+    //  group / guild: "[Group] Name: msg" - the tag has a space after it, so skip the tag and read the real name
+    //Filters body text that happens to contain a separator and multi-word system lines ("You say:").
     private static (string Name, int Start)? ParseChatName(string text)
     {
         if (text.Length == 0)
             return null;
 
-        //a whisper puts the name in brackets followed right away by ':' or '>'
-        //a channel tag has a space after the ']' instead, so skip the tag and read the real name after it
+        //a whisper puts the name in brackets followed immediately by ':' or '>'. A channel tag ("[Group] ") has a space
+        //after the ']' instead, so we skip past the tag and read the real name from what follows.
         if (text[0] == '[')
         {
             var close = text.IndexOf(']');
@@ -256,7 +274,7 @@ public sealed class ChatPanel : ExpandablePanel
         return ParseLeadingName(text, 0);
     }
 
-    //reads a leading name beginning at offset start, returned with its absolute start index
+    //a "Name: msg" / "Name! msg" name beginning at offset start, returned with its absolute start index
     private static (string Name, int Start)? ParseLeadingName(string text, int start)
     {
         var sep = text.IndexOfAny([':', '!'], start) - start;
@@ -283,7 +301,8 @@ public sealed class ChatPanel : ExpandablePanel
     }
 
     /// <summary>
-    ///     Switches the visible tab, pass null for every channel
+    ///     Switches the visible tab. Pass null for "All" (every channel). Re-wraps the stored history through the new
+    ///     filter and snaps to the newest line.
     /// </summary>
     public void SetActiveChannel(ChatChannel? channel, string? channelName = null)
     {
@@ -296,8 +315,8 @@ public sealed class ChatPanel : ExpandablePanel
         ScrollToBottom();
     }
 
-    //both null shows everything, a custom-channel tab shows only that channel
-    //a built-in tab shows its channel but not custom-channel messages, so channel chat never leaks into Public
+    //All (both null) shows everything. A custom-channel tab shows only that channel's messages. A built-in tab shows its
+    //channel AND only messages that aren't custom-channel ones (so channel chat never leaks into the Public tab).
     private bool PassesFilter(ChatChannel channel, string? channelName)
     {
         if (ActiveChannel is null && ActiveChannelName is null)
@@ -309,57 +328,72 @@ public sealed class ChatPanel : ExpandablePanel
         return (channel == ActiveChannel) && (channelName is null);
     }
 
-    private void AddMessage(string text, Color color, ChatChannel channel, string? channelName = null)
+    private void AddMessage(string text, Color color, ChatChannel channel, string? channelName = null, DateTime timestamp = default)
     {
-        //drop blank messages so a stray newline or an empty send never leaves a gap in the log
+        //drop blank / whitespace-only messages outright so a stray newline (in orange/system or NPC text) or an
+        //empty send never leaves a gap in the log
         if (string.IsNullOrWhiteSpace(text))
             return;
 
         var time = NowSeconds;
-        RawMessages.Add(new ChatLine(text, color, channel, time, channelName));
+        RawMessages.Add(new ChatLine(text, color, channel, time, channelName, timestamp));
 
         if (RawMessages.Count > MAX_CHAT_LINES)
             RawMessages.RemoveRange(0, RawMessages.Count - MAX_CHAT_LINES);
 
-        //messages on other channels stay in RawMessages so a tab switch can reveal them, but aren't shown now
+        //messages on other channels stay in RawMessages (so a tab switch can reveal them) but are not shown now
         if (!PassesFilter(channel, channelName))
             return;
 
-        WrapInto(text, color, time);
+        WrapInto(text, color, time, timestamp);
         AfterLogChanged();
     }
 
-    //word-wraps one message to the current width and appends the lines to the display log
-    //each wrapped line keeps the source post time so the age fade treats a multi-line message as one unit
-    private void WrapInto(string text, Color color, double time)
+    //word-wraps one message to the current width and appends the resulting line(s) to the display log. Each wrapped line
+    //carries the source message's post time so the age fade treats a multi-line message as one unit.
+    //When ShowChatTimestamp is on, prepends "[HH:mm] " to the first visual line only.
+    private void WrapInto(string text, Color color, double time, DateTime timestamp = default)
     {
         var maxWidth = DisplayBounds.Width - ScrollBarControl.DEFAULT_WIDTH;
 
         if (maxWidth <= 0)
             return;
 
+        var prefix = (ClientSettings.ShowChatTimestamp && timestamp != default)
+            ? $"[{timestamp:HH:mm}] "
+            : string.Empty;
+
+        var prefixedText = prefix.Length > 0 ? prefix + text : text;
+
         if (CustomFontSize > 0)
         {
-            //TrueType path wraps by measured width in the custom font, skipping any blank wrapped line
-            foreach (var line in TtfTextRenderer.WrapText(text, maxWidth, CustomFontSize))
+            //WrapText handles the full prefixed string at once -the prefix naturally lands on the first line only
+            foreach (var line in TtfTextRenderer.WrapText(prefixedText, maxWidth, CustomFontSize))
                 if (!string.IsNullOrWhiteSpace(line))
                     ChatLog.Add(new ChatLine(line, color, ChatChannel.Public, time));
         } else
         {
-            var remaining = text;
+            var firstLine = true;
+            var remaining = prefixedText;
 
             while (remaining.Length > 0)
             {
                 var lineEnd = TextRenderer.FindLineBreak(remaining, maxWidth);
-
-                var line = remaining[..lineEnd]
-                    .TrimEnd();
-
-                remaining = remaining[lineEnd..]
-                    .TrimStart();
+                var line = remaining[..lineEnd].TrimEnd();
+                remaining = remaining[lineEnd..].TrimStart();
 
                 if (!string.IsNullOrWhiteSpace(line))
+                {
                     ChatLog.Add(new ChatLine(line, color, ChatChannel.Public, time));
+
+                    if (firstLine && (prefix.Length > 0))
+                    {
+                        //subsequent wrapped lines have no prefix -indent by the same number of spaces so they
+                        //align with the message text rather than overflowing back to column 0
+                        remaining = new string(' ', prefix.Length) + remaining.TrimStart();
+                        firstLine = false;
+                    }
+                }
             }
         }
     }
@@ -385,21 +419,25 @@ public sealed class ChatPanel : ExpandablePanel
         LogVersion++;
     }
 
-    //re-wraps the whole stored history to the current width, called after a resize
+    //re-wraps the entire stored history to the current width (called after a resize or timestamp toggle)
     private void RewrapAll()
     {
         ChatLog.Clear();
 
         foreach (var msg in RawMessages)
             if (PassesFilter(msg.Channel, msg.ChannelName))
-                WrapInto(msg.Text, msg.Color, msg.Time);
+                WrapInto(msg.Text, msg.Color, msg.Time, msg.Timestamp);
 
         ScrollOffset = 0;
         AfterLogChanged();
     }
 
-    /// <summary>Tracks the host window's chrome opacity and fades the scrollbar with it
-    ///     Recent lines stay readable while the window is faded, older lines fade out with it</summary>
+    /// <summary>Re-wraps all stored messages so timestamps are added to (or removed from) every line immediately.
+    ///     Called when the "Show chat timestamps" setting is toggled.</summary>
+    public void RefreshTimestamps() => RewrapAll();
+
+    /// <summary>Tracks the hosting window's chrome opacity and fades the scrollbar with it. Recent chat lines stay fully
+    ///     readable while the window is faded; lines older than the fade delay fade out with the window (see Update).</summary>
     public void SetContentOpacity(float opacity)
     {
         WindowOpacity = opacity;
@@ -407,19 +445,20 @@ public sealed class ChatPanel : ExpandablePanel
     }
 
     /// <summary>
-    ///     Sets up expand support for the large HUD chat panel
+    ///     Configures expand support for the large HUD chat panel (larger text area).
     /// </summary>
     public void ConfigureExpand(Texture2D? expandedBackground, Rectangle expandedBounds, Rectangle panelBounds)
     {
         ExpandedDisplayBounds = expandedBounds;
 
-        //clear the normal background so the expand offset comes from panel height, not texture height
+        //clear the normal background so expandyoffset is computed from panel height, not the
+        //texture height (which is the same as the expanded texture, yielding expandyoffset=0).
         Background = null;
         Height = panelBounds.Height;
 
         ConfigureExpand(expandedBackground);
 
-        //create the extra labels the expanded line count needs
+        //create additional labels needed for the expanded line count
         var expandedMaxLines = expandedBounds.Height / LineHeight;
 
         if (expandedMaxLines > Lines.Length)
@@ -451,7 +490,7 @@ public sealed class ChatPanel : ExpandablePanel
             }
         }
 
-        //in the large hud the compact chat area is too small for a scrollbar
+        //in the large hud, the compact chat area is too small for a scrollbar
         ScrollBar.Visible = false;
     }
 
@@ -465,9 +504,9 @@ public sealed class ChatPanel : ExpandablePanel
         base.Dispose();
     }
 
-    //labels are children, drawn automatically by base.Draw
+    //labels are children -drawn automatically by base.draw()
 
-    private void OnMessageAdded(Chat.ChatMessage msg) => AddMessage(msg.Text, msg.Color, msg.Channel, msg.ChannelName);
+    private void OnMessageAdded(Chat.ChatMessage msg) => AddMessage(msg.Text, msg.Color, msg.Channel, msg.ChannelName, msg.Timestamp);
 
     private void RefreshDisplay()
     {
@@ -480,14 +519,14 @@ public sealed class ChatPanel : ExpandablePanel
         var startIndex = Math.Max(0, ChatLog.Count - maxLines - ScrollOffset);
         var shown = Math.Min(ChatLog.Count - startIndex, maxLines);
 
-        //bottom-anchored, when there are fewer messages than rows the empty rows sit at the top
-        //the newest message is always in the bottom row and a new line pushes everything up
+        //bottom-anchored: when there are fewer messages than rows, the empty rows sit at the TOP and the newest
+        //message is always in the bottom row. A new line pushes everything up.
         var slot = maxLines - shown;
 
         for (var i = 0; i < slot; i++)
         {
             Lines[i].Text = string.Empty;
-            LineTimes[i] = NowSeconds; //empty rows are never old
+            LineTimes[i] = NowSeconds; //empty rows are never "old"
         }
 
         for (var i = 0; i < shown; i++)
@@ -507,7 +546,7 @@ public sealed class ChatPanel : ExpandablePanel
         for (var i = 0; i < Lines.Length; i++)
             if (i < maxLines)
             {
-                //bottom-up, line 0 at top and the last line at the bottom
+                //bottom-up: line 0 at top, line maxlines-1 at bottom
                 Lines[i].Y = relY + DisplayBounds.Height - (maxLines - i) * LineHeight;
                 Lines[i].Visible = true;
             } else
@@ -523,17 +562,17 @@ public sealed class ChatPanel : ExpandablePanel
         ScrollBar.Visible = expanded;
         ScrollBar.Height = DisplayBounds.Height;
 
-        //show or hide labels based on the current line count
+        //show/hide labels based on current line count
         for (var i = 0; i < Lines.Length; i++)
             Lines[i].Visible = i < MaxVisibleLines;
 
-        //force a re-render with the new line count
+        //force re-render with new line count
         LogVersion++;
     }
 
     /// <summary>
-    ///     Changes the TrueType font size of the chat log live and re-flows the history
-    ///     Only valid for the TrueType chat where CustomFontSize is above 0
+    ///     Changes the TrueType font size of the chat log live (the "Chat font size" slider). Updates the line height +
+    ///     every label, then re-flows the history to the new metrics. Only valid for the TrueType chat (CustomFontSize &gt; 0).
     /// </summary>
     public void SetCustomFontSize(int size)
     {
@@ -549,13 +588,13 @@ public sealed class ChatPanel : ExpandablePanel
             line.Height = LineHeight;
         }
 
-        //re-run the size-based layout and re-wrap the history at the new font
+        //re-run the size-based layout (line count, positions, scrollbar) + re-wrap the history at the new font
         Resize(Width, Height);
     }
 
     /// <summary>
-    ///     Re-flows the chat to a new size when hosted in a resizable window
-    ///     Assumes the panel's own origin is at zero, the HUD does not call this
+    ///     Re-flows the chat to a new size when hosted in a resizable window. Assumes the panel's own origin is (0,0)
+    ///     (i.e. it was constructed with a panelBounds at the origin). The HUD does not call this.
     /// </summary>
     public void Resize(int width, int height)
     {
@@ -602,7 +641,7 @@ public sealed class ChatPanel : ExpandablePanel
         ScrollBar.Y = db.Y;
         ScrollBar.Height = db.Height;
 
-        //the stored lines were wrapped at the old width, re-wrap the whole history to the new one
+        //the stored lines were wrapped at the old width; re-wrap the whole history to the new width
         RewrapAll();
     }
 
@@ -644,8 +683,8 @@ public sealed class ChatPanel : ExpandablePanel
         UpdateLineOpacities();
     }
 
-    //each line shows at max of window opacity and its own recency
-    //a recent line stays visible while the chrome has faded and only fades once it is old
+    //each line shows at max(window opacity, its own age recency): a recent line stays visible even while the window
+    //chrome has faded, and only fades once it is old. This is independent of the window fade (ChatWindow).
     private void UpdateLineOpacities()
     {
         var maxLines = Math.Min(MaxVisibleLines, Lines.Length);
@@ -656,15 +695,16 @@ public sealed class ChatPanel : ExpandablePanel
             var recent = RecentFactor(NowSeconds - LineTimes[i], delay);
             Lines[i].Opacity = Math.Max(WindowOpacity, recent);
 
-            //glow backs the text only while the chrome is gone, the dark window background backs it otherwise
-            //the line-opacity factor is cubed so the glow fades away faster than the text once a line starts fading
+            //glow = how visible the line is while the window chrome is gone: full when the window has faded out but the
+            //line is still up (recent), zero when the window is shown (its dark background already backs the text). The
+            //line-opacity factor is CUBED so the dark glow fades away noticeably faster than the text once the line starts
+            //fading - it is much darker than the text, so a linear fade left it lingering after the text was already gone.
             var vis = Lines[i].Opacity;
             Lines[i].GlowAlpha = vis * vis * vis * (1f - WindowOpacity);
         }
     }
 
-    //1 while the line is younger than delaySeconds, easing to 0 over the second after
-    //a delay of 0 or less means never fade
+    //1 while the line is younger than delaySeconds, easing to 0 over the second after. delaySeconds <= 0 = never fade.
     private static float RecentFactor(double ageSeconds, float delaySeconds)
     {
         const float FADE_SPAN = 1f;
@@ -681,5 +721,5 @@ public sealed class ChatPanel : ExpandablePanel
         return 1f - (float)(ageSeconds - delaySeconds) / FADE_SPAN;
     }
 
-    private record struct ChatLine(string Text, Color Color, ChatChannel Channel = ChatChannel.Public, double Time = 0, string? ChannelName = null);
+    private record struct ChatLine(string Text, Color Color, ChatChannel Channel = ChatChannel.Public, double Time = 0, string? ChannelName = null, DateTime Timestamp = default);
 }

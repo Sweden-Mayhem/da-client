@@ -19,14 +19,13 @@ namespace Chaos.Client.Controls.World.ViewPort;
 ///     image on the right that PANS to the selected location (same fixed-duration smoothstep as the dialog-speaker camera).
 ///     Titlebar reads "Travel from {current} to {selected}". Buttons: Travel (asks "Travel to X?" via the shared OK/Cancel
 ///     dialog, then warps), Info (toggles curated notes, persisted), Close. Single click selects + pans; clicking the SAME
-///     entry twice (or Travel / Enter) asks to travel. Because the server keeps the player off-map until they pick a
-///     destination, Close (and Escape) do NOT just hide the window, they travel straight to the CURRENT location (the
-///     "Travel from" location), which is also the entry selected by default.
+///     entry twice (or Travel / Enter) asks to travel.
 /// </summary>
 public sealed class WorldMap : UIPanel
 {
-    private const float ZOOM = 2.2f;
-    private const float PAN_DURATION = 0.34f; //fixed-duration smoothstep pan, matching the dialog-speaker camera
+    private const float ZOOM = 2.0f;
+    private const float PAN_DURATION = 0.34f;
+    private float CurrentZoom = 1f;
 
     private const int WIN_W = 900;
     private const int WIN_H = 580;
@@ -52,6 +51,13 @@ public sealed class WorldMap : UIPanel
     private static readonly Color RowSelectedBg = new Color(120, 96, 50) * 0.55f;
     private static readonly Color RowHoverBg = new Color(80, 72, 50) * 0.45f;
     private static readonly Color MarkerColor = new(100, 149, 237);
+
+    private static readonly Dictionary<string, (int W, int H)> OriginalFieldSizes = new()
+    {
+        ["field001"] = (639, 479),
+        ["field002"] = (640, 480),
+        ["field003"] = (640, 480),
+    };
     private static readonly Color MarkerSelectedColor = new(247, 142, 24);
 
     private readonly ConnectionManager Connection;
@@ -73,6 +79,9 @@ public sealed class WorldMap : UIPanel
     private Vector2 PanStart;
     private Vector2 PanTarget;
     private float PanT = 1f;
+    private float ZoomStart = 1f;
+    private float ZoomTarget = 1f;
+    private float ZoomT = 1f;
 
     private Rectangle WindowRect;
     private Rectangle ListRect;
@@ -82,7 +91,7 @@ public sealed class WorldMap : UIPanel
 
     /// <summary>
     ///     Raised when the player asks to travel to a destination. The host shows the shared OK/Cancel dialog
-    ///     ("Travel to {name}?") and runs the supplied confirm/cancel callbacks. Keeps the in-game dialog graphics
+    ///     ("Travel to {name}?") and invokes the supplied confirm/cancel callbacks. Keeps the in-game dialog graphics
     ///     instead of a bespoke confirm.
     /// </summary>
     public Action<string, Action, Action>? TravelRequested;
@@ -117,6 +126,15 @@ public sealed class WorldMap : UIPanel
 
         BackgroundTexture = UiRenderer.Instance!.GetFieldImage(args.FieldName);
 
+        var scaleX = 1f;
+        var scaleY = 1f;
+
+        if (BackgroundTexture is not null && OriginalFieldSizes.TryGetValue(args.FieldName, out var origSize))
+        {
+            scaleX = BackgroundTexture.Width / (float)origSize.W;
+            scaleY = BackgroundTexture.Height / (float)origSize.H;
+        }
+
         foreach (var node in args.Nodes)
             Nodes.Add(
                 new Node(
@@ -125,20 +143,29 @@ public sealed class WorldMap : UIPanel
                     node.DestinationPoint.X,
                     node.DestinationPoint.Y,
                     node.CheckSum,
-                    new Point(node.ScreenPosition.X, node.ScreenPosition.Y)));
+                    new Point((int)(node.ScreenPosition.X * scaleX), (int)(node.ScreenPosition.Y * scaleY))));
 
         //no item is selected by default; the view simply starts centered on the current location
         SelectedIndex = -1;
         TravelButton.Visible = false;
 
-        var currentIdx = CurrentLocationIndex();
-        var start = currentIdx >= 0 ? Nodes[currentIdx].FieldPos.ToVector2() : new Vector2(320, 240);
-        ViewCenter = start;
-        PanStart = start;
-        PanTarget = start;
-        PanT = 1f;
-
         Visible = true;
+        Layout();
+
+        if (BackgroundTexture is not null)
+            CurrentZoom = Math.Max(0.5f, Math.Max(MapRect.Width / (float)BackgroundTexture.Width, MapRect.Height / (float)BackgroundTexture.Height));
+        else
+            CurrentZoom = 1f;
+
+        var fw = BackgroundTexture?.Width ?? 640;
+        var fh = BackgroundTexture?.Height ?? 480;
+        var center = new Vector2(fw / 2f, fh / 2f);
+        ViewCenter = center;
+        PanStart = center;
+        PanTarget = center;
+        PanT = 1f;
+        ZoomT = 1f;
+
         InputDispatcher.Instance?.PushControl(this);
     }
 
@@ -190,6 +217,9 @@ public sealed class WorldMap : UIPanel
         PanStart = ViewCenter;
         PanTarget = Nodes[index].FieldPos.ToVector2();
         PanT = 0f;
+        ZoomStart = CurrentZoom;
+        ZoomTarget = ZOOM;
+        ZoomT = 0f;
     }
 
     //#7: ask via the shared in-game OK/Cancel dialog before warping. The caller has already selected the entry.
@@ -211,9 +241,6 @@ public sealed class WorldMap : UIPanel
             () => Confirming = false);
     }
 
-    //Escape travels straight to the current location (no confirm) so the player is never stranded off-map (there is no
-    //Close button, the server keeps you off-map until a node is picked). Falls back to the first node if there is no
-    //current-location entry.
     private void TravelToCurrent()
     {
         if (Confirming)
@@ -286,6 +313,14 @@ public sealed class WorldMap : UIPanel
             ViewCenter = Vector2.Lerp(PanStart, PanTarget, eased);
         }
 
+        if (ZoomT < 1f)
+        {
+            var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            ZoomT = Math.Clamp(ZoomT + (dt / PAN_DURATION), 0f, 1f);
+            var eased = ZoomT * ZoomT * (3f - 2f * ZoomT);
+            CurrentZoom = ZoomStart + (ZoomTarget - ZoomStart) * eased;
+        }
+
         //animate the "you are here" player icon on the current location's node
         PlayerFrameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -305,24 +340,32 @@ public sealed class WorldMap : UIPanel
     private int VisibleRows => Math.Max(1, ListRect.Height / RowHeight);
     private int MaxScroll => Math.Max(0, Nodes.Count - VisibleRows);
 
-    private (Rectangle Src, float ScaleX, float ScaleY) MapView()
+    private (Rectangle Src, float ScaleX, float ScaleY) MapView(Rectangle dest)
     {
         var fieldW = BackgroundTexture?.Width ?? 640;
         var fieldH = BackgroundTexture?.Height ?? 480;
 
-        var srcW = MapRect.Width / ZOOM;
-        var srcH = MapRect.Height / ZOOM;
+        var srcW = dest.Width / CurrentZoom;
+        var srcH = dest.Height / CurrentZoom;
 
         var cx = srcW >= fieldW ? fieldW / 2f : Math.Clamp(ViewCenter.X, srcW / 2f, fieldW - srcW / 2f);
         var cy = srcH >= fieldH ? fieldH / 2f : Math.Clamp(ViewCenter.Y, srcH / 2f, fieldH - srcH / 2f);
 
-        var src = new Rectangle(
-            (int)MathF.Round(cx - srcW / 2f),
-            (int)MathF.Round(cy - srcH / 2f),
-            Math.Max(1, (int)MathF.Round(srcW)),
-            Math.Max(1, (int)MathF.Round(srcH)));
+        var left = (int)MathF.Round(cx - srcW / 2f);
+        var top = (int)MathF.Round(cy - srcH / 2f);
+        var w = Math.Max(1, (int)MathF.Round(srcW));
+        var h = Math.Max(1, (int)MathF.Round(srcH));
 
-        return (src, MapRect.Width / (float)src.Width, MapRect.Height / (float)src.Height);
+        if (left < 0) { w += left; left = 0; }
+        if (top < 0) { h += top; top = 0; }
+        if (left + w > fieldW) w = fieldW - left;
+        if (top + h > fieldH) h = fieldH - top;
+        w = Math.Max(1, w);
+        h = Math.Max(1, h);
+
+        var src = new Rectangle(left, top, w, h);
+
+        return (src, dest.Width / (float)src.Width, dest.Height / (float)src.Height);
     }
 
     public override void Draw(SpriteBatch spriteBatch)
@@ -383,35 +426,38 @@ public sealed class WorldMap : UIPanel
     private void DrawMap(SpriteBatch spriteBatch)
     {
         Fill(spriteBatch, MapRect, Color.Black);
-        Border(spriteBatch, MapRect, PanelBorder);
 
         if (BackgroundTexture is null)
             return;
 
-        var (src, scaleX, scaleY) = MapView();
-        spriteBatch.Draw(BackgroundTexture, MapRect, src, Color.White);
+        var mapContent = new Rectangle(MapRect.X + 1, MapRect.Y, MapRect.Width - 2, MapRect.Height - 1);
+        var (src, scaleX, scaleY) = MapView(mapContent);
+        spriteBatch.Draw(BackgroundTexture, mapContent, src, Color.White);
+
+        Border(spriteBatch, MapRect, PanelBorder);
 
         MapMarkers.EnsureLoaded(spriteBatch.GraphicsDevice);
 
         for (var i = 0; i < Nodes.Count; i++)
         {
             var node = Nodes[i];
-            var mx = MapRect.X + (int)((node.FieldPos.X - src.X) * scaleX);
-            var my = MapRect.Y + (int)((node.FieldPos.Y - src.Y) * scaleY);
+            var mx = mapContent.X + (int)((node.FieldPos.X - src.X) * scaleX);
+            var my = mapContent.Y + (int)((node.FieldPos.Y - src.Y) * scaleY);
             var selected = i == SelectedIndex;
 
-            //destinations are marked with the painted red X (its crossing is the texture center, so clicks land
-            //where the X looks like it is); the selected one is bigger and full-strength
             var size = selected ? 22 : 16;
             var mark = MapMarkers.RedMark;
             var markH = mark is null ? size : Math.Max(1, (int)(size * (mark.Height / (float)mark.Width)));
             var box = new Rectangle(mx - size / 2, my - markH / 2, size, markH);
 
-            if (!MapRect.Contains(box))
+            if (!mapContent.Contains(box))
                 continue;
 
             if (mark is not null)
+            {
+                spriteBatch.Draw(mark, new Rectangle(box.X + 2, box.Y + 2, size, markH), Color.Black * 0.55f);
                 spriteBatch.Draw(mark, box, selected ? Color.White : new Color(235, 235, 235) * 0.85f);
+            }
             else
                 Fill(spriteBatch, box, selected ? MarkerSelectedColor : MarkerColor);
 
@@ -468,7 +514,7 @@ public sealed class WorldMap : UIPanel
         }
     }
 
-    //input
+    //--- input ---
 
     public override void OnMouseMove(MouseMoveEvent e) => HoveredListIndex = Confirming ? -1 : ListRowAt(e.ScreenX, e.ScreenY);
 
@@ -513,11 +559,6 @@ public sealed class WorldMap : UIPanel
 
         switch (e.Key)
         {
-            case Keys.Escape:
-                TravelToCurrent(); //#1: never strand the player off-map
-                e.Handled = true;
-
-                break;
             case Keys.Up:
                 Select(SelectedIndex <= 0 ? Nodes.Count - 1 : SelectedIndex - 1);
                 EnsureSelectedVisible();
@@ -566,14 +607,15 @@ public sealed class WorldMap : UIPanel
         if (!MapRect.Contains(screenX, screenY) || (BackgroundTexture is null))
             return -1;
 
-        var (src, scaleX, scaleY) = MapView();
+        var mapContent = new Rectangle(MapRect.X + 1, MapRect.Y, MapRect.Width - 2, MapRect.Height - 1);
+        var (src, scaleX, scaleY) = MapView(mapContent);
         var best = -1;
         var bestDist = 16 * 16;
 
         for (var i = 0; i < Nodes.Count; i++)
         {
-            var mx = MapRect.X + (int)((Nodes[i].FieldPos.X - src.X) * scaleX);
-            var my = MapRect.Y + (int)((Nodes[i].FieldPos.Y - src.Y) * scaleY);
+            var mx = mapContent.X + (int)((Nodes[i].FieldPos.X - src.X) * scaleX);
+            var my = mapContent.Y + (int)((Nodes[i].FieldPos.Y - src.Y) * scaleY);
             var dx = mx - screenX;
             var dy = my - screenY;
             var dist = dx * dx + dy * dy;
@@ -588,7 +630,7 @@ public sealed class WorldMap : UIPanel
         return best;
     }
 
-    //draw helpers
+    //--- draw helpers ---
 
     private static void DrawTtf(SpriteBatch spriteBatch, string text, int x, int y, int size, Color color)
     {

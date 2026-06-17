@@ -24,13 +24,14 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     //idle frame for south-facing direction (walk anim frames 5-9, idle = 5)
     private const int PAPERDOLL_IDLE_FRAME = 5;
 
-    //level-up stat-raise arrows (shared art with the Stats window). Gap is the pixels between a stat value and its arrow
+    //level-up stat-raise arrows (shared art with the Stats window); gap is the pixels between a stat value and its arrow
     private const string LEVELUP_EPF = "levelup.epf";
     private const int STAT_ARROW_GAP = 3;
 
-    //TrueType pixel size for every label on this page, the book's ScaleHost magnifies it (so the on-screen size is
-    //EQUIP_FONT * WindowScale). 11 visually matches the retail 12px bitmap it replaces
+    //TrueType pixel size for every label on this page; the book's ScaleHost magnifies it (so the on-screen size is
+    //EQUIP_FONT * WindowScale). 11 visually matches the retail 12px bitmap it replaces.
     private const int EQUIP_FONT = 11;
+    private const int EQUIP_FONT_MIN = 7;
 
     //one stat-raise arrow per primary attribute (STR/INT/WIS/CON/DEX), shown only when there are unspent points
     private readonly StatButton?[] StatRaiseButtons = new StatButton?[5];
@@ -145,9 +146,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         AcLabel?.TruncateWithEllipsis = false;
 
         //level-up stat-raise arrows next to STR/INT/WIS/CON/DEX, mirroring the Stats window. Shown only when the player
-        //has unspent points, and clicking one raises that stat (OnRaiseStat to server). They are UIButtons (not labels/images)
+        //has unspent points; clicking one raises that stat (OnRaiseStat -> server). They are UIButtons (not labels/images)
         //so the decorative non-hit-test pass below leaves them interactive, and they are hidden when there is nothing to
-        //spend, so they never block dragging the book by its background
+        //spend, so they never block dragging the book by its background.
         var iconCache = UiRenderer.Instance!;
 
         if (iconCache.GetEpfFrameCount(LEVELUP_EPF) >= 3)
@@ -191,7 +192,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
             }
         }
 
-        //player info labels, left-aligned text
+        //player info labels -left-aligned text
         NameLabel = CreateLabel("NAME");
         ClassLabel = CreateLabel("CLASSTEXT");
         ClanLabel = CreateLabel("CLANTEXT");
@@ -203,8 +204,8 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         TitleLabel = CreateLabel("TITLETEXT");
         TitleLabel?.TruncateWithEllipsis = false;
 
-        //group button, one button that swaps textures based on groupopen state
-        //groupbtn prefab has the "open/recruiting" images, groupbtn_disabled has the "closed" images
+        //group button - swaps textures based on groupopen state
+        //GroupBtn prefab has the "open/recruiting" images; GroupBtn_Disabled has the "closed" image
         GroupBtn = CreateButton("GroupBtn");
 
         if (GroupBtn is not null)
@@ -250,7 +251,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         for (var i = 0; i < EMOTICON_FRAME_COUNT; i++)
             EmoticonIcons[i] = UiRenderer.Instance!.GetSpfTexture("_nemots.spf", i);
 
-        //emoticon status text label, the prefab places it at the same origin as the icon, so shift
+        //emoticon status text label -prefab places it at the same origin as the icon, so shift
         //it right past the icon to avoid overlap
         EmoticonLabel = CreateLabel("HumanState");
         EmoticonLabel?.ForegroundColor = TextColors.Default;
@@ -273,8 +274,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
             EmoticonLabel.Y -= 1;
         }
 
-        //emoticon icon drawn as a uiimage child so it joins the regular child render pipeline
-        //this keeps zindex ordering correct, so the tooltip (zindex 10) draws on top of the emoticon icon
+        //emoticon icon -drawn as a uiimage child so it participates in the regular child render
+        //pipeline. this ensures zindex ordering works correctly, allowing the tooltip (zindex 10)
+        //to draw on top of the emoticon icon.
         if (humanIconRect != Rectangle.Empty)
         {
             EmoticonImage = new UIImage
@@ -313,13 +315,13 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
 
         PortraitTextLabel?.IsHitTestVisible = true;
 
-        //the social-status emoticon (icon + its label) is clickable, it opens the Social status picker. Restoring
+        //the social-status emoticon (icon + its label) is clickable - it opens the Social status picker. Restoring
         //hit-testing here also stops a click there from dragging the book.
         EmoticonImage?.IsHitTestVisible = true;
         EmoticonLabel?.IsHitTestVisible = true;
 
         //tooltips on the interactive gadgets. These are hit-test-visible, so the resolver's generic-fallback step
-        //(any hovered control with a Tooltip) shows them, no per-control resolver code needed
+        //(any hovered control with a Tooltip) shows them - no per-control resolver code needed.
         if (GroupBtn is not null)
             GroupBtn.Tooltip = "Grouping\nControls whether other players are allowed to invite you into their group.\n\nClick to toggle it on or off.";
 
@@ -358,10 +360,10 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
             _                        => "Accessory"
         };
 
-    //lay a transparent InfoHotspot over each baked field NAME (the words left of the value boxes in the _nui_eq art)
-    //the stat words reuse the same StatInfo help as their value hover, the identity words get a short note
-    //geometry comes from the value-label rects (so it tracks the prefab), leftBound is the per-column
-    //left edge of the word, eyeballed from the rendered art (nudge if a word is missed)
+    //lay a transparent InfoHotspot over each baked field NAME (the words left of the value boxes in the _nui_eq art).
+    //The stat words reuse the same StatInfo help as their value hover / the Stats window; the identity words get a
+    //short note. Geometry derives from the value-label rects (so it tracks the prefab); leftBound is the per-column
+    //left edge of the word, eyeballed from the rendered art (nudge if a word is missed).
     private void BuildInfoHotspots()
     {
         //stats (bottom of the left page, a 3-column grid)
@@ -379,7 +381,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         AddWordHotspot(ClanTitleLabel, 362, "Guild Rank", "Your rank within your guild.");
         AddWordHotspot(TitleLabel, 362, "Title", "An honorific title you have earned.");
 
-        //nation crest (no value label to anchor to, fixed to the _nui_eq "Nation" rect)
+        //nation crest (no value label to anchor to - fixed to the _nui_eq "Nation" rect)
         AddChild(
             new InfoHotspot("Nation", "Your nation, or homeland.")
             {
@@ -547,6 +549,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     }
 
     /// <summary>
+    ///     Renders an item icon from the panel item sprite sheet using the same pipeline as inventory icons.
+    /// </summary>
+    /// <summary>
     ///     Sets the emoticon/social status icon and text. State 0-7 maps to _nemots.spf frames.
     /// </summary>
     public void SetEmoticonState(byte state, string statusText)
@@ -637,7 +642,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         if (!SlotVisuals.TryGetValue(slot, out var visual))
             return;
 
-        //dispose previous item texture (not the placeholder, that's shared/owned by the prefab)
+        //dispose previous item texture (not the placeholder -that's shared/owned by the prefab)
         if (visual.ItemTexture is not null)
         {
             visual.ItemTexture.Dispose();
@@ -663,12 +668,34 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         int dex,
         int ac)
     {
-        StrLabel?.Text = $"{str}";
-        IntLabel?.Text = $"{intel}";
-        WisLabel?.Text = $"{wis}";
-        ConLabel?.Text = $"{con}";
-        DexLabel?.Text = $"{dex}";
-        AcLabel?.Text = $"{ac}";
+        SetStatLabel(StrLabel, str);
+        SetStatLabel(IntLabel, intel);
+        SetStatLabel(WisLabel, wis);
+        SetStatLabel(ConLabel, con);
+        SetStatLabel(DexLabel, dex);
+        SetStatLabel(AcLabel, ac);
+    }
+
+    private static void SetStatLabel(UILabel? label, int value)
+    {
+        if (label is null)
+            return;
+
+        var text = $"{value}";
+
+        //default to EQUIP_FONT and shrink down to EQUIP_FONT_MIN so negative AC values and other
+        //unexpectedly wide numbers never overflow the fixed-width label box
+        if (TtfTextRenderer.Available && (label.Width > 0))
+        {
+            var size = EQUIP_FONT;
+
+            while ((size > EQUIP_FONT_MIN) && (TtfTextRenderer.MeasureWidth(text, size) > label.Width))
+                size--;
+
+            label.CustomFontSize = size;
+        }
+
+        label.Text = text;
     }
 
     public override void OnClick(ClickEvent e)

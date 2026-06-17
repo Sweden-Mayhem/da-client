@@ -23,7 +23,7 @@ public sealed class MinimapControl : UIElement
     private const int BASE_BORDER = 3;
     private const int BASE_NAME_FONT = 12;
     private const float FADE_SECONDS = 0.4f;
-    private const int DRAG_THRESHOLD = 4;
+    private const int DRAG_THRESHOLD = 16;
 
     //the dark backdrop inside the circle is only this visible, so the game world shows through the empty parts
     private const float BG_OPACITY = 0.25f;
@@ -46,7 +46,7 @@ public sealed class MinimapControl : UIElement
     private Texture2D? Texture;
     private Color[] Buffer = new Color[BASE_DIAMETER * BASE_DIAMETER];
 
-    //scale-based sizes (the circle SIZE scales with the option; tile coverage does not)
+    //scale-derived sizes (the circle SIZE scales with the option; tile coverage does not)
     private int Diam = BASE_DIAMETER;
     private int Border = BASE_BORDER;
     private int NameFont = BASE_NAME_FONT;
@@ -69,7 +69,11 @@ public sealed class MinimapControl : UIElement
     private bool Dragging;
     private bool PressArmed; //true only while a left-press that BEGAN on the minimap is held (so world clicks never drag it)
     private bool WasVisible; //re-fade the content in every time the minimap (re)appears
-    private bool Placed;
+    private bool OffsetLoaded; //true after the saved center-relative offset has been read from settings once
+    private bool HasOffset;    //true when a valid offset is available (false = use default position)
+    //OffsetX: center-relative (X - screenW/2). OffsetY: anchor-relative, positive = distance from top,
+    //negative = distance from bottom (Y - screenH), so the element stays near whichever edge it started on.
+    private int OffsetX, OffsetY;
     private int PressX, PressY, DragOffX, DragOffY;
 
     //warp-name placement + per-destination fade (so a name eases in when it enters range and out when it leaves / is crowded out)
@@ -141,7 +145,7 @@ public sealed class MinimapControl : UIElement
             DragOffY = e.ScreenY - Y;
         }
 
-        e.Handled = true; //swallow so the click never reaches the world behind the minimap
+        e.Handled = true; //mark handled so the click never reaches the world behind the minimap
     }
 
     public override void OnClick(ClickEvent e)
@@ -205,19 +209,51 @@ public sealed class MinimapControl : UIElement
             WasVisible = true;
         }
 
-        if (!Placed)
+        //load saved center-relative offset on first visible update; if none, lock in the default and save it now
+        if (!OffsetLoaded)
         {
-            X = ClientSettings.MinimapX >= 0 ? ClientSettings.MinimapX : (ChaosGame.UiWidth - Diam - 12);
-            Y = ClientSettings.MinimapY >= 0 ? ClientSettings.MinimapY : 12;
-            Placed = true;
+            OffsetLoaded = true;
+            var savedX = ClientSettings.MinimapOffsetX;
+            var savedY = ClientSettings.MinimapOffsetY;
+
+            if ((savedX != int.MinValue) && (savedY != int.MinValue))
+            {
+                HasOffset = true;
+                OffsetX = savedX;
+                OffsetY = savedY;
+            }
+            else
+            {
+                //first run: default is top-right corner. Compute as center-relative and persist immediately.
+                HasOffset = true;
+                OffsetX = (ChaosGame.UiWidth - Diam - 12) - ChaosGame.UiWidth / 2;
+                OffsetY = 12; //top-anchored: distance from top edge
+                ClientSettings.MinimapOffsetX = OffsetX;
+                ClientSettings.MinimapOffsetY = OffsetY;
+                ClientSettings.Save();
+            }
+        }
+
+        //non-drag: position from center-relative offset so the radar tracks the screen center on resize
+        if (!Dragging)
+        {
+            var cx = ChaosGame.UiWidth / 2;
+            var cy = ChaosGame.UiHeight / 2;
+            X = HasOffset ? cx + OffsetX : (ChaosGame.UiWidth - Diam - 12); //default top-right
+            Y = HasOffset ? (OffsetY >= 0 ? OffsetY : ChaosGame.UiHeight + OffsetY) : 12;
         }
 
         //drag ONLY when the left-press began on the minimap (PressArmed), else a world click whose held button is far from
         //a stale press point would teleport the minimap to the cursor
-        if (PressArmed && InputBuffer.IsLeftButtonHeld)
+        if (PressArmed && InputBuffer.IsLeftButtonHeld && ClientSettings.AllowDragMinimap)
         {
             if (!Dragging && ((Math.Abs(InputBuffer.MouseX - PressX) >= DRAG_THRESHOLD) || (Math.Abs(InputBuffer.MouseY - PressY) >= DRAG_THRESHOLD)))
+            {
                 Dragging = true;
+                //re-anchor to the current cursor position so the radar starts from here, not from the click point
+                DragOffX = InputBuffer.MouseX - X;
+                DragOffY = InputBuffer.MouseY - Y;
+            }
 
             if (Dragging)
             {
@@ -229,8 +265,9 @@ public sealed class MinimapControl : UIElement
         {
             if (Dragging)
             {
-                ClientSettings.MinimapX = X;
-                ClientSettings.MinimapY = Y;
+                //save on actual drag-drop only, not on resize-clamp
+                ClientSettings.MinimapOffsetX = OffsetX;
+                ClientSettings.MinimapOffsetY = OffsetY;
                 ClientSettings.Save();
             }
 
@@ -238,8 +275,25 @@ public sealed class MinimapControl : UIElement
             PressArmed = false;
         }
 
+        //clamp the visual position to keep the radar on screen
         X = Math.Clamp(X, 0, Math.Max(0, ChaosGame.UiWidth - Diam));
         Y = Math.Clamp(Y, 0, Math.Max(0, ChaosGame.UiHeight - Diam));
+
+        //keep the center-relative offset synced with the clamped drag position (NOT on a resize clamp)
+        if (Dragging)
+        {
+            var cx = ChaosGame.UiWidth / 2;
+            var cy = ChaosGame.UiHeight / 2;
+            HasOffset = true;
+            OffsetX = X - cx;
+            OffsetY = Y + Diam / 2 < ChaosGame.UiHeight / 2 ? Y : Y - ChaosGame.UiHeight;
+        }
+
+        //always publish the current clamped position to the settings properties (no Save -disk only updates
+        //on drag-end). This lets attached elements like the menu button follow in real-time both while the
+        //minimap is being dragged AND while it is pushed inward by a screen resize.
+        ClientSettings.MinimapOffsetX = X - ChaosGame.UiWidth / 2;
+        ClientSettings.MinimapOffsetY = Y + Diam / 2 < ChaosGame.UiHeight / 2 ? Y : Y - ChaosGame.UiHeight;
 
         var r = Diam / 2;
         Zoom = (r - Border) / InkedRadius;
@@ -266,7 +320,7 @@ public sealed class MinimapControl : UIElement
         Rebuild();
     }
 
-    //builds the circle texture: the SHELL (faint backdrop + border ring) is always at full opacity; the map ink and all the
+    //builds the circle texture - the SHELL (faint backdrop + border ring) is always at full opacity; the map ink and all the
     //stamped markers fade in by FadeAlpha. Warp names are collected for the GPU pass (not stamped here).
     private void Rebuild()
     {
@@ -480,8 +534,9 @@ public sealed class MinimapControl : UIElement
             if (!placed)
                 continue;
 
-            //keep the middle of the name inside the circle radius, the edges may overflow
-            //so pull it radially inward when stacking pushed the centre past the rim
+            //hard rule: the MIDDLE of the name must stay within the circle radius. The text may overflow at its edges, but
+            //its centre cannot sit outside the circle - so pull it radially inward when stacking/edge placement pushed the
+            //centre past the rim (this is what let "Tutorial 3" float way out before).
             var mcx = nx + (w / 2f);
             var mcy = ny + (h / 2f);
             var rcx = mcx - r;
@@ -771,6 +826,24 @@ public sealed class MinimapControl : UIElement
     {
         if (!Visible || (Texture is null))
             return;
+
+        var layers = DebugSettings.GlowLayers;
+
+        if (layers > 0)
+        {
+            var strength = DebugSettings.GlowStrength;
+            var cx = ScreenX + (float)Diam / 2;
+            var cy = ScreenY + (float)Diam / 2;
+            var origin = new Vector2(Texture.Width / 2f, Texture.Height / 2f);
+
+            for (var j = 0; j < layers; j++)
+            {
+                var dist = layers - j;
+                var scale = 1.0f + dist * 2f / Diam;
+                var alpha = (0.02f + (j + 1) * 0.035f) * strength;
+                spriteBatch.Draw(Texture, new Vector2(cx, cy), null, Color.Black * alpha, 0f, origin, scale, SpriteEffects.None, 0f);
+            }
+        }
 
         base.Draw(spriteBatch);
 

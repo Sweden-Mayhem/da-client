@@ -29,7 +29,7 @@ public sealed partial class WorldScreen
 
     private void HandleDisplayAisling(DisplayAislingArgs args)
     {
-        //update player name in hud when our own aisling shows up
+        //update player name in hud when the player's own aisling is displayed
         if (args.Id == Game.Connection.AislingId)
         {
             WorldState.PlayerName = args.Name;
@@ -51,7 +51,7 @@ public sealed partial class WorldScreen
         {
             entity.IdleAnimFrameCount = Game.AislingRenderer.GetIdleAnimFrameCount(in appearance);
 
-            //start idle cycling if the entity is already idle
+            //start idle cycling if entity is currently idle
             if (entity.AnimState == EntityAnimState.Idle)
                 AnimationSystem.ResetToIdle(entity);
         }
@@ -59,7 +59,7 @@ public sealed partial class WorldScreen
 
     private void HandleRemoveEntity(uint id)
     {
-        //grab the creature sprite for the death dissolve before it leaves worldstate
+        //capture creature sprite for death dissolve before removing from worldstate
         var entity = WorldState.GetEntity(id);
 
         if (entity is { Type: ClientEntityType.Creature })
@@ -74,7 +74,7 @@ public sealed partial class WorldScreen
         //clean up cached debug label texture
         DebugRenderer.RemoveEntity(id);
 
-        //remove the entity from worldstate
+        //remove entity from worldstate (chaosgame skips removal when worldscreen is active)
         WorldState.RemoveEntity(id);
     }
 
@@ -113,11 +113,12 @@ public sealed partial class WorldScreen
     //--- movement ---
 
     /// <summary>
-    ///     Sends the Walk packet and starts the walk animation right away without waiting for the server
+    ///     Client-side prediction: sends Walk packet and immediately starts the walk animation locally without waiting for
+    ///     server confirmation. The server response reconciles position if needed.
     /// </summary>
     private void PredictAndWalk(WorldEntity player, Direction direction)
     {
-        //bounds check, don't walk off the map edge
+        //bounds check - don't walk off the map edge
         (var dx, var dy) = direction.ToTileOffset();
         var newX = player.TileX + dx;
         var newY = player.TileY + dy;
@@ -125,7 +126,7 @@ public sealed partial class WorldScreen
         if (MapFile is null || (newX < 0) || (newY < 0) || (newX >= MapFile.Width) || (newY >= MapFile.Height))
             return;
 
-        //swimming gate, off by default, toggled via GlobalSettings.RequireSwimmingSkill
+        //swimming gate - retail behavior, off by default, toggled via GlobalSettings.RequireSwimmingSkill
         if (GlobalSettings.RequireSwimmingSkill
             && player.IsOnSwimmingTile
             && !IsGameMaster
@@ -136,14 +137,21 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //collision check, IsTilePassable already returns true under NoClip so a noclip GM phases through
-        //a normal GM is blocked just like the server blocks them
+        //collision check. IsTilePassable already returns true under NoClip, so a noclip GM still phases through;
+        //a NORMAL gm is blocked exactly like the server blocks them. (Gating on !IsGameMaster instead made GMs
+        //fire walk packets straight into walls - the server refused every one, which both rubber-banded the GM and
+        //hammered the speed-walk detector, the root of "Admin gets stuck by the fence".)
         if (!IsTilePassable(newX, newY))
+            return;
+
+        //closed door safety net - keyboard movement should already be gated in MoveOrTurn, but
+        //this catches the queued-walk and path-executor paths too
+        if (IsClosedDoorAt(newX, newY))
             return;
 
         Game.Connection.Walk(direction);
 
-        //remember where we predicted this step lands so the matching server response lines up in order
+        //remember where we predicted this step lands, so the matching server response can be reconciled in order
         PredictedWalkDests.Enqueue((newX, newY));
 
         //predict position locally
@@ -169,28 +177,30 @@ public sealed partial class WorldScreen
         if (player is null)
             return;
 
-        //the server's real tile for this walk is its source plus the direction it moved
+        //the server's authoritative tile for this walk = its source + the direction it moved
         (var dx, var dy) = direction.ToTileOffset();
         var serverX = oldX + dx;
         var serverY = oldY + dy;
 
-        //this response confirms the oldest predicted walk (FIFO over the same stream)
+        //this response confirms the OLDEST predicted walk (FIFO over the same stream)
         if (PredictedWalkDests.Count > 0)
         {
             var predicted = PredictedWalkDests.Dequeue();
 
-            //in sync, the server landed exactly where we predicted this step would
-            //our local state already reflects it, nothing to do
+            //in sync: the server landed exactly where we predicted this step would. our local state already
+            //reflects it (and any further-ahead predictions stay queued for their own responses). Nothing to do.
             if ((predicted.X == serverX) && (predicted.Y == serverY))
                 return;
 
-            //the server ended up somewhere our prediction did not, so the whole chain is wrong
-            //drop the rest and fall through to a hard resync, which self-heals a one-tile drift
+            //DIVERGENCE: the server ended up somewhere our prediction did not (a refused step left a stale
+            //prediction in the queue, or a server move slipped in). Our whole predicted chain is now wrong, so
+            //drop the rest and fall through to a hard resync onto the server's tile. This is the self-heal that
+            //stops a one-tile drift from rubber-banding every subsequent step forever.
             PredictedWalkDests.Clear();
         }
 
-        //no prediction (push tile, knockback, teleport) or a divergence resync
-        //snap to the server's tile and animate the step
+        //no prediction (genuine server-initiated walk: push tile, knockback, teleport) OR a divergence resync:
+        //snap to the server's tile and animate the step.
         QueuedWalkDirection = null;
 
         player.TileX = serverX;
@@ -208,8 +218,8 @@ public sealed partial class WorldScreen
 
         UpdateHuds(HudOps.SetCoords, serverX, serverY);
 
-        //a server move invalidates the path but must not drop the chase
-        //the retarget tick re-paths from wherever we landed
+        //a server-initiated move (push, knockback) invalidates the PATH but must not drop the CHASE - the retarget
+        //tick re-paths from wherever we landed
         var chase = Pathfinding.TargetEntityId;
         Pathfinding.Clear();
 
@@ -237,11 +247,11 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //custom-channel messages come in as a public shout from no entity, formatted "[!name] sender: msg"
-        //route them to their own chat tab keyed by the "!name" instead of the Public tab
+        //custom-channel messages arrive as a public "shout" from no entity (source uint.MaxValue), formatted
+        //"[!name] sender: msg". Route them to their own chat tab (keyed by the "!name") instead of the Public tab.
         if ((args.SourceId == uint.MaxValue) && TryParseChannelName(args.Message, out var chanName))
         {
-            //use the channel's set colour ("{=x" prefix), fall back to shout colour if unknown
+            //honor the channel's set colour ("{=x" prefix) for the whole line; fall back to shout colour if unknown/invalid
             var chColor = ChannelMessageColor(args.Message) ?? TextColors.Shout;
             WorldState.Chat.AddMessage(args.Message, chColor, ChatChannel.Public, chanName);
 
@@ -265,8 +275,8 @@ public sealed partial class WorldScreen
 
         var isShout = args.PublicMessageType == PublicMessageType.Shout;
 
-        //while an NPC dialog is open, skip over-head bubbles and their sound so it isn't noisy
-        //the message still goes to the chat window above
+        //while an NPC dialog is open, suppress over-head bubbles entirely (no bubble, no chat-bubble sound) so the
+        //conversation isn't cluttered/noisy; the message still goes to the chat window above.
         if (!NpcSession.Visible)
         {
             const int BUBBLE_MAX = 100;
@@ -275,8 +285,8 @@ public sealed partial class WorldScreen
         }
     }
 
-    //pulls the sender out of a received whisper "[Sender]: msg"
-    //returns null for the sent echo, system notices, or anything else, so we only reply to a real incoming whisper
+    //pulls the sender out of a RECEIVED whisper "[Sender]: msg". Returns null for the sent echo "[Name]> msg", system
+    //whisper notices, or any other shape, so we only ever reply to a real incoming whisper.
     private static string? ExtractWhisperSender(string message)
     {
         if (string.IsNullOrEmpty(message) || (message[0] != '['))
@@ -298,8 +308,10 @@ public sealed partial class WorldScreen
 
     private void HandleServerMessage(ServerMessageArgs args)
     {
-        //group/guild chat reuses the channel system internally, so forming one fires a "joined channel !group" notice
-        //that is just plumbing, so drop those reserved notices while real channel joins still show
+        //group/guild chat reuses the channel system internally, so forming a group/guild emits a "You have joined channel
+        //!group"/"!guild" (and a "left channel ..." on disband) notice using the channel override name. That is pure
+        //plumbing - the player already gets "You form a group with X" - and naming an internal "!group" channel only
+        //confuses (it reads like a user channel). Drop just those reserved notices; real channel joins still show.
         if (IsReservedChannelNotice(args.Message))
             return;
 
@@ -309,8 +321,8 @@ public sealed partial class WorldScreen
                 WorldState.Chat.AddMessage(args.Message, TextColors.Whisper, ChatChannel.Whisper);
                 WorldState.Chat.AddOrangeBarMessage(args.Message, TextColors.Whisper);
 
-                //seed the reply target from a received whisper so the whisper key replies to the sender
-                //the sent echo is ignored since the send path already records the target
+                //a RECEIVED whisper is "[Sender]: msg" (a sent echo is "[Target]> msg", which we ignore here since the
+                //send path already records the target). Seed the reply target so the whisper key replies to the sender.
                 if (ExtractWhisperSender(args.Message) is { } whisperSender)
                     ActiveChatInput?.SeedWhisperTargetIfEmpty(whisperSender);
 
@@ -318,7 +330,7 @@ public sealed partial class WorldScreen
 
             case ServerMessageType.GroupChat:
             {
-                //the server tags group chat with the internal "[!group]", show it as "[Group]"
+                //the server formats group chat with the channel's internal override tag "[!group]"; show it as "[Group]"
                 var groupMsg = args.Message.Replace("[!group]", "[Group]", StringComparison.OrdinalIgnoreCase);
                 WorldState.Chat.AddMessage(groupMsg, TextColors.GroupChat, ChatChannel.Group);
                 WorldState.Chat.AddOrangeBarMessage(groupMsg, TextColors.GroupChat);
@@ -346,8 +358,8 @@ public sealed partial class WorldScreen
                  or ServerMessageType.OrangeBar3
                  or ServerMessageType.AdminMessage
                  or ServerMessageType.OrangeBar5:
-                //the server also re-broadcasts every custom-channel line here, but it already shows in its own tab
-                //so don't duplicate it into System/orange
+                //the server ALSO re-broadcasts every custom-channel chat line here ("[!name] user: text"); it is already
+                //shown in its own channel tab (via the DisplayPublicMessage path), so don't duplicate it into System/orange.
                 if (TryParseChannelName(args.Message, out _))
                     break;
 
@@ -361,7 +373,8 @@ public sealed partial class WorldScreen
 
                 break;
 
-            //the text popups own the screen, so an open town map leaves first and can't reopen under them
+            //the text popups own the screen front-and-center: an open town map leaves first (and cannot reopen
+            //under them - ShowTownMap gates on TextPopup.Visible)
             case ServerMessageType.ScrollWindow:
                 TownMapControl.Hide();
                 TextPopup.Show(args.Message);
@@ -399,14 +412,16 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     Parses the server's UserOptions response, either a full list or a single toggle
+    ///     Parses the server's UserOptions response. Two formats:
+    ///     Full request: "0{desc}:{state}\t{desc}:{state}\t..." - '0' prefix, digits stripped, options ordered by position.
+    ///     Single toggle: "{digit}{desc}:{state}" - leading digit identifies the option (1-based).
     /// </summary>
     private void ParseUserOptions(string message)
     {
         if (message.Length < 2)
             return;
 
-        //single option toggle response, a leading digit then the description and on/off state
+        //single option toggle response: "{digit}{description,-25}:{on/off,-3}"
         if (message[0] != '0')
         {
             if (!char.IsDigit(message[0]))
@@ -422,7 +437,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //full response, leading '0' then 8 options in order with the digits stripped
+        //full request response: "0{opt1_desc}:{state}\t{opt2_desc}:{state}\t..."
+        //leading '0' prefix, then 8 options in order with digits stripped
         var entries = message[1..]
             .Split('\t', StringSplitOptions.RemoveEmptyEntries);
 
@@ -431,7 +447,7 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     Parses one description and on/off option entry and applies it
+    ///     Parses a single option entry in the format "{description,-25}:{ON/OFF,-3}" and applies it.
     /// </summary>
     private void ParseOptionEntry(int optionIndex, string entry)
     {
@@ -447,7 +463,7 @@ public sealed partial class WorldScreen
             .Trim();
         var isOn = stateStr.StartsWithI("ON");
 
-        //use the full formatted text as the display name since it carries the on/off state
+        //server settings: use the full formatted text as the display name (includes :on/:off)
         SettingsDialog.SetSettingName(optionIndex, entry.TrimEnd());
         WorldState.UserOptions.SetValue(optionIndex, isOn);
     }
@@ -461,23 +477,24 @@ public sealed partial class WorldScreen
         if (dialog is null || (dialog.DialogType == DialogType.CloseDialog))
         {
             NpcSession.HideAll();
-            //keep CameraFocusEntityId so the spotlit speaker can fade out during the close
-            //it gets overwritten on the next dialog open
+            //keep CameraFocusEntityId so the spotlit speaker can fade out during the close; the pan eases back because the
+            //pan target is gated on NpcSession.Visible (now false). It is overwritten on the next dialog open.
 
             return;
         }
 
-        //play the open sound only on hidden to shown, so paging through a conversation doesn't replay it
-        //covers NPC dialogs and read-only signs since the server sends those down this same path
+        //play the dialog-open sound only when the session goes from hidden to shown - so paging through a conversation
+        //(or a dialog->menu hop within the same open session) does not replay it. Covers NPC dialogs and read-only signs
+        //(the server sends those as a one-page text dialog through this same path).
         var wasOpen = NpcSession.Visible;
         NpcSession.ShowDialog(dialog);
 
-        //resolve the speaker before rendering the portrait so we can skip the avatar when one is found
+        //resolve the speaker BEFORE rendering the portrait so RenderNpcSessionPortrait can skip the avatar when found
         if (!wasOpen)
         {
             ResolveCameraFocus();
 
-            //a dialog owns the screen, so an open town map leaves right away
+            //a dialog owns the screen: an open town map leaves immediately (and cannot reopen under it)
             TownMapControl.Hide();
         }
 
@@ -497,12 +514,12 @@ public sealed partial class WorldScreen
         var wasOpen = NpcSession.Visible;
         NpcSession.ShowMenu(menu);
 
-        //resolve the speaker before rendering the portrait so we can skip the avatar when one is found
+        //resolve the speaker BEFORE rendering the portrait so RenderNpcSessionPortrait can skip the avatar when found
         if (!wasOpen)
         {
             ResolveCameraFocus();
 
-            //a dialog owns the screen, so an open town map leaves right away
+            //a dialog owns the screen: an open town map leaves immediately (and cannot reopen under it)
             TownMapControl.Hide();
         }
 
@@ -514,8 +531,8 @@ public sealed partial class WorldScreen
 
     private void RenderNpcSessionPortrait()
     {
-        //when the speaker is spotlit in-world we are already showing the real NPC
-        //so skip the dialog's own portrait avatar, it would be redundant
+        //when the speaker is shown in-world (the camera panned to it + it is spotlit), skip the dialog's own portrait/avatar
+        //entirely - we are already showing the real NPC, so the little avatar tile is redundant
         if (SpeakerResolved)
         {
             NpcSession.SetPortrait(null, false);
@@ -523,8 +540,10 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //phase 1, try the full-art illustration spf if the NPC name matches an entry in the illustration metadata
-        //IllustrationIndex picks which filename variant to load when a name has multiple
+        //phase 1: try full-art illustration spf. The original DA client attempts this unconditionally for every
+        //dialog/menu packet - the only gate is whether the NPC name matches an entry in the merged illustration
+        //metadata (npci.tbl inside npcbase.dat + server-pushed NPCIllust metafile). IllustrationIndex picks which
+        //filename variant to load when a name has multiple.
         if (!string.IsNullOrEmpty(NpcSession.NpcName))
         {
             var illustTexture = TryLoadNpcIllustration(NpcSession.NpcName, NpcSession.IllustrationIndex);
@@ -537,7 +556,7 @@ public sealed partial class WorldScreen
             }
         }
 
-        //phase 2, fall back to an entity sprite portrait based on entity type
+        //phase 2: fall back to entity sprite portrait based on entitytype
         if (NpcSession.PortraitSpriteId == 0)
         {
             NpcSession.SetPortrait(null, false);
@@ -575,7 +594,10 @@ public sealed partial class WorldScreen
     }
 
     /// <summary>
-    ///     Loads a full-art NPC illustration SPF from <c>npcbase.dat</c>, or null when the name, variant, or file is missing
+    ///     Attempts to load a full-art NPC illustration SPF from <c>npcbase.dat</c>. Looks up <paramref name="npcName" />
+    ///     in the merged illustration metadata (npci.tbl + server NPCIllust metafile) and picks the filename at
+    ///     <paramref name="variant" />. Returns null if the NPC has no entries, the variant index is out of range,
+    ///     or the SPF file is missing.
     /// </summary>
     private static Texture2D? TryLoadNpcIllustration(string npcName, byte variant)
     {
@@ -619,17 +641,19 @@ public sealed partial class WorldScreen
     private void HandleRefreshResponse()
         =>
 
-            //server acknowledged the refresh, re-center the camera
+            //server acknowledged the refresh request - re-center camera
             FollowPlayerCamera();
 
     //--- exchange ---
 
     private void HandleExchangeAmountRequested(byte fromSlot)
     {
-        //ItemAmount lives in its own ScaleHost now, scaled and centered each frame by AnchorPopups
+        //ItemAmount is hosted in its own ScaleHost now (scaled + centered each frame by AnchorPopups), so it no longer
+        //positions itself relative to the exchange window.
         ItemAmount.ShowForSlot(fromSlot);
 
-        //pin the slot's hover description in the HUD bar while the popup is open
+        //surface the slot's hover description (e.g. "Apple[ 10 ]") in the HUD bar while the popup
+        //is open - matches retail behavior of pinning the operated-on item's tooltip text.
         WorldHud.SetDescription(WorldState.Inventory.GetSlot(fromSlot).Name);
     }
 
@@ -670,7 +694,7 @@ public sealed partial class WorldScreen
         var board = WorldState.Board;
         var posts = board.Posts.ToList();
 
-        //make sure the session is open, the server can send board data directly without going through BoardList
+        //ensure session is open - server can send board data directly (e.g. tile click) without going through BoardList
         if (!board.IsSessionOpen)
             board.OpenSession();
 
@@ -707,7 +731,7 @@ public sealed partial class WorldScreen
 
         var board = WorldState.Board;
 
-        //make sure the session is open, the server can send a post directly without going through BoardList
+        //ensure session is open - server can send a post directly without going through BoardList
         if (!board.IsSessionOpen)
             board.OpenSession();
 
@@ -771,8 +795,9 @@ public sealed partial class WorldScreen
 
             case ServerGroupSwitch.RequestToJoin:
             {
-                //the leader's client silently auto-forwards this as TryInvite with no prompt
-                //the orange-bar notice is a nicety we add on top
+                // Retail behavior: the leader's client silently auto-forwards as TryInvite
+                // with no UI prompt. Ref: docs/research/group-ui-original-re.md §5.1 / §7.1
+                // (verified round-2). The orange-bar notice is a QoL addition retail omits.
                 WorldState.Chat.AddOrangeBarMessage($"{sourceName} wants to join your group.");
                 Game.Connection.SendGroupInvite(ClientGroupSwitch.TryInvite, sourceName);
 
@@ -872,7 +897,7 @@ public sealed partial class WorldScreen
     {
         WorldState.IsMaster = args.EnableMasterQuestMetaData;
 
-        //remember guild membership so the chat window knows whether to show a Guild tab
+        //remember guild membership so the chat window knows whether to show a Guild tab (profile is fetched on demand)
         WorldState.GuildName = args.GuildName ?? string.Empty;
 
         //nation emblem and text
@@ -882,7 +907,7 @@ public sealed partial class WorldScreen
         var status = SocialStatusPicker.CurrentStatus;
         StatusBook.SetEmoticonState((byte)status, UiComponentRepository.GetSocialStatusName(status));
 
-        //fill in and show the status book
+        //fill and show the status book
         StatusBook.SetPlayerInfo(
             WorldHud.PlayerName,
             args.DisplayClass,
@@ -901,8 +926,9 @@ public sealed partial class WorldScreen
 
         StatusBook.SetLegendMarks(marks);
 
-        //ability metadata from the sclass file, cached so hover tooltips look up detail by name without re-parsing
-        //remember the class so the metadata-sync handler can re-parse, since login can run before the sync lands
+        //ability metadata (skills/spells from sclass file). Cached so the hotbar + K/P book hover tooltips can look up a
+        //skill/spell's detail by name without re-parsing the metafile each hover. The class is remembered so the
+        //metadata-sync handler can re-parse: at login this can run BEFORE the sync lands the fresh SClass files.
         PlayerBaseClass = (byte)args.BaseClass;
         var abilityMetadata = DataContext.MetaFiles.GetAbilityMetadata((byte)args.BaseClass);
         PlayerAbilityMetadata = abilityMetadata;
@@ -912,12 +938,12 @@ public sealed partial class WorldScreen
         else
             StatusBook.ClearSkills();
 
-        //event metadata, quests from the sevent files
+        //event metadata (quests from sevent files)
         var eventMetadata = DataContext.MetaFiles.GetEventMetadata();
 
         if (eventMetadata.Count > 0)
         {
-            //build a set of completed event ids from legend marks for quick lookup
+            //build a set of completed event ids from legend marks for o(1) lookup
             var completedEventIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var mark in args.LegendMarks)
@@ -935,18 +961,18 @@ public sealed partial class WorldScreen
         StatusBook.SetFamilyInfo(args.SpouseName ?? string.Empty);
         LoadPlayerFamilyList();
 
-        //paperdoll, render the player's full aisling at south-facing idle
+        //paperdoll - render the player's full aisling at south-facing idle
         var playerEntity = WorldState.GetPlayerEntity();
 
         if (playerEntity?.Appearance is { } appearance)
             StatusBook.SetPaperdoll(Game.AislingRenderer, in appearance);
 
-        //group open state, the server is the source of truth so sync all the ui
+        //group open state - server is source of truth, sync all ui
         StatusBook.SetGroupOpen(args.GroupOpen);
         WorldState.UserOptions.SetValue(12, args.GroupOpen);
         WorldHud.SetGroupOpen(args.GroupOpen);
 
-        //group members, parse the groupstring into state and the ui picks it up via event
+        //group members - parse groupstring into state, ui subscribes via event
         if (!string.IsNullOrEmpty(args.GroupString))
         {
             if (args.GroupString.StartsWithI(GROUP_MEMBERS_PREFIX))
@@ -1019,8 +1045,8 @@ public sealed partial class WorldScreen
 
         StatusBook.SwitchTab(tab);
 
-        //center the host in the native window only the first time it opens
-        //after that leave it where the player dragged it
+        //magnify (dynamic WindowScale); center the host in the native window only the FIRST time it opens, then leave it
+        //where the player dragged it (until restart). The book sits at the host's origin.
         if (StatusBookHost is not null)
         {
             StatusBookHost.Scale = ClientSettings.WindowScale;
@@ -1057,11 +1083,11 @@ public sealed partial class WorldScreen
         if (entity is null)
             return;
 
-        //emotes are body animations, so ignore if any body anim or emote overlay is already playing
+        //emotes are body animations - ignore if any body anim or emote overlay is already playing
         if ((entity.AnimState == EntityAnimState.BodyAnim) || (entity.ActiveEmoteFrame >= 0))
             return;
 
-        //creatures use their mpf attack frame counts, aislings use epf suffix-based counts
+        //creatures use their mpffile attack frame counts; aislings use epf suffix-based frame counts
         if (entity.Type == ClientEntityType.Creature)
         {
             var animInfo = Game.CreatureRenderer.GetAnimInfo(entity.SpriteId);
@@ -1084,7 +1110,7 @@ public sealed partial class WorldScreen
                 AnimationSystem.StartBodyAnimation(entity, args.BodyAnimation, args.AnimationSpeed);
             } else if (DataUtilities.IsEmote(args.BodyAnimation))
             {
-                //emote overlay, a face or bubble icon composited into the aisling sprite
+                //emote overlay - face/bubble icon composited into the aisling sprite
                 (var startFrame, var frameCount, var durationMs) = AnimationSystem.ResolveEmoteFrames(args.BodyAnimation);
 
                 if (startFrame >= 0)
@@ -1103,8 +1129,8 @@ public sealed partial class WorldScreen
             Game.SoundSystem.PlaySound(args.Sound.Value);
     }
 
-    //TargetAnimation values in this range are MEFC projectiles
-    //the meffect id is what's left after subtracting the base
+    //TargetAnimation values in [PROJECTILE_ANIMATION_BASE, PROJECTILE_ANIMATION_MAX_EXCLUSIVE) are MEFC projectiles;
+    //the meffect id is recovered by subtracting the base.
     private const int PROJECTILE_ANIMATION_BASE = 10000;
     private const int PROJECTILE_ANIMATION_MAX_EXCLUSIVE = 12000;
 
@@ -1133,7 +1159,7 @@ public sealed partial class WorldScreen
         if (args is { TargetId: > 0, TargetAnimation: > 0 })
             CreateEffect(args.TargetAnimation, args.AnimationSpeed, args.TargetId.Value);
 
-        //source-side effect, the caster visual
+        //source-side effect (caster visual)
         if (args is { SourceId: > 0, SourceAnimation: > 0 })
             CreateEffect(args.SourceAnimation, args.AnimationSpeed, args.SourceId.Value);
     }
@@ -1169,7 +1195,7 @@ public sealed partial class WorldScreen
         if (distance < 1f)
             return;
 
-        //direction matches the server's DirectionalRelationTo in tile space, Up=0, Right=1, Down=2, Left=3
+        //direction matches server's DirectionalRelationTo (tile space): Up=0, Right=1, Down=2, Left=3
         var direction = GetProjectileDirection(
             targetEntity.TileX - sourceEntity.TileX,
             targetEntity.TileY - sourceEntity.TileY);
@@ -1207,19 +1233,22 @@ public sealed partial class WorldScreen
 
         (var frameCount, var fileIntervalMs, var isEfa, var blendMode) = info.Value;
 
-        //efa effects use the interval from the file, epf effects use the packet's animation speed
+        //efa effects use the interval from the file; epf effects use the packet's animation speed
         float frameIntervalMs = isEfa
             ? fileIntervalMs > 0 ? fileIntervalMs : 50
             : animationSpeed > 0
                 ? animationSpeed
                 : 50;
 
-        //only one effect per entity at a time, so cancel any existing one on the same entity
+        //cancel any existing effect on the same entity - only one effect per entity at a time
         if (targetEntityId.HasValue)
             WorldState.ActiveEffects.RemoveAll(e => e.TargetEntityId == targetEntityId);
 
-        //record the target's current tile as a fallback so a killing-blow effect keeps playing at the death spot
-        //the entity still exists here since the animation packet is handled before the remove-entity packet
+        //capture the target entity's current tile as a FALLBACK position. An entity-targeted effect normally follows
+        //the live entity (DrawEntityEffects), but if that entity is removed before the effect finishes - e.g. a
+        //killing-blow spell on a monster that dies the same instant - the effect would vanish. With the tile recorded,
+        //it keeps playing at the death spot (see DrawGroundEffectsAtDepth). The entity still exists here because the
+        //animation packet is processed before the remove-entity packet.
         if (targetEntityId.HasValue && (targetTileX is null) && WorldState.GetEntity(targetEntityId.Value) is { } target)
         {
             targetTileX = target.TileX;
@@ -1265,7 +1294,7 @@ public sealed partial class WorldScreen
 
             if (door.Closed)
             {
-                //restore the closed tile, find the open one currently set and swap it back
+                //restore closed tile: find the open tile currently set and swap it back
                 var closedLeft = DoorTable.GetClosedTileId(tile.LeftForeground);
                 var closedRight = DoorTable.GetClosedTileId(tile.RightForeground);
 
@@ -1276,7 +1305,7 @@ public sealed partial class WorldScreen
                     tile.RightForeground = closedRight.Value;
             } else
             {
-                //open the door, find the closed tile and swap it to open
+                //open door: find the closed tile and swap to open
                 var openLeft = DoorTable.GetOpenTileId(tile.LeftForeground);
                 var openRight = DoorTable.GetOpenTileId(tile.RightForeground);
 
@@ -1291,32 +1320,33 @@ public sealed partial class WorldScreen
 
     private void HandleMapChangePending()
     {
-        //MapPreloaded gates every path request, the water/door tile lists still belong to the old map
+        //MapPreloaded gates every path request: the water/door tile lists still belong to the OLD map's dimensions,
         //so nothing may pathfind against them before FinalizeMapLoad rebuilds them
         MapPreloaded = false;
-        LastHealthPercent.Clear(); //entity ids don't carry across maps, drop stale baselines so the hit cue stays right
+        LastHealthPercent.Clear(); //entity ids don't carry across maps; drop stale baselines so the hit cue stays correct
         ResetCameraFx();           //don't carry a shake or red flash across a warp
 
         QueuedWalkDirection = null;
         Pathfinding.Clear();
         TownMapControl.Hide();
 
-        //a real map transition is the one place we drop outstanding predicted walks
-        //any in flight on the old map will never be confirmed on the new one
+        //a true map transition is the one place we discard outstanding predicted walks: any that were in flight
+        //on the old map will not be confirmed on the new one. (the same-map F5 refresh path, which also runs
+        //ClearTransientState, must NOT clear this - its predictions are still awaiting their responses.)
         PredictedWalkDests.Clear();
     }
 
     //--- health / effects / light ---
 
-    //a channel message is "[!name] sender: msg" with an optional leading "{=c" colour code
-    //pulls out the "!name" key when the bracket holds one, false for ordinary broadcasts
+    //a channel message is "[!name] sender: msg" (an optional "{=c" colour code may lead). Pulls out the "!name" channel
+    //key when the leading bracket holds a channel-prefixed name; false for ordinary broadcasts.
     private static bool TryParseChannelName(string message, out string channelName)
     {
         channelName = string.Empty;
 
         var open = message.IndexOf('[');
 
-        if (open is < 0 or > 3) //allow a short leading colour code before the bracket, nothing more
+        if (open is < 0 or > 3) //allow a short leading colour code ("{=c") before the bracket, nothing more
             return false;
 
         var close = message.IndexOf(']', open + 1);
@@ -1334,28 +1364,29 @@ public sealed partial class WorldScreen
         return true;
     }
 
-    //the line colour from a leading "{=x" colour code, or null when absent so the caller uses a default
+    //the line colour from a leading "{=x" channel-colour code, or null if absent/unknown (then the caller uses a default)
     private static Color? ChannelMessageColor(string message)
         => (message.Length >= 3) && (message[0] == '{') && (message[1] == '=') ? TextRenderer.GetColorCode(message[2]) : null;
 
-    //true for the internal group/guild channel join/leave notices, which are plumbing the player should never see
-    //group/guild chat has its own tabs and its own "you formed/joined" lines
+    //true for the internal group/guild channel join/leave notices ("... channel !group" / "... channel !guild"), which
+    //are plumbing the player should never see (group/guild chat has its own tabs and its own "you formed/joined" lines).
     private static bool IsReservedChannelNotice(string message)
         => message.Contains("channel !group", StringComparison.OrdinalIgnoreCase)
            || message.Contains("channel !guild", StringComparison.OrdinalIgnoreCase);
 
     private void HandleEffect(EffectArgs args) => BuffBar?.SetEffect(args.EffectIcon, args.EffectColor);
 
-    //each entity's last-seen health %, so the hit cue fires only on an actual drop
-    //heals also show a health bar, so without this a heal would wrongly play the hit sound
+    //each entity's last-seen health %, so the hit cue fires only on an actual DROP. Heals also show a health bar
+    //(server ApplyHealScript calls ShowHealth), so without this a heal would wrongly play the hit sound. Cleared on map change.
     private readonly Dictionary<uint, int> LastHealthPercent = [];
 
     private void HandleHealthBar(HealthBarArgs args)
     {
         Overlays.AddOrResetHealthBar(args.SourceId, args.HealthPercent);
 
-        //hit cue when health dropped vs what we last saw, or the first time we see its bar
-        //any source counts, but a heal goes up and must stay silent, hence the compare
+        //hit cue on HP LOSS: play when this entity's health dropped vs what we last saw (or the first time we see its
+        //bar, which is almost always a hit). Any source counts - melee, spell, a draining effect - matching "play it
+        //whenever something loses HP". A heal (% went up) shows a bar too but must stay silent, hence the compare.
         int pct = args.HealthPercent;
         var lostHp = !LastHealthPercent.TryGetValue(args.SourceId, out var prev) || (pct < prev);
         LastHealthPercent[args.SourceId] = pct;
@@ -1367,7 +1398,7 @@ public sealed partial class WorldScreen
             var hitEntity = WorldState.GetEntity(args.SourceId);
 
             if (hitEntity is not null)
-                hitEntity.HitShakeMs = 264f; //200ms delay plus 64ms active
+                hitEntity.HitShakeMs = 264f; //200ms delay + 64ms active
         }
 
         if (args.Sound.HasValue)
@@ -1382,14 +1413,15 @@ public sealed partial class WorldScreen
         DarknessRenderer.ReapplyLightLevel();
         DataContext.MetaFiles.BuildItemIndex();
 
-        //if the server shipped a SwmWarps metafile it is now on disk and wins, so swap it in over the baked table
+        //if the server shipped a SwmWarps metafile it is now on disk and authoritative; swap it in over the baked table
         WarpData.ReloadFromServer();
 
-        //same for the server collision table, use it over the ia.dat sotp so client walls match the server
+        //likewise the server collision table (SwmSotp): use it over the ia.dat sotp so client walls match the server
         DataContext.Tiles.ReloadSotpOverride();
 
-        //the SClass files may have just been replaced, so drop the merged cache and re-parse the player's own set
-        //at login the self-profile often arrives before this sync, leaving it parsed from the previous session's files
+        //the SClass files may have just been replaced - drop the merged cross-class cache AND re-parse the player's
+        //own set. At login the self-profile often arrives BEFORE this sync, so the player's set was parsed from the
+        //PREVIOUS session's files (symptom: stale ability detail, e.g. "Cast lines: instant" on a 2-line spell).
         AllClassAbilityMetadata = null;
 
         if ((PlayerBaseClass >= 0) && DataContext.MetaFiles.GetAbilityMetadata((byte)PlayerBaseClass) is { } fresh)
@@ -1428,20 +1460,21 @@ public sealed partial class WorldScreen
 
     private void HandleExitResponse(ExitResponseArgs args)
     {
-        //server confirmed exit, send the actual logout which triggers the server redirect to login
+        //server confirmed exit - send the actual logout (isrequest=false triggers server-side redirect to login)
         if (args.ExitConfirmed)
             Game.Connection.RequestExit(false);
     }
 
     private void HandleStateChanged(ConnectionState oldState, ConnectionState newState)
     {
-        //while a silent reconnect is running, ReconnectFlow owns every transition
-        //ignore them here so we don't flash to the lobby or pop the disconnect box on its redirects
+        //while a silent reconnect is running, ReconnectFlow owns every transition (it walks us back through
+        //lobby → login → world). Ignore them here so we don't switch to the lobby on the intermediate Login state
+        //or pop the disconnect box on the expected redirect disconnects.
         if (Reconnecting)
             return;
 
-        //server redirected us back to login, transitions go world then connecting then login
-        //so just check for login arrival
+        //server redirected us back to login (e.g., after logout)
+        //state transitions go world → connecting → login, so just check for login arrival
         if (newState == ConnectionState.Login)
         {
             RedirectInProgress = false;
@@ -1450,16 +1483,19 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //unexpected disconnect, skip if this is part of a redirect sequence
+        //unexpected disconnect (skip if this is part of a redirect sequence)
         if ((newState == ConnectionState.Disconnected) && !RedirectInProgress)
         {
-            //force any open NPC dialog shut, the server can't round-trip the close
-            //so it would otherwise hang over the reconnect overlay until relog
+            //force any open NPC dialog shut: the server can't round-trip the close, so it would otherwise hang over the
+            //reconnect overlay / disconnect prompt until relog
             NpcSession.HideAll();
             NpcSessionHost?.SnapHidden();
 
-            //try a silent reconnect first, but only for a genuine unexpected drop, never for an in-flight redirect
-            //IsRedirecting is set before that disconnect so it gates this right, otherwise fall back to the popup
+            //try a silent reconnect first (freeze + darken + replay login), but ONLY for a GENUINE unexpected drop -
+            //never for the expected disconnect of an in-flight redirect (logout / server move closes the world socket
+            //on purpose). IsRedirecting is set BEFORE that disconnect, so it gates this correctly; RedirectInProgress
+            //is only set just AFTER it (by OnRedirectReceived) and so can't. A reconnect needs this session's
+            //credentials, always present once in the world; otherwise fall back to the disconnect popup.
             if (!Game.Connection.IsRedirecting && Game.Connection.CanReconnect)
             {
                 BeginReconnect();
@@ -1482,7 +1518,7 @@ public sealed partial class WorldScreen
     }
     #endregion
 
-    //Up=0, Right=1, Down=2, Left=3, matches the server DirectionalRelationTo in tile space
+    //Up=0, Right=1, Down=2, Left=3 - matches server DirectionalRelationTo in tile space
     private static int GetProjectileDirection(int dtx, int dty)
     {
         var absDtx = Math.Abs(dtx);

@@ -18,15 +18,16 @@ public enum StatInfoKind
     Gold,
     GamePoints,
     Level,
-    Ability
+    Ability,
+    OffenseElement,
+    DefenseElement,
+    MagicResistance,
+    Damage,
+    HitChance
 }
 
 /// <summary>
-///     Hover help for the character stats, shown by the info tooltip on the Stats window (s_Str, s_EXP, ...) and the
-///     Equipment book (N_STR, ...). Each entry is a short title plus a body that uses the client's &lt;green&gt;/&lt;red&gt;
-///     markup, so the upside reads green and the caveat reads red.
-///     EDIT THE WORDING HERE - this is the single source for both panels. The class/attribute pairings below follow the
-///     usual Dark Ages conventions; tune them to this server's actual formulas.
+///     Hover help for the character stats, shown by the unified info tooltip on the Stats window and Equipment book.
 /// </summary>
 public static class StatInfo
 {
@@ -35,94 +36,113 @@ public static class StatInfo
         {
             StatInfoKind.Strength => (
                 "Strength",
-                "<green>Increases your melee attack power</green> and how much you can carry.\n"
-                + "The main attribute for Warriors and Monks.\n"
-                + "<red>Does little for spellcasters.</red>\n"
-                + "Raise it by spending level-up points."),
+                "Increases your maximum carry weight.\n"
+                + "<green>Increases the damage of most skills.</green>"),
 
             StatInfoKind.Intelligence => (
                 "Intelligence",
-                "<green>Powers Wizard spells</green> - more magic damage and a larger mana pool.\n"
-                + "The main attribute for Wizards.\n"
-                + "Raise it by spending level-up points."),
+                "<green>Increases the damage of most spells.</green>"),
 
             StatInfoKind.Wisdom => (
                 "Wisdom",
-                "<green>Powers Priest spells and healing</green>, and raises your maximum mana.\n"
-                + "The main attribute for Priests.\n"
-                + "Raise it by spending level-up points."),
+                "<green>Increases the potency of most heals.</green>\n"
+                + "Increases mana gained when leveling up.\n"
+                + "<green>Increases mana regeneration amount.</green>\n"
+                + "<red>Does not increase mana regeneration speed.</red>"),
 
             StatInfoKind.Constitution => (
                 "Constitution",
-                "<green>Raises your maximum health</green>, so you can take more hits.\n"
-                + "Valuable to every class.\n"
-                + "Raise it by spending level-up points."),
+                "Increases the damage of most kick skills.\n"
+                + "<green>Increases health gained when leveling up.</green>\n"
+                + "<green>Increases health regeneration amount and speed.</green>"),
 
             StatInfoKind.Dexterity => (
                 "Dexterity",
-                "<green>Improves your accuracy and attack speed.</green>\n"
-                + "The main attribute for Rogues.\n"
-                + "Raise it by spending level-up points."),
+                "<green>Increases the damage of some skills.</green>\n"
+                + "<green>Increases the chance for assails to do double damage.</green>\n"
+                + "<red>Does not affect spells in any way.</red>"),
 
             StatInfoKind.ArmorClass => (
                 "Armor Class",
-                "Your defense against physical attacks.\n"
-                + "<green>Lower is better</green> - it makes you harder to hit.\n"
-                + "Lower it by wearing better armor."),
+                "Modifies the damage you will take from most sources by an equal percentage.\n"
+                + "<green>Lower is better.</green>\n"
+                + "<red>Kelb skills are unaffected.</red>"),
 
             StatInfoKind.Health => (
                 "Health (HP)",
-                "Your life force. <red>Reach 0 and you die.</red>\n"
-                + "<green>Regenerates over time</green>, and from food, potions and rest.\n"
-                + "Raise your maximum with Constitution and better gear."),
+                "The damage you must take before dying.\n"
+                + "<green>Increases the damage of crasher skills.</green>"),
 
             StatInfoKind.Mana => (
                 "Mana (MP)",
-                "The energy your spells cost to cast.\n"
-                + "<green>Regenerates over time</green>, and from potions and rest.\n"
-                + "Raise your maximum with Wisdom, Intelligence and better gear."),
+                "Required to cast most spells.\n"
+                + "<green>Increases the damage of strioch spells.</green>"),
 
             StatInfoKind.Experience => (
                 "Experience",
-                "How much experience you have earned in total.\n"
-                + "<green>Gained by defeating monsters and finishing quests.</green>\n"
-                + "Earn enough to level up and gain stat points."),
+                "How much experience you have gained.\n"
+                + "<green>Can be used to buy health or mana.</green>\n"
+                + "Required to learn some medenian skills and spells."),
 
             StatInfoKind.NextLevel => (
                 "To next level",
-                "Experience still needed to reach your next level.\n"
-                + "<green>Defeat monsters and finish quests</green> to close the gap."),
+                "The amount of experience you must gain to level up."),
 
             StatInfoKind.AbilityExperience => (
                 "Ability experience",
-                "Experience that advances your Ability rank.\n"
-                + "<green>Earned alongside regular experience</green>, and keeps you growing once leveling slows."),
+                "How much ability experience you have gained.\n"
+                + "Required to learn some medenian skills and spells."),
 
             StatInfoKind.NextAbility => (
                 "To next ability",
-                "Ability experience still needed for your next Ability rank."),
+                "How much ability experience you need to reach your next ability level.\n"
+                + "<red>95 is the current cap.</red>"),
 
             StatInfoKind.Gold => (
                 "Gold",
-                "Coin for buying from shops and paying for services.\n"
-                + "<green>Looted from monsters</green> and earned by selling items.\n"
-                + "<red>Drop it and others can grab it.</red>"),
+                "How much gold you are carrying.\n"
+                + "The main currency of Dark Ages.\n"
+                + "Used to learn some skills and spells.\n"
+                + "<red>Drop it and others can pick it up.</red>"),
 
             StatInfoKind.GamePoints => (
                 "Game points",
-                "A special currency, kept separate from your gold.\n"
-                + "Spent on premium goods and services where they are accepted."),
+                "Does nothing."),
 
             StatInfoKind.Level => (
                 "Level",
-                "Your character level.\n"
-                + "<green>Each level raises your stats and opens up new gear and abilities.</green>\n"
-                + "Gained by earning experience."),
+                "Your current level.\n"
+                + "Some skills, spells, equipment, quests and areas may have level requirements.\n"
+                + "<red>99 is the maximum level.</red>"),
 
             StatInfoKind.Ability => (
                 "Ability",
-                "Your Ability rank.\n"
-                + "<green>Continues your growth</green> as you earn ability experience."),
+                "Your current ability level.\n"
+                + "Some skills, spells, equipment, quests and areas may have ability requirements."),
+
+            StatInfoKind.OffenseElement => (
+                "Offense element",
+                "Modifies the element of your attack skills.\n"
+                + "Also affects mor strioch, pian and gar spells."),
+
+            StatInfoKind.DefenseElement => (
+                "Defense element",
+                "Modifies the element of your defense."),
+
+            StatInfoKind.MagicResistance => (
+                "Magic resistance",
+                "<green>Increases the chance for spells to miss you.</green>\n"
+                + "<red>70% is the cap.</red>"),
+
+            StatInfoKind.Damage => (
+                "Damage",
+                "<green>Increases the damage your assail skills will do.</green>\n"
+                + "<red>Does not affect spells in any way.</red>"),
+
+            StatInfoKind.HitChance => (
+                "Hit",
+                "<green>Increases the chance for your unmaxed assails to hit.</green>\n"
+                + "<red>Does not affect spells in any way.</red>"),
 
             _ => (string.Empty, string.Empty)
         };

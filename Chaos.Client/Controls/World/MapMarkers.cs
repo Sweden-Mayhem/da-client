@@ -8,8 +8,8 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Chaos.Client.Controls.World;
 
 /// <summary>
-///     Shared map-marker art for the town map (M) and the world travel map. The painted red X marks places the
-///     player can go (cropped so its crossing IS the texture center, so clicks land where the X looks like it is), plus
+///     Shared map-marker art for the town map (M) and the world travel map: the painted red X that marks places the
+///     player can go (cropped so its crossing IS the texture center - clicks land where the X looks like it is), and
 ///     the retail animated "you are here" player icon (tmuser.epf, 7 frames).
 /// </summary>
 internal static class MapMarkers
@@ -18,11 +18,21 @@ internal static class MapMarkers
     public const float PLAYER_FRAME_INTERVAL = 0.083f;
 
     public static Texture2D? RedMark { get; private set; }
+
+    /// <summary>1×1 white premultiplied pixel -used as a building block for procedural line drawing (DrawLine).</summary>
+    public static Texture2D? Pixel { get; private set; }
+
     public static Texture2D[]? PlayerFrames { get; private set; }
 
     public static void EnsureLoaded(GraphicsDevice device)
     {
         RedMark ??= LoadEmbeddedPremultiplied(device, "map_mark_red.png");
+
+        if (Pixel is null)
+        {
+            Pixel = new Texture2D(device, 1, 1);
+            Pixel.SetData(new Color[] { Color.White });
+        }
 
         if (PlayerFrames is null)
         {
@@ -56,7 +66,7 @@ internal static class MapMarkers
 
     /// <summary>
     ///     Loads an embedded PNG and premultiplies its alpha. <see cref="Texture2D.FromStream(GraphicsDevice, Stream)" />
-    ///     yields STRAIGHT alpha. The UI batch blends premultiplied, so soft edges get bright fringes without this.
+    ///     yields STRAIGHT alpha; the UI batch blends premultiplied, so soft edges get bright fringes without this.
     /// </summary>
     public static Texture2D? LoadEmbeddedPremultiplied(GraphicsDevice device, string logicalName)
     {

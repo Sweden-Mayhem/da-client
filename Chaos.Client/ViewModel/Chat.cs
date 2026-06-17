@@ -1,4 +1,5 @@
 #region
+using System;
 using Chaos.Client.Collections;
 using Microsoft.Xna.Framework;
 #endregion
@@ -40,12 +41,12 @@ public sealed class Chat
     private readonly CircularBuffer<OrangeBarMessage> OrangeBarHistory = new(MAX_HISTORY);
 
     /// <summary>
-    ///     Adds a chat message with the specified color and channel. The channel figures out which chat-window tab the
+    ///     Adds a chat message with the specified color and channel. The channel controls which chat-window tab the
     ///     message shows under (it always shows under "All").
     /// </summary>
     public void AddMessage(string text, Color color, ChatChannel channel = ChatChannel.Public, string? channelName = null)
     {
-        var msg = new ChatMessage(text, color, channel, channelName);
+        var msg = new ChatMessage(text, color, DateTime.Now, channel, channelName);
         Messages.Add(msg);
         MessageAdded?.Invoke(msg);
     }
@@ -56,7 +57,7 @@ public sealed class Chat
     /// </summary>
     public void AddOrangeBarMessage(string text, Color? color = null)
     {
-        var msg = new OrangeBarMessage(text, color ?? Color.Orange);
+        var msg = new OrangeBarMessage(text, color ?? Color.Orange, DateTime.Now);
         OrangeBarHistory.Add(msg);
         OrangeBarMessageAdded?.Invoke(msg);
     }
@@ -96,11 +97,11 @@ public sealed class Chat
     ///     A single chat message with text, display color, and source channel. <paramref name="ChannelName" /> is set only
     ///     for a custom "!name" channel (it gets its own chat-window tab); null for the built-in channels.
     /// </summary>
-    public readonly record struct ChatMessage(string Text, Color Color, ChatChannel Channel = ChatChannel.Public, string? ChannelName = null);
+    public readonly record struct ChatMessage(string Text, Color Color, DateTime Timestamp, ChatChannel Channel = ChatChannel.Public, string? ChannelName = null);
 
     /// <summary>
     ///     A single orange bar entry with text and display color. System/server notifications default to orange; whisper,
     ///     group, and guild messages carry their own chat color.
     /// </summary>
-    public readonly record struct OrangeBarMessage(string Text, Color Color);
+    public readonly record struct OrangeBarMessage(string Text, Color Color, DateTime Timestamp);
 }

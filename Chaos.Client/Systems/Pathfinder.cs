@@ -7,20 +7,25 @@ using Chaos.Geometry.Abstractions.Definitions;
 namespace Chaos.Client.Systems;
 
 /// <summary>
-///     Pure path computation. Paths are found with a turn-aware Dijkstra whose cost is lexicographic. Fewest STEPS
+///     Pure path computation. Paths are found with a turn-aware Dijkstra whose cost is lexicographic: fewest STEPS
 ///     first (the path is always shortest), then fewest TURNS (no zig-zag staircases), then turns as LATE as possible
-///     (head out straight toward the click, make the corrective turns near the destination).
+///     (head out straight toward the click, make the corrective turns near the destination). This replaced an external
+///     A* + greedy reshaping pass, which could only approximate those preferences and oscillated on busy maps.
 /// </summary>
 public static class Pathfinder
 {
-    //lexicographic cost weights, STEP dominates TURN dominates lateness. A turn's lateness bias is (LATE_CAP - steps
-    //so far), so an early turn costs more than a late one. LATE_CAP bounds it below TURN_W so it can never trade
+    //lexicographic cost weights - STEP dominates TURN dominates lateness. A turn's lateness bias is (LATE_CAP - steps
+    //so far), so an early turn costs more than a late one; LATE_CAP bounds it below TURN_W so it can never trade
     //against an extra turn, and TURN_W * any plausible turn count stays far below STEP_W
     private const long STEP_W = 10_000_000;
     private const long TURN_W = 10_000;
     private const int LATE_CAP = 4096;
 
-    //cardinal directions, index-matched everywhere in this class, 0 up, 1 right, 2 down, 3 left
+    //a warp tile costs more than one extra plain step so the pathfinder avoids a warp at the cost of a
+    //single-step detour, but won't go two steps out of the way - balances avoidance with practicality
+    private const long WARP_PENALTY = 12_000_000;
+
+    //cardinal directions, index-matched everywhere in this class - 0 up, 1 right, 2 down, 3 left
     private static readonly (int Dx, int Dy)[] Dirs = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 
     /// <summary>
@@ -53,7 +58,8 @@ public static class Pathfinder
         int mapHeight,
         IReadOnlyCollection<IPoint> blockedPoints,
         Func<int, int, bool>? isTileWalkable,
-        out bool alreadyAdjacent)
+        out bool alreadyAdjacent,
+        Func<int, int, bool>? isTileWarp = null)
     {
         alreadyAdjacent = false;
 
@@ -81,7 +87,7 @@ public static class Pathfinder
             blockedPoints,
             isTileWalkable);
 
-        //every walkable tile cardinally adjacent to the target is a valid stopping point, Dijkstra finds the
+        //every walkable tile cardinally adjacent to the target is a valid stopping point; Dijkstra finds the
         //cheapest one in a single run
         var goals = new List<(int X, int Y)>(4);
 
@@ -113,7 +119,8 @@ public static class Pathfinder
             goals,
             mapWidth,
             mapHeight,
-            walkable);
+            walkable,
+            isTileWarp);
     }
 
     /// <summary>
@@ -127,7 +134,8 @@ public static class Pathfinder
         int mapWidth,
         int mapHeight,
         IReadOnlyCollection<IPoint> blockedPoints,
-        Func<int, int, bool>? isTileWalkable)
+        Func<int, int, bool>? isTileWalkable,
+        Func<int, int, bool>? isTileWarp = null)
     {
         if (!IsInGrid(
                 fromX,
@@ -156,18 +164,20 @@ public static class Pathfinder
             [(toX, toY)],
             mapWidth,
             mapHeight,
-            walkable);
+            walkable,
+            isTileWarp);
     }
 
     //turn-aware Dijkstra over (tile, heading) states. All 4 headings at the start cost 0, so the first leg is free
-    //to point wherever serves the path best. Every later heading change pays TURN_W plus an earliness bias
+    //to point wherever serves the path best; every later heading change pays TURN_W plus an earliness bias
     private static Stack<IPoint>? RunNicePath(
         int fromX,
         int fromY,
         IReadOnlyList<(int X, int Y)> goals,
         int mapWidth,
         int mapHeight,
-        Func<int, int, bool> walkable)
+        Func<int, int, bool> walkable,
+        Func<int, int, bool>? isTileWarp = null)
     {
         var tileCount = mapWidth * mapHeight;
         var dist = new long[tileCount * 4];
@@ -203,7 +213,7 @@ public static class Pathfinder
             {
                 goalState = state;
 
-                break; //first goal pop is globally cheapest
+                break; //first goal pop = globally cheapest
             }
 
             var dir = state % 4;
@@ -220,6 +230,9 @@ public static class Pathfinder
                     continue;
 
                 var nCost = cost + STEP_W;
+
+                if (isTileWarp is not null && isTileWarp(nx, ny))
+                    nCost += WARP_PENALTY;
 
                 if (nd != dir)
                     nCost += TURN_W + (LATE_CAP - Math.Min(steps, LATE_CAP - 1));
@@ -252,7 +265,7 @@ public static class Pathfinder
         if (outTiles.Count == 0)
             return null;
 
-        return new Stack<IPoint>(outTiles); //already goal to start order, so Pop yields the first step
+        return new Stack<IPoint>(outTiles); //already goal->start order, so Pop yields the first step
     }
 
     private static Func<int, int, bool> BuildWalkable(
