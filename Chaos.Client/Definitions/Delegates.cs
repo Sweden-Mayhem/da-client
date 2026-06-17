@@ -491,6 +491,11 @@ public delegate void MusicVolumeChangedHandler(int volume);
 ///     The sound volume was changed.
 /// </summary>
 public delegate void SoundVolumeChangedHandler(int volume);
+
+/// <summary>
+///     The effective scale of windows has changed (either via a setting change, or automatic sizing via a window resize)
+/// </summary>
+public delegate void EffectiveWindowScaleChangedHandler();
 #endregion
 
 #region Controls/World/Popups/Profile Delegates

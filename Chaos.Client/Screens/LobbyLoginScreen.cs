@@ -313,7 +313,7 @@ public sealed class LobbyLoginScreen : IScreen
         //the lobby Options window, built from the same shared builder as the in-world one
         //compact drops the in-world-only rows so the menu fits the lobby, everything else still persists and applies in the world
         ControlsWin = new ControlsWindow { ZIndex = 3 };
-        OptionsWin = OptionsWindow.Create(Game, ControlsWin, applyWindowScale: null, compact: true);
+        OptionsWin = OptionsWindow.Create(Game, ControlsWin, compact: true);
         OptionsWin.ZIndex = 2;
         OptionsWin.X = (ChaosGame.VIRTUAL_WIDTH - OptionsWin.Width) / 2;
         OptionsWin.Y = 60;

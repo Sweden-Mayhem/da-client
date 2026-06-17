@@ -167,7 +167,7 @@ public sealed class MinimapControl : UIElement
     //apply the "Minimap size" option: a bigger circle, same tile coverage. Reallocates the texture/buffer on change.
     private void ApplyScale()
     {
-        var scale = Math.Clamp(ClientSettings.MinimapScale, 0.1f, 4f);
+        var scale = Math.Clamp(ClientSettings.EffectiveMinimapScale, 0.1f, 4f);
         var diam = Math.Max(32, (int)MathF.Round(BASE_DIAMETER * scale));
 
         if (diam == Diam)

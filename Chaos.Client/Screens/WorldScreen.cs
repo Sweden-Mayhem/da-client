@@ -459,6 +459,8 @@ public sealed partial class WorldScreen : IScreen
     {
         Game = game;
         WireServerEvents();
+
+        ClientSettings.OnEffectiveWindowScaleChanged += OnWindowScaleChanged;
     }
 
 
@@ -839,7 +841,7 @@ public sealed partial class WorldScreen : IScreen
 
             //the host owns placement + magnification (like the chant editor): scale by "Window size", center, raise above
             //the book that spawned it in the shared window stack.
-            ProfileEditorHost.Scale = ClientSettings.WindowScale;
+            ProfileEditorHost.Scale = ClientSettings.EffectiveWindowScale;
             ProfileEditorHost.CenterOnUi();
             ProfileEditorHost.ZIndex = WindowOrder.Next();
         };
@@ -851,7 +853,7 @@ public sealed partial class WorldScreen : IScreen
             //the host owns placement + magnification: scale by "Window size", center on the UI, raise above the book
             if (AbilityDetailsHost is not null)
             {
-                AbilityDetailsHost.Scale = ClientSettings.WindowScale;
+                AbilityDetailsHost.Scale = ClientSettings.EffectiveWindowScale;
                 AbilityDetailsHost.CenterOnUi();
                 AbilityDetailsHost.ZIndex = WindowOrder.Next();
             }
@@ -862,7 +864,7 @@ public sealed partial class WorldScreen : IScreen
 
             if (EventDetailsHost is not null)
             {
-                EventDetailsHost.Scale = ClientSettings.WindowScale;
+                EventDetailsHost.Scale = ClientSettings.EffectiveWindowScale;
                 EventDetailsHost.CenterOnUi();
                 EventDetailsHost.ZIndex = WindowOrder.Next();
             }
@@ -907,7 +909,7 @@ public sealed partial class WorldScreen : IScreen
 
         //the sign/board fades in while sliding up into place (AnchorTextPopup repositions it every frame off
         //OpenFraction); the same path reversed plays on close
-        TextPopupHost = new ScaleHost(TextPopup, ClientSettings.WindowScale)
+        TextPopupHost = new ScaleHost(TextPopup, ClientSettings.EffectiveWindowScale)
         {
             ZIndex = 160_000,
             Fades = true,
@@ -1028,7 +1030,7 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(HotkeyHelp);
 
         //magnify + drag the group window (centered when shown); pass-through so empty space reaches the host to drag
-        GroupHost = new ScaleHost(GroupPanel, ClientSettings.WindowScale)
+        GroupHost = new ScaleHost(GroupPanel, ClientSettings.EffectiveWindowScale)
         {
             Draggable = true,
             Fades = true,
@@ -1040,7 +1042,7 @@ public sealed partial class WorldScreen : IScreen
             if (!visible || (GroupHost is null))
                 return;
 
-            GroupHost.Scale = ClientSettings.WindowScale;
+            GroupHost.Scale = ClientSettings.EffectiveWindowScale;
 
             //center only the first time it opens; after that it stays where the player dragged it (until restart)
             if (!GroupCentered)
@@ -1061,19 +1063,19 @@ public sealed partial class WorldScreen : IScreen
         //the exchange window is draggable (like the equipment book / group window). Centered on each new exchange open.
         //The gold/item prompts remain anchored each frame in AnchorPopups (they are quick non-draggable dialogs).
         Exchange.IsPassThrough = true;
-        ExchangeHost = new ScaleHost(Exchange, ClientSettings.WindowScale) { ZIndex = 140_000, Draggable = true, Fades = true };
+        ExchangeHost = new ScaleHost(Exchange, ClientSettings.EffectiveWindowScale) { ZIndex = 140_000, Draggable = true, Fades = true };
         Exchange.VisibilityChanged += visible =>
         {
             if (!visible || (ExchangeHost is null))
                 return;
 
-            ExchangeHost.Scale = ClientSettings.WindowScale;
+            ExchangeHost.Scale = ClientSettings.EffectiveWindowScale;
             ExchangeHost.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
         };
         Root.AddChild(ExchangeHost);
-        GoldDropHost = new ScaleHost(GoldDrop, ClientSettings.WindowScale) { ZIndex = 140_000, Fades = true };
+        GoldDropHost = new ScaleHost(GoldDrop, ClientSettings.EffectiveWindowScale) { ZIndex = 140_000, Fades = true };
         Root.AddChild(GoldDropHost);
-        ItemAmountHost = new ScaleHost(ItemAmount, ClientSettings.WindowScale) { ZIndex = 140_000, Fades = true };
+        ItemAmountHost = new ScaleHost(ItemAmount, ClientSettings.EffectiveWindowScale) { ZIndex = 140_000, Fades = true };
         Root.AddChild(ItemAmountHost);
 
         //the whole board/mail family are free-floating menu windows too - the board list, the post/mail lists, the readers
@@ -1094,7 +1096,7 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(WrapOkPopup(ExchangeResultPopup));
         //host the profile/legend/equipment book in a magnifier; draggable by its background, high ZIndex so the
         //centered book draws above the windows. The book is pass-through so empty-space clicks reach the host to drag.
-        StatusBookHost = new ScaleHost(StatusBook, ClientSettings.WindowScale)
+        StatusBookHost = new ScaleHost(StatusBook, ClientSettings.EffectiveWindowScale)
         {
             Draggable = true,
             Fades = true,
@@ -1104,13 +1106,13 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(StatusBookHost);
         //the profile-text editor lives inside a magnifier so it opens at the "Window size" scale like the book that spawns
         //it; it visibility-syncs to the inner editor, which is shown/positioned/raised in the OnProfileTextClicked handler.
-        ProfileEditorHost = new ScaleHost(SelfProfileTextEditor, ClientSettings.WindowScale) { ZIndex = 100010 };
+        ProfileEditorHost = new ScaleHost(SelfProfileTextEditor, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
         Root.AddChild(ProfileEditorHost);
         //the skill/spell + event detail popups live inside a magnifier so they open at the "Window size" scale (like the
         //book that spawns them) with crisp native TTF; each host visibility-syncs to its inner control, which is
         //shown/centered/raised in the OnAbilityDetailRequested / OnEventDetailRequested handlers above.
-        AbilityDetailsHost = new ScaleHost(AbilityMetadataDetails, ClientSettings.WindowScale) { ZIndex = 100010 };
-        EventDetailsHost = new ScaleHost(EventMetadataDetails, ClientSettings.WindowScale) { ZIndex = 100010 };
+        AbilityDetailsHost = new ScaleHost(AbilityMetadataDetails, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
+        EventDetailsHost = new ScaleHost(EventMetadataDetails, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
         Root.AddChild(AbilityDetailsHost);
         Root.AddChild(EventDetailsHost);
         //wrap the other-player profile in the same draggable, magnified menu-window host the rest of the books use, so
@@ -1120,11 +1122,11 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(Notepad);
         //the chant editor lives inside a magnifier so it opens at the "Window size" scale; it visibility-syncs to the
         //inner editor, which is shown/positioned/raised by OpenChantEdit. Re-scaled + re-centered on each open there.
-        ChantEditHost = new ScaleHost(ChantEdit, ClientSettings.WindowScale);
+        ChantEditHost = new ScaleHost(ChantEdit, ClientSettings.EffectiveWindowScale);
         Root.AddChild(ChantEditHost);
         Root.AddChild(WorldMap);
         //magnify the social status picker like the other windows (Window size); it visibility-syncs to the picker
-        SocialStatusHost = new ScaleHost(SocialStatusPicker, ClientSettings.WindowScale)
+        SocialStatusHost = new ScaleHost(SocialStatusPicker, ClientSettings.EffectiveWindowScale)
         {
             ZIndex = 200_000 //above the status book host (100000), below the item tooltip (1,000,000)
         };
@@ -1198,7 +1200,7 @@ public sealed partial class WorldScreen : IScreen
 
         //magnify the small pixel-art inventory grid so it reads well at native resolution (Options "Window size" slider).
         //flush: the host fills the window so the inventory art's border merges with the wood frame (no double border).
-        InvHost = new ScaleHost(inv, ClientSettings.WindowScale)
+        InvHost = new ScaleHost(inv, ClientSettings.EffectiveWindowScale)
         {
             X = 0,
             Y = 0
@@ -1238,7 +1240,7 @@ public sealed partial class WorldScreen : IScreen
         statsContainer.AddChild(ExtStatsWinPanel);
         statsContainer.AddChild(StatsWinPanel);
 
-        StatsHost = new ScaleHost(statsContainer, ClientSettings.WindowScale) { X = 0, Y = 0 };
+        StatsHost = new ScaleHost(statsContainer, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
         StatsWin = new DraggableWindow("Stats", StatsHost.Width, StatsHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 60, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
         StatsWin.Content.AddChild(StatsHost);
         StatsWin.ContentHost = StatsHost;
@@ -1259,7 +1261,7 @@ public sealed partial class WorldScreen : IScreen
         SkillWinPanel.OnSlotHoverEnter += HandleAbilityHoverEnter;
         SkillWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SkillWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
-        SkillHost = new ScaleHost(SkillWinPanel, ClientSettings.WindowScale) { X = 0, Y = 0 };
+        SkillHost = new ScaleHost(SkillWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
         SkillWin = new DraggableWindow("Skills", SkillHost.Width, SkillHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 100, Y = 80, CentersOnFirstShow = true, FadeOnOpen = true };
         SkillWin.Content.AddChild(SkillHost);
         SkillWin.ContentHost = SkillHost;
@@ -1274,7 +1276,7 @@ public sealed partial class WorldScreen : IScreen
         SpellWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SpellWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SpellBook, s, t);
         SpellWinPanel.OnSlotDroppedOutside += HandleSpellSlotDropped;
-        SpellHost = new ScaleHost(SpellWinPanel, ClientSettings.WindowScale) { X = 0, Y = 0 };
+        SpellHost = new ScaleHost(SpellWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
         SpellWin = new DraggableWindow("Spells", SpellHost.Width, SpellHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 140, Y = 100, CentersOnFirstShow = true, FadeOnOpen = true };
         SpellWin.Content.AddChild(SpellHost);
         SpellWin.ContentHost = SpellHost;
@@ -1295,7 +1297,7 @@ public sealed partial class WorldScreen : IScreen
         tools.WorldSpells.OnSlotHoverExit += HandleAbilityHoverExit;
         WireAbilityRightClicks(tools.WorldSkills);
         WireAbilityRightClicks(tools.WorldSpells);
-        ActionsHost = new ScaleHost(tools, ClientSettings.WindowScale) { X = 0, Y = 0 };
+        ActionsHost = new ScaleHost(tools, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
         ActionsWin = new DraggableWindow("Actions", ActionsHost.Width, ActionsHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 180, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
         ActionsWin.Content.AddChild(ActionsHost);
         ActionsWin.ContentHost = ActionsHost;
@@ -1365,10 +1367,10 @@ public sealed partial class WorldScreen : IScreen
             GameAction.ToggleEmotes));
 
         //custom settings window (shared with the lobby via OptionsWindow.Create): each row applies live and
-        //persists to Darkages.cfg. ApplyWindowScale live-rescales the open hud windows when the slider moves.
+        //persists to Darkages.cfg.
         ControlsWin = new ControlsWindow { CentersOnFirstShow = true, FadeOnOpen = true };
         Root.AddChild(ControlsWin);
-        OptionsWin = OptionsWindow.Create(Game, ControlsWin, ApplyWindowScale, onChatRefresh: () => ChatWin?.RefreshChatTimestamps());
+        OptionsWin = OptionsWindow.Create(Game, ControlsWin, onChatRefresh: () => ChatWin?.RefreshChatTimestamps());
         OptionsWin.CentersOnFirstShow = true;
         OptionsWin.FadeOnOpen = true;
         Root.AddChild(OptionsWin);
@@ -1423,9 +1425,9 @@ public sealed partial class WorldScreen : IScreen
         RefreshHotbarSlotLabels();
         Keybindings.Changed += RefreshHotbarSlotLabels;
 
-        SkillBar = new ScaleHost(SkillBarPanel, ClientSettings.HotbarScale);
-        SpellBar = new ScaleHost(SpellBarPanel, ClientSettings.HotbarScale);
-        InvBar = new ScaleHost(InvBarPanel, ClientSettings.HotbarScale);
+        SkillBar = new ScaleHost(SkillBarPanel, ClientSettings.EffectiveHotbarScale);
+        SpellBar = new ScaleHost(SpellBarPanel, ClientSettings.EffectiveHotbarScale);
+        InvBar = new ScaleHost(InvBarPanel, ClientSettings.EffectiveHotbarScale);
         Root.AddChild(InvBar);
         Root.AddChild(SkillBar);
         Root.AddChild(SpellBar);
@@ -1445,7 +1447,7 @@ public sealed partial class WorldScreen : IScreen
         //status-effect bar: a fresh EffectBarControl (the HUD's is hidden with the retired HUD) wrapped in a magnifier so
         //the small half-size icons read at the chunky UI scale. Fed by HandleEffect; anchored on the right in AnchorHotbars.
         BuffBar = new EffectBarControl();
-        BuffBarHost = new ScaleHost(BuffBar, ClientSettings.HotbarScale * 2f) { ZIndex = 90_000 };
+        BuffBarHost = new ScaleHost(BuffBar, ClientSettings.EffectiveHotbarScale * 2f) { ZIndex = 90_000 };
         Root.AddChild(BuffBarHost);
 
 
@@ -1676,11 +1678,13 @@ public sealed partial class WorldScreen : IScreen
         ReconnectLabelShadow.Y = y + 2;
     }
 
+    // TODO: call this whenever automatic window resizing occurs
+
     //applies the Options "Window size" scale live: resizes the always-built menu windows in place and re-scales the
     //book/group hosts (which also re-read WindowScale on open), re-centering those two if they are currently open.
-    private void ApplyWindowScale(float scale)
+    private void OnWindowScaleChanged()
     {
-        ClientSettings.WindowScale = scale; //persisted by the caller's Save(); also what new book/group opens read
+        var scale = ClientSettings.EffectiveWindowScale;
 
         RescaleWindow(InventoryWindow, InvHost, scale);
         RescaleWindow(StatsWin, StatsHost, scale);
@@ -1717,7 +1721,7 @@ public sealed partial class WorldScreen : IScreen
     //repositions the host instead. The host inherits the popup's ZIndex.
     private ScaleHost WrapOkPopup(OkPopupMessageControl popup)
     {
-        var host = new ScaleHost(popup, ClientSettings.WindowScale)
+        var host = new ScaleHost(popup, ClientSettings.EffectiveWindowScale)
         {
             ZIndex = popup.ZIndex
         };
@@ -1731,7 +1735,7 @@ public sealed partial class WorldScreen : IScreen
 
             popup.X = 0;
             popup.Y = 0;
-            host.Scale = ClientSettings.WindowScale;
+            host.Scale = ClientSettings.EffectiveWindowScale;
             host.X = (ChaosGame.UiWidth - host.Width) / 2;
             host.Y = (ChaosGame.UiHeight - host.Height) / 2;
         };
@@ -1750,7 +1754,7 @@ public sealed partial class WorldScreen : IScreen
     {
         var centered = false;
 
-        var host = new ScaleHost(panel, ClientSettings.WindowScale)
+        var host = new ScaleHost(panel, ClientSettings.EffectiveWindowScale)
         {
             Draggable = true,
             Fades = true,
@@ -1772,7 +1776,7 @@ public sealed partial class WorldScreen : IScreen
         {
             if (visible)
             {
-                host.Scale = ClientSettings.WindowScale;
+                host.Scale = ClientSettings.EffectiveWindowScale;
 
                 if (group is not null)
                 {
@@ -1893,7 +1897,7 @@ public sealed partial class WorldScreen : IScreen
 
         if (SocialStatusHost is not null)
         {
-            SocialStatusHost.Scale = ClientSettings.WindowScale; //pick up the current "Window size"
+            SocialStatusHost.Scale = ClientSettings.EffectiveWindowScale; //pick up the current "Window size"
             SocialStatusHost.X = Math.Clamp(x, 0, Math.Max(0, ChaosGame.UiWidth - SocialStatusHost.Width));
             SocialStatusHost.Y = Math.Clamp(y, 0, Math.Max(0, ChaosGame.UiHeight - SocialStatusHost.Height));
         }

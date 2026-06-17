@@ -1039,7 +1039,7 @@ public sealed partial class WorldScreen
         //where the player dragged it (until restart). The book sits at the host's origin.
         if (StatusBookHost is not null)
         {
-            StatusBookHost.Scale = ClientSettings.WindowScale;
+            StatusBookHost.Scale = ClientSettings.EffectiveWindowScale;
 
             if (!StatusBookCentered)
             {
