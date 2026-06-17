@@ -357,7 +357,13 @@ public class UITextBox : UIElement, INativeTextDrawer
                 DrawSingleLine(spriteBatch);
         }
 
-        DrawOverlay(spriteBatch);
+        if (IsHovered)
+        {
+            if (IsPressed)
+                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonPressTint);
+            else if (!IsFocused)
+                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonHoverTint);
+        }
     }
 
     //── native-resolution TTF rendering (INativeTextDrawer) ──
@@ -682,17 +688,6 @@ public class UITextBox : UIElement, INativeTextDrawer
                     CURSOR_WIDTH,
                     fontHeight),
                 ForegroundColor);
-        }
-    }
-
-    private void DrawOverlay(SpriteBatch spriteBatch)
-    {
-        if (IsHovered)
-        {
-            if (IsPressed)
-                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonPressTint);
-            else if (!IsFocused)
-                DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonHoverTint);
         }
     }
     
