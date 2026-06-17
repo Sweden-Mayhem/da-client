@@ -409,7 +409,7 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
-                "    Tooltips", 0.25f, 4f, ClientSettings.TooltipScale, 0.1f, v => $"{v:0.0#}x",
+                "    Tooltips", 0.2f, 4f, ClientSettings.TooltipScale, 0.1f, v => $"{v:0.0#}x",
                 v =>
                 {
                     ClientSettings.TooltipScale = v;

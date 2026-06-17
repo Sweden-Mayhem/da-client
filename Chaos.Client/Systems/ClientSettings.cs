@@ -178,7 +178,7 @@ public static class ClientSettings
     public static float TooltipDelaySeconds { get; set; } = 0.25f;
 
     //magnification of the tooltip font + layout (Options "Tooltip size" slider, 1.0 to 4.0). Read live in ItemTooltipControl.
-    public static float TooltipScale { get; set; } = 1.2f;
+    public static float TooltipScale { get; set; } = 1f;
     public static float EffectiveTooltipScale { get => Math.Clamp(EffectiveInterfaceScale * TooltipScale, 1f, 4f); }
 
     //how visible blocked entities (player/enemies/items/NPCs) are through walls (Options "Behind-walls opacity"
