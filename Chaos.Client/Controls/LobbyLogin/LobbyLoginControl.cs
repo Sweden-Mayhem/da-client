@@ -16,17 +16,17 @@ namespace Chaos.Client.Controls.LobbyLogin;
 /// </summary>
 public sealed class LobbyLoginControl : UIPanel
 {
-	private readonly Texture2D ButtonMaskHover;
 	private readonly Texture2D ButtonMaskPress;
+	private readonly Texture2D ButtonMaskHover;
 
-    public HotspotButton? SubmitCreateButton { get; }
-    public HotspotButton? ContinueButton { get; }
-    public HotspotButton? PasswordButton { get; }
-    public HotspotButton? ExitButton { get; }
-    public HotspotButton? CreditButton { get; }
-    public HotspotButton? HomepageButton { get; }
-    public HotspotButton? OptionsButton { get; }
-    public HotspotButton? NewsButton { get; }
+    public readonly UIButton SubmitCreateButton;
+    public readonly UIButton ContinueButton;
+    public readonly UIButton PasswordButton;
+    public readonly UIButton ExitButton;
+    public readonly UIButton CreditButton;
+    public readonly UIButton HomepageButton;
+    public readonly UIButton OptionsButton;
+    public readonly UIButton NewsButton;
 
     public LobbyLoginControl()
     {
@@ -39,37 +39,31 @@ public sealed class LobbyLoginControl : UIPanel
         Background = LoadTexture("da_login.png");
 
         var buttonHotspotArea = LoadTexture("da_login_button_mask.png");
-        ButtonMaskHover = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, buttonHotspotArea);
         ButtonMaskPress = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, buttonHotspotArea);
+        ButtonMaskHover = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, buttonHotspotArea);
+        buttonHotspotArea.Dispose();
 
         //left column (icon + plate), measured against the art and scaled to 640x480
-        SubmitCreateButton = AddHotspot("Create", 31, 155-3, ButtonMaskHover, ButtonMaskPress);
-        ContinueButton = AddHotspot("Continue", 31, 197-3, ButtonMaskHover, ButtonMaskPress);
-        PasswordButton = AddHotspot("Password", 31, 241-3, ButtonMaskHover, ButtonMaskPress);
-        ExitButton = AddHotspot("Exit", 31, 285-3, ButtonMaskHover, ButtonMaskPress);
+        SubmitCreateButton = AddHotspot("Create", 31, 155-3, ButtonMaskPress, ButtonMaskHover);
+        ContinueButton = AddHotspot("Continue", 31, 197-3, ButtonMaskPress, ButtonMaskHover);
+        PasswordButton = AddHotspot("Password", 31, 241-3, ButtonMaskPress, ButtonMaskHover);
+        ExitButton = AddHotspot("Exit", 31, 285-3, ButtonMaskPress, ButtonMaskHover);
 
         //right column (same rows)
-        CreditButton = AddHotspot("Credit", 465, 155-3, ButtonMaskHover, ButtonMaskPress);
-        HomepageButton = AddHotspot("Homepage", 465, 197-3, ButtonMaskHover, ButtonMaskPress);
-        OptionsButton = AddHotspot("Options", 465, 241-3, ButtonMaskHover, ButtonMaskPress);
-        NewsButton = AddHotspot("News", 465, 285-3, ButtonMaskHover, ButtonMaskPress);
+        CreditButton = AddHotspot("Credit", 465, 155-3, ButtonMaskPress, ButtonMaskHover);
+        HomepageButton = AddHotspot("Homepage", 465, 197-3, ButtonMaskPress, ButtonMaskHover);
+        OptionsButton = AddHotspot("Options", 465, 241-3, ButtonMaskPress, ButtonMaskHover);
+        NewsButton = AddHotspot("News", 465, 285-3, ButtonMaskPress, ButtonMaskHover);
 
         SetButtonsEnabled(false);
     }
 
-    private HotspotButton AddHotspot(string name, int x, int y, Texture2D hover, Texture2D press)
+    private UIButton AddHotspot(string name, int x, int y, Texture2D press, Texture2D hover)
     {
-        var button = new HotspotButton
-        {
-            Name = name,
-            X = x,
-            Y = y,
-            Width = hover.Width,
-            Height = hover.Height,
-            HoverTexture = hover,
-            PressedTexture = press,
-            Enabled = false
-        };
+        var button = UIButton.CreateWithTexture(name, null, press, hover);
+        button.X = x;
+        button.Y = y;
+        button.Enabled = false;
 
         AddChild(button);
 

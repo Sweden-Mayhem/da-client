@@ -53,16 +53,16 @@ public class UIButton : UIElement
         }
     }
 
-    public static UIButton CreateWithTexture(string? name, Texture2D normalTexture, Texture2D? pressedTexture = null, Texture2D? hoverTexture = null)
+    public static UIButton CreateWithTexture(string? name, Texture2D? normalTexture, Texture2D? pressedTexture = null, Texture2D? hoverTexture = null)
     {
         return new UIButton
         {
             Name = name ?? string.Empty,
-            Width = normalTexture.Width,
-            Height = normalTexture.Height,
+            Width = normalTexture?.Width ?? pressedTexture?.Width ?? 0,
+            Height = normalTexture?.Height ?? pressedTexture?.Height ?? 0,
             NormalTexture = normalTexture,
-            PressedTexture = pressedTexture ?? ImageUtil.BuildButtonPressTint(ChaosGame.Device, normalTexture),
-            HoverTexture = hoverTexture ?? ImageUtil.BuildButtonHoverTint(ChaosGame.Device, normalTexture)
+            PressedTexture = pressedTexture ?? (normalTexture != null ? ImageUtil.BuildButtonPressTint(ChaosGame.Device, normalTexture) : null),
+            HoverTexture = hoverTexture ?? (normalTexture != null ? ImageUtil.BuildButtonHoverTint(ChaosGame.Device, normalTexture) : null)
         };
     }
 
