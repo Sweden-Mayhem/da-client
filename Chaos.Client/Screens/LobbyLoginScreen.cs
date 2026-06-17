@@ -40,7 +40,7 @@ public sealed class LobbyLoginScreen : IScreen
 
     //flow state
     private bool Connecting;
-    private bool AutoLoginAttempted;
+    private static bool AutoLoginAttempted;
 
     //connection status and auto-retry, while the server is unreachable we show a status line and keep retrying
     //buttons stay disabled until the lobby is usable so the screen never looks frozen
