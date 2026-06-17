@@ -412,7 +412,7 @@ public sealed partial class WorldScreen
 
         //the editor just sized itself for this line count; magnify the host by the current "Window size", center it on
         //the UI, and raise it above the window it was opened from (WindowOrder is the shared front-to-back counter).
-        ChantEditHost.Scale = ClientSettings.WindowScale;
+        ChantEditHost.Scale = ClientSettings.EffectiveWindowScale;
         ChantEditHost.CenterOnUi();
         ChantEditHost.ZIndex = WindowOrder.Next();
     }

@@ -362,7 +362,7 @@ public sealed partial class WorldScreen
 
         if (SocialStatusHost is not null)
         {
-            SocialStatusHost.Scale = ClientSettings.WindowScale; //pick up the current "Window size" (host re-sizes to it)
+            SocialStatusHost.Scale = ClientSettings.EffectiveWindowScale; //pick up the current "Window size" (host re-sizes to it)
 
             if (emoteBtn is not null)
             {

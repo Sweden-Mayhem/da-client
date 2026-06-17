@@ -94,7 +94,7 @@ public sealed class ChatWindow : DraggableWindow
 
         FontSize = ScaledFont();
         InputH = ScaledInputH(FontSize);
-        AppliedChatScale = ClientSettings.ChatFontScale;
+        AppliedChatScale = ClientSettings.EffectiveChatFontScale;
 
         var chatH = contentH - TABS_H - InputH; //chat log sits between the tab strip and the input line
         var displayH = chatH - 4;
@@ -272,14 +272,14 @@ public sealed class ChatWindow : DraggableWindow
     }
 
     //base size * the slider (clamped); the input line is tall enough for that font plus a little breathing room
-    private static int ScaledFont() => Math.Max(8, (int)MathF.Round(CHAT_FONT * ClientSettings.ChatFontScale));
+    private static int ScaledFont() => Math.Max(8, (int)MathF.Round(CHAT_FONT * ClientSettings.EffectiveChatFontScale));
     private static int ScaledInputH(int fontSize) => (TtfTextRenderer.Available ? TtfTextRenderer.LineHeight(fontSize) : 16) + 4;
 
     //re-applies the chat font scale to the log + the input line, then re-lays the contents. Called live from Update when
     //the "Chat font size" slider moves.
     private void ApplyChatFontScale()
     {
-        AppliedChatScale = ClientSettings.ChatFontScale;
+        AppliedChatScale = ClientSettings.EffectiveChatFontScale;
         FontSize = ScaledFont();
         InputH = ScaledInputH(FontSize);
 
@@ -303,7 +303,7 @@ public sealed class ChatWindow : DraggableWindow
     public override void Update(GameTime gameTime)
     {
         //apply a live change to the "Chat font size" slider before the fade logic / base update
-        if (ClientSettings.ChatFontScale != AppliedChatScale)
+        if (ClientSettings.EffectiveChatFontScale != AppliedChatScale)
             ApplyChatFontScale();
 
         //first update: load saved position and size from settings

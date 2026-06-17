@@ -23,9 +23,14 @@ public sealed class OptionsWindow : DraggableWindow
     private const int CTL_X = 220;
     private const int CTL_W = 138;
     private const int VAL_X = 366;
-    private const int SLIDER_ROW = 28;
+    private const int TITLE_ROW = 26;
+    private const int SLIDER_ROW = 26;
     private const int CHECK_ROW = 26;
+    private const int SPACING_ROW = 8;
+    private const int CONTROL_INDENT = 12;
 
+    private static readonly Color TitleColor = new(196, 168, 110);
+    private static readonly int TitleFontSize = 14;
     private static readonly Color LabelColor = new(200, 198, 190);
     private static readonly Color ValueColor = new(196, 168, 110);
 
@@ -81,6 +86,29 @@ public sealed class OptionsWindow : DraggableWindow
         NextY = PAD;
     }
 
+    public void AddTitle(string title)
+    {
+        var label = new UILabel
+        {
+            X = PAD - 2,
+            Y = NextY,
+            Text = title,
+            Width = RowW,
+            Height = 16,
+            CustomFontSize = TitleFontSize,
+            ForegroundColor = TitleColor,
+        };
+
+        RowsHost.AddChild(label);
+        NextY += TITLE_ROW;
+    }
+
+    public void AddSpacing()
+    {
+        NextY += SPACING_ROW;
+    }
+
+    /// <summary>Adds a "&lt;label&gt;  [==O==]  &lt;value&gt;" row. <paramref name="format" /> renders the live value text.</summary>
     public void AddSlider(
         string label,
         float min,
@@ -94,7 +122,7 @@ public sealed class OptionsWindow : DraggableWindow
             new UILabel
             {
                 Text = label,
-                X = PAD,
+                X = PAD + CONTROL_INDENT - 2,
                 Y = NextY,
                 Width = LABEL_W,
                 Height = 16,
@@ -108,7 +136,7 @@ public sealed class OptionsWindow : DraggableWindow
             Text = format(value),
             X = VAL_X,
             Y = NextY,
-            Width = RowW - VAL_X - PAD,
+            Width = RowW - VAL_X - PAD - CONTROL_INDENT,
             Height = 16,
             CustomFontSize = MenuButton.MenuFontSize,
             ForegroundColor = ValueColor,
@@ -134,10 +162,10 @@ public sealed class OptionsWindow : DraggableWindow
 
     public void AddCheckbox(string label, bool value, Action<bool> onChanged)
     {
-        var checkbox = new Checkbox(label, RowW - 2 * PAD, value)
+        var checkbox = new Checkbox(label, RowW - PAD - CONTROL_INDENT - PAD, value)
         {
-            X = PAD,
-            Y = NextY
+            X = PAD + CONTROL_INDENT,
+            Y = NextY - 3
         };
 
         checkbox.Changed += onChanged;
@@ -151,7 +179,7 @@ public sealed class OptionsWindow : DraggableWindow
             new UILabel
             {
                 Text = label,
-                X = PAD,
+                X = PAD + CONTROL_INDENT,
                 Y = NextY,
                 Width = LABEL_W,
                 Height = 16,
@@ -246,35 +274,20 @@ public sealed class OptionsWindow : DraggableWindow
         e.Handled = true;
     }
 
-    public static OptionsWindow Create(ChaosGame game, ControlsWindow controls, Action<float>? applyWindowScale, bool compact = false, Action? onChatRefresh = null)
+    /// <summary>
+    ///     Builds the standard settings window, shared by the world screen and the lobby. Each row applies live (where it
+    ///     can) and persists to Darkages.cfg. <paramref name="compact" /> (the lobby) keeps only the core pre-game
+    ///     settings (Sound, Music, VSync) and shows a "More options in-game" note instead of the keybind button;
+    ///     pass false in the world for the full menu.
+    /// </summary>
+    public static OptionsWindow Create(ChaosGame game, ControlsWindow controls, bool compact = false, Action? onChatRefresh = null)
     {
         var win = new OptionsWindow();
 
-        if (!compact)
-        {
-            win.AddSlider(
-                "Hotbar size", 1f, 4f, ClientSettings.HotbarScale, 0.25f, v => $"{v:0.0#}x",
-                v =>
-                {
-                    ClientSettings.HotbarScale = v; //AnchorHotbars re-reads this every frame in the world
-                    ClientSettings.Save();
-                });
-
-            win.AddSlider(
-                "Window size", 1f, 4f, ClientSettings.WindowScale, 0.25f, v => $"{v:0.0#}x",
-                v =>
-                {
-                    if (applyWindowScale is not null)
-                        applyWindowScale(v); //world: rescales the open hud windows live (and sets WindowScale)
-                    else
-                        ClientSettings.WindowScale = v;
-
-                    ClientSettings.Save();
-                });
-        }
+        win.AddTitle("Volume");
 
         win.AddSlider(
-            "Sound", 0f, 10f, ClientSettings.SoundVolume, 1f, v => v <= 0f ? "Off" : $"{v * 10:0}%",
+            "Sound Effects", 0f, 10f, ClientSettings.SoundVolume, 1f, v => v <= 0f ? "Off" : $"{v * 10:0}%",
             v =>
             {
                 ClientSettings.SoundVolume = (int)v;
@@ -305,7 +318,7 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
-                "Chat bubble sound", 0f, 100f, ClientSettings.ChatBubbleVolume, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
+                "Chat bubble", 0f, 100f, ClientSettings.ChatBubbleVolume, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
                 v =>
                 {
                     ClientSettings.ChatBubbleVolume = (int)v;
@@ -317,10 +330,62 @@ public sealed class OptionsWindow : DraggableWindow
             //persistence stay, so they can be re-exposed later if needed.)
         }
 
+        win.AddSpacing();
+
+        win.AddTitle("Video");
+
+        win.AddCheckbox(
+            "VSync (smooth, no tearing)", ClientSettings.VSync,
+            v =>
+            {
+                ClientSettings.VSync = v;
+                game.SetVSync(v);
+                ClientSettings.Save();
+            });
+
+        win.AddSpacing();
+
+        win.AddTitle("Interface");
+
+        win.AddSlider(
+            "Scale", 0.75f, 4f, ClientSettings.InterfaceScale, 0.25f, v => v < 1 ? "Auto" : $"{v:0.0#}x",
+            v =>
+            {
+                ClientSettings.InterfaceScale = v;
+                ClientSettings.Save();
+                ClientSettings.NotifyEffectiveWindowScaleChanged();
+            });
+
         if (!compact)
         {
             win.AddSlider(
-                "Chat font size", 1f, 4f, ClientSettings.ChatFontScale, 0.05f, v => $"{v:0.0#}x",
+                "    Windows", 0.25f, 4f, ClientSettings.WindowScale, 0.25f, v => $"{v:0.0#}x",
+                v =>
+                {
+                    ClientSettings.WindowScale = v;
+                    ClientSettings.Save();
+                    ClientSettings.NotifyEffectiveWindowScaleChanged();
+                });
+
+            win.AddSlider(
+                "    Hotbar", 0.25f, 4f, ClientSettings.HotbarScale, 0.25f, v => $"{v:0.0#}x",
+                v =>
+                {
+                    ClientSettings.HotbarScale = v; //AnchorHotbars re-reads this every frame in the world
+                    ClientSettings.Save();
+                });
+
+            win.AddSlider(
+                "    Minimap", 0.5f, 4f, ClientSettings.MinimapScale, 0.1f, v => $"{v:0.0#}x",
+                v =>
+                {
+                    ClientSettings.MinimapScale = v; //the minimap re-reads this every frame (scales the circle, not the zoom)
+                    ClientSettings.Save();
+                });
+
+
+            win.AddSlider(
+                "    Chat", 0.25f, 4f, ClientSettings.ChatFontScale, 0.05f, v => $"{v:0.0#}x",
                 v =>
                 {
                     ClientSettings.ChatFontScale = v; //ChatWindow re-reads this each frame and re-lays out when it changes
@@ -328,7 +393,7 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
-                "Bubble font size", 1f, 4f, ClientSettings.BubbleFontScale, 0.05f, v => $"{v:0.0#}x",
+                "    Bubbles", 0.25f, 4f, ClientSettings.BubbleFontScale, 0.05f, v => $"{v:0.0#}x",
                 v =>
                 {
                     ClientSettings.BubbleFontScale = v; //read when a bubble is created
@@ -336,10 +401,18 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
-                "Names font size", 1f, 4f, ClientSettings.NameFontScale, 0.05f, v => $"{v:0.0#}x",
+                "    Names", 0.25f, 4f, ClientSettings.NameFontScale, 0.05f, v => $"{v:0.0#}x",
                 v =>
                 {
                     ClientSettings.NameFontScale = v; //read live each frame when over-head name tags are drawn
+                    ClientSettings.Save();
+                });
+
+            win.AddSlider(
+                "    Tooltips", 0.2f, 4f, ClientSettings.TooltipScale, 0.1f, v => $"{v:0.0#}x",
+                v =>
+                {
+                    ClientSettings.TooltipScale = v;
                     ClientSettings.Save();
                 });
 
@@ -366,106 +439,12 @@ public sealed class OptionsWindow : DraggableWindow
                     ClientSettings.BubbleFadeSeconds = (int)v;
                     ClientSettings.Save();
                 });
-        }
 
-        if (!compact)
-        {
             win.AddCheckbox(
                 "Modern controls", ClientSettings.ModernControls,
                 v =>
                 {
                     ClientSettings.ModernControls = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Flip walk / interact click", ClientSettings.FlipWalkInteract,
-                v =>
-                {
-                    ClientSettings.FlipWalkInteract = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Flip mouse target buttons", ClientSettings.FlipMouseTargetButtons,
-                v =>
-                {
-                    ClientSettings.FlipMouseTargetButtons = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Click players for profile", ClientSettings.EnableProfileClick,
-                v =>
-                {
-                    ClientSettings.EnableProfileClick = v;
-                    ClientSettings.Save();
-                });
-        }
-
-        if (!compact)
-        {
-            win.AddCheckbox(
-                "Smooth scrolling", ClientSettings.ScrollLevel > 0,
-                v =>
-                {
-                    ClientSettings.ScrollLevel = v ? 1 : 0;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Smooth creature movement", ClientSettings.SmoothCreatureMovement,
-                v =>
-                {
-                    ClientSettings.SmoothCreatureMovement = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Focus speaker", ClientSettings.FocusSpeaker,
-                v =>
-                {
-                    ClientSettings.FocusSpeaker = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddSlider(
-                "Camera shake", 0f, 100f, ClientSettings.CameraShake, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
-                v =>
-                {
-                    ClientSettings.CameraShake = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddSlider(
-                "Camera effects", 0f, 100f, ClientSettings.CameraEffects, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
-                v =>
-                {
-                    ClientSettings.CameraEffects = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Sound on whisper", ClientSettings.WhisperSound,
-                v =>
-                {
-                    ClientSettings.WhisperSound = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Alternative map fade", ClientSettings.AlternativeMapFade,
-                v =>
-                {
-                    ClientSettings.AlternativeMapFade = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Show over-head group", ClientSettings.UseGroupWindow,
-                v =>
-                {
-                    ClientSettings.UseGroupWindow = v;
                     ClientSettings.Save();
                 });
 
@@ -490,34 +469,6 @@ public sealed class OptionsWindow : DraggableWindow
                 v =>
                 {
                     ClientSettings.AllowDragMenuButton = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddSlider(
-                "Minimap size", 0.1f, 4f, ClientSettings.MinimapScale, 0.1f, v => $"{v:0.0#}x",
-                v =>
-                {
-                    ClientSettings.MinimapScale = v; //the minimap re-reads this every frame (scales the circle, not the zoom)
-                    ClientSettings.Save();
-                });
-        }
-
-        win.AddCheckbox(
-            "VSync (smooth, no tearing)", ClientSettings.VSync,
-            v =>
-            {
-                ClientSettings.VSync = v;
-                game.SetVSync(v);
-                ClientSettings.Save();
-            });
-
-        if (!compact)
-        {
-            win.AddCheckbox(
-                "Spell target line", ClientSettings.SpellTargetLine,
-                v =>
-                {
-                    ClientSettings.SpellTargetLine = v;
                     ClientSettings.Save();
                 });
 
@@ -553,12 +504,110 @@ public sealed class OptionsWindow : DraggableWindow
                     ClientSettings.TooltipDelaySeconds = v;
                     ClientSettings.Save();
                 });
+        }
 
-            win.AddSlider(
-                "Tooltip size", 1f, 4f, ClientSettings.TooltipScale, 0.05f, v => $"{v:0.0#}x",
+        win.AddSpacing();
+
+        if (!compact)
+        {
+            win.AddTitle("Game Settings");
+
+            win.AddCheckbox(
+                "Flip walk / interact click", ClientSettings.FlipWalkInteract,
                 v =>
                 {
-                    ClientSettings.TooltipScale = v;
+                    ClientSettings.FlipWalkInteract = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Flip mouse target buttons", ClientSettings.FlipMouseTargetButtons,
+                v =>
+                {
+                    ClientSettings.FlipMouseTargetButtons = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Click players for profile", ClientSettings.EnableProfileClick,
+                v =>
+                {
+                    ClientSettings.EnableProfileClick = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Focus speaker", ClientSettings.FocusSpeaker,
+                v =>
+                {
+                    ClientSettings.FocusSpeaker = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Show over-head group", ClientSettings.UseGroupWindow,
+                v =>
+                {
+                    ClientSettings.UseGroupWindow = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Spell target line", ClientSettings.SpellTargetLine,
+                v =>
+                {
+                    ClientSettings.SpellTargetLine = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddSpacing();
+
+            win.AddTitle("Effects");
+
+            win.AddCheckbox(
+                "Smooth scrolling", ClientSettings.ScrollLevel > 0,
+                v =>
+                {
+                    ClientSettings.ScrollLevel = v ? 1 : 0;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Smooth creature movement", ClientSettings.SmoothCreatureMovement,
+                v =>
+                {
+                    ClientSettings.SmoothCreatureMovement = v;
+                    ClientSettings.Save();
+                });
+            win.AddSlider(
+                "Camera shake", 0f, 100f, ClientSettings.CameraShake, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
+                v =>
+                {
+                    ClientSettings.CameraShake = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddSlider(
+                "Camera effects", 0f, 100f, ClientSettings.CameraEffects, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
+                v =>
+                {
+                    ClientSettings.CameraEffects = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Sound on whisper", ClientSettings.WhisperSound,
+                v =>
+                {
+                    ClientSettings.WhisperSound = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Alternative map fade", ClientSettings.AlternativeMapFade,
+                v =>
+                {
+                    ClientSettings.AlternativeMapFade = v;
                     ClientSettings.Save();
                 });
 
@@ -570,6 +619,8 @@ public sealed class OptionsWindow : DraggableWindow
                     SilhouetteRenderer.SilhouetteAlpha = v;
                     ClientSettings.Save();
                 });
+
+            win.AddSpacing();
         }
 
         //the lobby (compact) hides the keybinding editor; a note points the player at the full set in-game

@@ -255,7 +255,7 @@ public sealed class MenuBar : UIPanel
     //returns the minimap's top-left position and diameter from saved settings (or hardcoded default).
     private (int X, int Y, int Diam) GetMinimapGeometry()
     {
-        var scale = Math.Clamp(ClientSettings.MinimapScale, 0.1f, 4f);
+        var scale = Math.Clamp(ClientSettings.EffectiveMinimapScale, 0.1f, 4f);
         var diam = Math.Max(32, (int)MathF.Round(MINIMAP_BASE_DIAM * scale));
         var mmOffX = ClientSettings.MinimapOffsetX;
         var mmOffY = ClientSettings.MinimapOffsetY;

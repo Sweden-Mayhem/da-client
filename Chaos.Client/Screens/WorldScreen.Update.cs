@@ -833,7 +833,7 @@ public sealed partial class WorldScreen
         SkillBar.ExternalAlpha = TargetingHotbarAlpha;
         SpellBar.ExternalAlpha = TargetingHotbarAlpha;
 
-        var scale = ClientSettings.HotbarScale;
+        var scale = ClientSettings.EffectiveHotbarScale;
         InvBar.Scale = scale;
         SkillBar.Scale = scale;
         SpellBar.Scale = scale;
@@ -977,7 +977,7 @@ public sealed partial class WorldScreen
         if ((TextPopupHost is null) || !TextPopupHost.Visible)
             return;
 
-        TextPopupHost.Scale = ClientSettings.WindowScale;
+        TextPopupHost.Scale = ClientSettings.EffectiveWindowScale;
 
         var f = Math.Clamp(TextPopupHost.OpenFraction, 0f, 1f);
         var ease = 1f - ((1f - f) * (1f - f)); //ease-out: fast start, soft landing
@@ -991,7 +991,7 @@ public sealed partial class WorldScreen
         if ((host is null) || !host.Visible)
             return;
 
-        host.Scale = ClientSettings.WindowScale;
+        host.Scale = ClientSettings.EffectiveWindowScale;
         host.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
     }
 

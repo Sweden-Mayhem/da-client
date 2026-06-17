@@ -215,7 +215,7 @@ public sealed class EntityOverlayManager
     ///     the name never blends into the background. Other players' names show always; NPC merchants show only while
     ///     hovered (and not during cast targeting / dragging), never the player's own character. Monsters get NO tag: the
     ///     DA visible-entities packet only sends a name for Merchants, so a monster's name arrives empty. The size is
-    ///     <see cref="ClientSettings.NameFontScale" /> (Options "Names font size"). Call from the native UI pass.
+    ///     <see cref="ClientSettings.EffectiveNameFontScale" /> (Options "Names font size"). Call from the native UI pass.
     /// </summary>
     //whether an entity's name tag is currently shown: other players always; an NPC merchant only while hovered (and not
     //during cast targeting / dragging), never the player's own character, never a nameless monster. Shared by the name-tag
@@ -245,7 +245,7 @@ public sealed class EntityOverlayManager
         var hoveredEntityId = WorldState.CurrentFrame.HoveredEntityId;
         var playerEntityId = WorldState.PlayerEntityId;
         var dr = ChaosGame.WorldDrawRect;
-        var fontSize = Math.Max(8, (int)MathF.Round(NAME_TAG_FONT_SIZE * ClientSettings.NameFontScale));
+        var fontSize = Math.Max(8, (int)MathF.Round(NAME_TAG_FONT_SIZE * ClientSettings.EffectiveNameFontScale));
 
         for (var i = 0; i < sortedEntities.Count; i++)
         {
@@ -564,7 +564,7 @@ public sealed class EntityOverlayManager
             //longer sits inside it. Just enough to clear the name, not the full anchor gap (which jumped it up too far).
             if (NameTagVisible(entity, hoveredEntityId, playerEntityId, showTintHighlight))
             {
-                var nameFontSize = Math.Max(8, (int)MathF.Round(NAME_TAG_FONT_SIZE * ClientSettings.NameFontScale));
+                var nameFontSize = Math.Max(8, (int)MathF.Round(NAME_TAG_FONT_SIZE * ClientSettings.EffectiveNameFontScale));
                 bubble.Y -= TtfTextRenderer.LineHeight(nameFontSize) + NAME_BUBBLE_GAP;
             }
 

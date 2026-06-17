@@ -27,6 +27,7 @@ public static class ClientSettings
     public static int MinimapOffsetX { get; set; } = int.MinValue;
     public static int MinimapOffsetY { get; set; } = int.MinValue;
     public static float MinimapScale { get; set; } = 1f; //scales the circle's SIZE only (same tiles shown)
+    public static float EffectiveMinimapScale { get => Math.Clamp(EffectiveInterfaceScale * MinimapScale, 0.1f, 4f); }
     public static bool GroupOpen { get; set; }
     public static int MusicVolume { get; set; } = 3; //30% by default (0-10 scale), quieter than sound
 
@@ -116,26 +117,41 @@ public static class ClientSettings
     public static int Speed { get; set; } = 100;
     public static bool UseShiftKeyForAltPanels { get; set; } = true;
 
+    //the master scale of all interface elements
+    //a value less than 1.0 means automatic sizing (adjusts with window scale)
+    //Note that all scales have a scale setting and an effective value. The scale setting is the setting stored, while the
+    //effective scale is what is actually in effect (taking into account automatic window scale, and size clamping etc.)
+    public static float InterfaceScale { get; set; } = 0f;
+    public static float EffectiveInterfaceScale { get; set; } = 1f; //this is managed by ChaosGame window management
+
     //magnification of the on-screen hotbars (skills/spells/inventory). The collapsed 1-row art is already a good
     //size at 1.0, so that is the default. A future options slider will drive this (intended range ~1.0 to 4.0).
     //Read live each frame, so it is independent of the inventory window's own scale.
     public static float HotbarScale { get; set; } = 1f;
+    public static float EffectiveHotbarScale { get => Math.Clamp(EffectiveInterfaceScale * HotbarScale, 1f, 4f); }
 
     //magnification of floating windows that host retail pixel-art panels (the profile/legend/equipment book, etc.).
     //Driven by the Options window's "Window size" slider (range 1.0 to 4.0).
-    public static float WindowScale { get; set; } = 1.5f;
+    public static float WindowScale { get; set; } = 1f;
+    public static float EffectiveWindowScale { get => Math.Clamp(EffectiveInterfaceScale * WindowScale, 1f, 4f); }
+
+    public static event EffectiveWindowScaleChangedHandler? OnEffectiveWindowScaleChanged;
+    public static void NotifyEffectiveWindowScaleChanged() => OnEffectiveWindowScaleChanged?.Invoke();
 
     //scale of the chat log + chat input text (multiplies the base 14px Cinzel size). Driven by the Options "Chat font
     //size" slider (range 1.0 to 4.0, 0.05 step); 1.0 = the current size. ChatWindow re-lays out live when it changes.
     public static float ChatFontScale { get; set; } = 1f;
+    public static float EffectiveChatFontScale { get => Math.Clamp(EffectiveInterfaceScale * ChatFontScale, 1f, 4f); }
 
     //scale of the over-head chat bubble text (multiplies the bubble's base 13px Cinzel size). Options "Bubble font size"
     //slider (1.0 to 4.0, 0.05 step); 1.0 = the current size. Read when a bubble is created.
     public static float BubbleFontScale { get; set; } = 1f;
+    public static float EffectiveBubbleFontScale { get => Math.Clamp(EffectiveInterfaceScale * BubbleFontScale, 1f, 4f); }
 
     //scale of the over-head entity NAME tags (multiplies the base 13px Cinzel size). Options "Names font size" slider
     //(1.0 to 4.0, 0.05 step); 1.0 = the current size. Read live each frame when name tags are drawn.
     public static float NameFontScale { get; set; } = 1f;
+    public static float EffectiveNameFontScale { get => Math.Clamp(EffectiveInterfaceScale * NameFontScale, 1f, 4f); }
 
     //seconds an over-head chat bubble stays before fading out. Options "Bubble fade after" slider (0 to 30s, 1s step);
     //0 disables bubbles entirely. Default 4s.
@@ -162,7 +178,8 @@ public static class ClientSettings
     public static float TooltipDelaySeconds { get; set; } = 0.25f;
 
     //magnification of the tooltip font + layout (Options "Tooltip size" slider, 1.0 to 4.0). Read live in ItemTooltipControl.
-    public static float TooltipScale { get; set; } = 1.15f;
+    public static float TooltipScale { get; set; } = 1f;
+    public static float EffectiveTooltipScale { get => Math.Clamp(EffectiveInterfaceScale * TooltipScale, 1f, 4f); }
 
     //how visible blocked entities (player/enemies/items/NPCs) are through walls (Options "Behind-walls opacity"
     //slider, 0 to 0.85; 0 = fully off). Pushed into SilhouetteRenderer.SilhouetteAlpha at boot and whenever the slider changes.
@@ -257,33 +274,39 @@ public static class ClientSettings
                         break;
 
                     //Sweden Mayhem custom settings (not part of the original Darkages.cfg format)
+                    case "SwmInterfaceScale":
+                        if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var ins))
+                            InterfaceScale = Math.Clamp(ins, 0f, 4f);
+
+                        break;
+
                     case "SwmHotbarScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var hbs))
-                            HotbarScale = Math.Clamp(hbs, 1f, 4f);
+                            HotbarScale = Math.Clamp(hbs, 0.25f, 4f);
 
                         break;
 
                     case "SwmWindowScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var ws))
-                            WindowScale = Math.Clamp(ws, 1f, 4f);
+                            WindowScale = Math.Clamp(ws, 0.25f, 4f);
 
                         break;
 
                     case "SwmChatFontScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var cfs))
-                            ChatFontScale = Math.Clamp(cfs, 1f, 4f);
+                            ChatFontScale = Math.Clamp(cfs, 0.25f, 4f);
 
                         break;
 
                     case "SwmNameFontScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var nfs))
-                            NameFontScale = Math.Clamp(nfs, 1f, 4f);
+                            NameFontScale = Math.Clamp(nfs, 0.25f, 4f);
 
                         break;
 
                     case "SwmBubbleFontScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var bfs))
-                            BubbleFontScale = Math.Clamp(bfs, 1f, 4f);
+                            BubbleFontScale = Math.Clamp(bfs, 0.25f, 4f);
 
                         break;
 
@@ -327,7 +350,7 @@ public static class ClientSettings
 
                     case "SwmTooltipScale":
                         if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var tsc))
-                            TooltipScale = Math.Clamp(tsc, 1f, 4f);
+                            TooltipScale = Math.Clamp(tsc, 0.25f, 4f);
 
                         break;
 
@@ -462,7 +485,7 @@ public static class ClientSettings
 
                     case "SwmMinimapScale":
                         if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var mms))
-                            MinimapScale = Math.Clamp(mms, 0.1f, 4f);
+                            MinimapScale = Math.Clamp(mms, 0.5f, 4f);
 
                         break;
 
@@ -581,6 +604,7 @@ public static class ClientSettings
             writer.WriteLine($"GroupAnswer : {(GroupOpen ? 1 : 0)}");
             writer.WriteLine($"ScrollLevel : {ScrollLevel}");
             writer.WriteLine($"GroupObjectOption : {(UseGroupWindow ? 1 : 0)}");
+            writer.WriteLine($"SwmInterfaceScale : {InterfaceScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmProfileClick : {(EnableProfileClick ? 1 : 0)}");
             writer.WriteLine($"SwmGoldSlot : {GoldSlotIndex}");
             writer.WriteLine($"SwmDragMenuBtn : {(AllowDragMenuButton ? 1 : 0)}");

@@ -246,6 +246,29 @@ public sealed class ChaosGame : Game
         UiHeight = bb.Height;
         var fit = Math.Min((float)bb.Width / VIRTUAL_WIDTH, (float)bb.Height / VIRTUAL_HEIGHT);
 
+        //scale the effective interface scale when set to automatic, or ensure it's fixed otherwise
+        {
+            var interfaceScale = ClientSettings.InterfaceScale;
+    
+            if (interfaceScale < 1)
+            {
+                interfaceScale = Math.Min(bb.Width/1280f, bb.Height/900f);
+    
+                //avoid scaling to 1.25. If too close round to the nearest half size instead, otherwise scale to the nearest quarter
+                if (Math.Abs(interfaceScale - 1.25) <= 0.125)
+                    interfaceScale = MathF.Round(interfaceScale / 0.5f) * 0.5f;
+                else
+                    interfaceScale = MathF.Round(interfaceScale / 0.25f) * 0.25f;
+            } else
+                interfaceScale = ClientSettings.InterfaceScale;
+    
+            if (ClientSettings.EffectiveInterfaceScale != interfaceScale)
+            {
+                ClientSettings.EffectiveInterfaceScale = interfaceScale;
+                ClientSettings.NotifyEffectiveWindowScaleChanged();
+            }
+        }
+
         if (native)
         {
             //EXPAND the world target to fill the whole window at the same scale: the centered 640x480 region is
