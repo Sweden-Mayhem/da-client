@@ -138,6 +138,7 @@ public class UITextBox : UIElement, INativeTextDrawer
 
                 FocusedTextBox = this;
                 TextBoxFocusGained?.Invoke(this);
+                ResetCursor();
             } else if (FocusedTextBox == this)
             {
                 FocusedTextBox = null;
