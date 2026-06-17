@@ -85,7 +85,7 @@ public sealed class ItemTooltipControl : UIPanel
     //Called at the top of Show/ShowInfo so the slider takes effect live.
     private (int DescWrap, int InfoWrap) ApplyScale()
     {
-        var scale = ClientSettings.TooltipScale;
+        var scale = ClientSettings.EffectiveTooltipScale;
 
         NameLabel.CustomFontSize = Scaled(NAME_SIZE, scale);
         CategoryLabel.CustomFontSize = Scaled(SUB_SIZE, scale);
@@ -234,7 +234,7 @@ public sealed class ItemTooltipControl : UIPanel
     {
         while (DescLabels.Count <= index)
         {
-            var label = MakeLabel(Scaled(SUB_SIZE, ClientSettings.TooltipScale), DescColor, true);
+            var label = MakeLabel(Scaled(SUB_SIZE, ClientSettings.EffectiveTooltipScale), DescColor, true);
             label.RichTextMarkup = true; //honor the server description's <green>/<red>/<white> effect coloring
             DescLabels.Add(label);
             AddChild(label);

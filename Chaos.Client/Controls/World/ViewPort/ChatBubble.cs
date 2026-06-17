@@ -84,7 +84,7 @@ public sealed class ChatBubble : UIImage
     public static ChatBubble Create(uint entityId, string message, bool isShout)
     {
         var textColor = isShout ? ShoutTextColor : NormalTextColor;
-        var fontSize = Math.Max(8, (int)MathF.Round(BASE_FONT_SIZE * ClientSettings.BubbleFontScale));
+        var fontSize = Math.Max(8, (int)MathF.Round(BASE_FONT_SIZE * ClientSettings.EffectiveBubbleFontScale));
 
         //"Bubble fade after" in seconds (0 is handled upstream as "disabled" so it never reaches here)
         var durationMs = Math.Max(FADE_MS, ClientSettings.BubbleFadeSeconds * 1000f);
