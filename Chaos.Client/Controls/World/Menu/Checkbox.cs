@@ -1,6 +1,7 @@
 #region
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Definitions;
+using Chaos.Client.Rendering.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
@@ -23,6 +24,9 @@ public sealed class Checkbox : UIPanel
     private readonly UILabel Label;
 
     public bool Checked { get; private set; }
+
+    public bool IsHovered { get; private set; }
+    public bool IsPressed { get; private set; }
 
     /// <summary>Sets the checked state WITHOUT raising <see cref="Changed" /> (for re-using one checkbox across contexts).</summary>
     public void SetChecked(bool value) => Checked = value;
@@ -71,6 +75,39 @@ public sealed class Checkbox : UIPanel
 
         if (Checked)
             DrawRectClipped(spriteBatch, new Rectangle(x + 4, y + 4, BOX - 8, BOX - 8), MarkClr);
+
+        var capturedElement = InputDispatcher.Instance?.CapturedElement;
+
+        if (capturedElement == this || capturedElement==null && IsHovered)
+        {
+            DrawRect(spriteBatch, new Rectangle(ScreenX-2, ScreenY, Width+2, Height), ImageUtil.ButtonHoverTint);
+        }
+    }
+
+    public override void OnMouseEnter()
+    {
+        IsHovered = true;
+    }
+
+    public override void OnMouseLeave()
+    {
+        IsHovered = false;
+    }
+
+    public override void OnMouseDown(MouseDownEvent e)
+    {
+        if (e.Button != MouseButton.Left)
+            return;
+
+        IsPressed = true;
+    }
+
+    public override void OnMouseUp(MouseUpEvent e)
+    {
+        if (e.Button != MouseButton.Left)
+            return;
+
+        IsPressed = false;
     }
 
     public override void OnClick(ClickEvent e)

@@ -66,30 +66,16 @@ public sealed class SelfProfileTextEditorControl : UIPanel
         var buttonY = TOTAL_HEIGHT - INSET_BOTTOM - btnHeight;
 
         //ok button, bottom-left
-        OkButton = new UIButton
-        {
-            Name = "OK",
-            X = INSET_LEFT,
-            Y = buttonY,
-            Width = okNormalTex.Width,
-            Height = btnHeight,
-            NormalTexture = okNormalTex,
-            PressedTexture = okPressedTex
-        };
+        OkButton = UIButton.CreateWithTexture("OK", okNormalTex, okPressedTex);
+        OkButton.X = INSET_LEFT;
+        OkButton.Y = buttonY;
         OkButton.Clicked += Confirm;
         AddChild(OkButton);
 
         //cancel button, bottom-right
-        CancelButton = new UIButton
-        {
-            Name = "Cancel",
-            X = TOTAL_WIDTH - INSET_RIGHT - cancelNormalTex.Width,
-            Y = buttonY,
-            Width = cancelNormalTex.Width,
-            Height = cancelNormalTex.Height,
-            NormalTexture = cancelNormalTex,
-            PressedTexture = cancelPressedTex
-        };
+        CancelButton = UIButton.CreateWithTexture("Cancel", cancelNormalTex, cancelPressedTex);
+        CancelButton.X = TOTAL_WIDTH - INSET_RIGHT - cancelNormalTex.Width;
+        CancelButton.Y = buttonY;
         CancelButton.Clicked += Cancel;
         AddChild(CancelButton);
 

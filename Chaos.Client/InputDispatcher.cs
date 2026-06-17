@@ -27,7 +27,7 @@ public sealed class InputDispatcher
     private UIElement? HoveredElement;
 
     //mouse capture state
-    private UIElement? CapturedElement;
+    public UIElement? CapturedElement { get; private set; }
     private Point MouseDownPosition;
     private MouseButton MouseDownButton;
 

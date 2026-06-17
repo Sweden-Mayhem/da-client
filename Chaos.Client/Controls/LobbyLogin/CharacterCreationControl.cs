@@ -1,5 +1,6 @@
 #region
 using Chaos.Client.Controls.Components;
+using Chaos.Client.Rendering.Utility;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -43,7 +44,10 @@ public sealed class CharacterCreationControl : PrefabPanel
     private readonly Texture2D? MaleSelected;
     private readonly UIElement? MaleToggleArea;
 
-    //gender toggle, custom hover behavior, not standard buttons
+    private readonly Texture2D OkayMask;
+	private readonly Texture2D CancelMask;
+
+	//gender toggle, custom hover behavior, not standard buttons
     private readonly Texture2D? MaleUnselected;
     private readonly int PreviewHeight;
     private readonly int PreviewWidth;
@@ -89,9 +93,9 @@ public sealed class CharacterCreationControl : PrefabPanel
 
         //override the retail _ncreate art with the custom "New Character" background (640x480)
         //controls (name/password fields, hair picker, OK/Cancel) keep their _ncreate positions and align with it
-        using (var bgStream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("cc_bg.png"))
-            if (bgStream is not null)
-                Background = Texture2D.FromStream(ChaosGame.Device, bgStream);
+        Background = LoadTexture("cc_bg.png");
+        OkayMask = LoadTexture("cc_bg_okay_mask.png");
+        CancelMask = LoadTexture("cc_bg_cancel_mask.png");
         Visible = false;
         UsesControlStack = true;
         X = 0;
@@ -225,8 +229,8 @@ public sealed class CharacterCreationControl : PrefabPanel
         }
 
         //OK / Cancel: invisible, overlapping the painted buttons, firing on click
-        InvisibleHotspot(OkButton, 400, 419, 84, 40);
-        InvisibleHotspot(CancelButton, 514, 419, 88, 40);
+        SetCustomHotspot(OkButton, 387, 421, ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, OkayMask), ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, OkayMask));
+        SetCustomHotspot(CancelButton, 500, 421, ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, CancelMask), ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, CancelMask));
 
         static void PlaceField(UITextBox? f, int y)
         {
@@ -249,16 +253,18 @@ public sealed class CharacterCreationControl : PrefabPanel
             e.Y = cy - e.Height / 2;
         }
 
-        static void InvisibleHotspot(UIButton? b, int x, int y, int w, int h)
+        static void SetCustomHotspot(UIButton? b, int x, int y, Texture2D hover, Texture2D press)
         {
             if (b is null)
                 return;
 
             b.X = x;
             b.Y = y;
-            b.Width = w;
-            b.Height = h;
-            b.NormalTexture = b.PressedTexture = b.HoverTexture = b.DisabledTexture = b.SelectedTexture = null;
+            b.Width = hover.Width;
+            b.Height = hover.Height;
+            b.NormalTexture = b.DisabledTexture = b.SelectedTexture = null;
+            b.HoverTexture = hover;
+            b.PressedTexture = press;
             b.CenterTexture = false;
         }
     }
@@ -279,6 +285,15 @@ public sealed class CharacterCreationControl : PrefabPanel
         Renderer.Dispose();
 
         base.Dispose();
+    }
+
+    private static Texture2D LoadTexture(String filename)
+    {
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+        using var stream = assembly.GetManifestResourceStream(filename) ?? throw new InvalidOperationException($"Embedded resource '{filename}' not found");
+
+        return Texture2D.FromStream(ChaosGame.Device, stream);
     }
 
     public override void Draw(SpriteBatch spriteBatch)

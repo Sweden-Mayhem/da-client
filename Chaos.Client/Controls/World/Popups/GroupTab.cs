@@ -85,17 +85,12 @@ public sealed class GroupTab : PrefabPanel
             MemberLabels[i]?.Native(11);
 
             //quit/kick button for each row, disabled by default
-            var quitButton = new UIButton
-            {
-                Name = $"QUIT{i}",
-                X = QUIT_BTN_X,
-                Y = QUIT_BTN_START_Y + i * ROW_HEIGHT,
-                Width = QUIT_BTN_WIDTH,
-                Height = QUIT_BTN_HEIGHT,
-                NormalTexture = disabledTexture,
-                PressedTexture = pressedTexture,
-                Enabled = false
-            };
+            var quitButton = UIButton.CreateWithTexture($"QUIT{i}", disabledTexture, pressedTexture);
+            quitButton.X = QUIT_BTN_X;
+            quitButton.Y = QUIT_BTN_START_Y + i * ROW_HEIGHT;
+            quitButton.Width = QUIT_BTN_WIDTH;
+            quitButton.Height = QUIT_BTN_HEIGHT;
+            quitButton.Enabled = false;
 
             //capture index for the click handler
             var memberIndex = i;

@@ -1,6 +1,8 @@
 #region
 using System.Reflection;
 using Chaos.Client.Controls.Components;
+using Chaos.Client.Rendering.Utility;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
@@ -14,14 +16,17 @@ namespace Chaos.Client.Controls.LobbyLogin;
 /// </summary>
 public sealed class LobbyLoginControl : UIPanel
 {
-    public HotspotButton? SubmitCreateButton { get; }
-    public HotspotButton? ContinueButton { get; }
-    public HotspotButton? PasswordButton { get; }
-    public HotspotButton? ExitButton { get; }
-    public HotspotButton? CreditButton { get; }
-    public HotspotButton? HomepageButton { get; }
-    public HotspotButton? OptionsButton { get; }
-    public HotspotButton? NewsButton { get; }
+	private readonly Texture2D ButtonMaskPress;
+	private readonly Texture2D ButtonMaskHover;
+
+    public readonly UIButton SubmitCreateButton;
+    public readonly UIButton ContinueButton;
+    public readonly UIButton PasswordButton;
+    public readonly UIButton ExitButton;
+    public readonly UIButton CreditButton;
+    public readonly UIButton HomepageButton;
+    public readonly UIButton OptionsButton;
+    public readonly UIButton NewsButton;
 
     public LobbyLoginControl()
     {
@@ -31,47 +36,45 @@ public sealed class LobbyLoginControl : UIPanel
         Width = ChaosGame.VIRTUAL_WIDTH;
         Height = ChaosGame.VIRTUAL_HEIGHT;
 
-        Background = LoadBackground();
+        Background = LoadTexture("da_login.png");
+
+        var buttonHotspotArea = LoadTexture("da_login_button_mask.png");
+        ButtonMaskPress = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, buttonHotspotArea);
+        ButtonMaskHover = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, buttonHotspotArea);
+        buttonHotspotArea.Dispose();
 
         //left column (icon + plate), measured against the art and scaled to 640x480
-        //rows sit at ~41px pitch, 32px tall to cover each wooden plate
-        SubmitCreateButton = AddHotspot("Create", 29, 155, 138, 32);
-        ContinueButton = AddHotspot("Continue", 29, 197, 138, 32);
-        PasswordButton = AddHotspot("Password", 29, 241, 138, 32);
-        ExitButton = AddHotspot("Exit", 29, 286, 138, 32);
+        SubmitCreateButton = AddHotspot("Create", 31, 155-3, ButtonMaskPress, ButtonMaskHover);
+        ContinueButton = AddHotspot("Continue", 31, 197-3, ButtonMaskPress, ButtonMaskHover);
+        PasswordButton = AddHotspot("Password", 31, 241-3, ButtonMaskPress, ButtonMaskHover);
+        ExitButton = AddHotspot("Exit", 31, 285-3, ButtonMaskPress, ButtonMaskHover);
 
         //right column (same rows)
-        CreditButton = AddHotspot("Credit", 462, 155, 135, 32);
-        HomepageButton = AddHotspot("Homepage", 462, 197, 135, 32);
-        OptionsButton = AddHotspot("Options", 462, 241, 135, 32);
-        NewsButton = AddHotspot("News", 462, 286, 135, 32);
+        CreditButton = AddHotspot("Credit", 465, 155-3, ButtonMaskPress, ButtonMaskHover);
+        HomepageButton = AddHotspot("Homepage", 465, 197-3, ButtonMaskPress, ButtonMaskHover);
+        OptionsButton = AddHotspot("Options", 465, 241-3, ButtonMaskPress, ButtonMaskHover);
+        NewsButton = AddHotspot("News", 465, 285-3, ButtonMaskPress, ButtonMaskHover);
 
         SetButtonsEnabled(false);
     }
 
-    private HotspotButton AddHotspot(string name, int x, int y, int width, int height)
+    private UIButton AddHotspot(string name, int x, int y, Texture2D press, Texture2D hover)
     {
-        var button = new HotspotButton
-        {
-            Name = name,
-            X = x,
-            Y = y,
-            Width = width,
-            Height = height,
-            Enabled = false
-        };
+        var button = UIButton.CreateWithTexture(name, null, press, hover);
+        button.X = x;
+        button.Y = y;
+        button.Enabled = false;
 
         AddChild(button);
 
         return button;
     }
 
-    private static Texture2D LoadBackground()
+    private static Texture2D LoadTexture(String path)
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        using var stream = assembly.GetManifestResourceStream("da_login.png")
-                           ?? throw new InvalidOperationException("Embedded resource 'da_login.png' not found");
+        using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
 
         return Texture2D.FromStream(ChaosGame.Device, stream);
     }

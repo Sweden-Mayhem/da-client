@@ -16,6 +16,10 @@
             <LogicalName>da_login.png</LogicalName>
         </EmbeddedResource>
 
+        <EmbeddedResource Include="Assets\da_login_button_mask.png">
+            <LogicalName>da_login_button_mask.png</LogicalName>
+        </EmbeddedResource>
+
         <EmbeddedResource Include="Assets\da_travel_image.png">
             <LogicalName>da_travel_image.png</LogicalName>
         </EmbeddedResource>
@@ -26,6 +30,12 @@
         <!-- Custom character creation background (640x480, replaces the retail _ncreate art) -->
         <EmbeddedResource Include="Assets\cc_bg.png">
             <LogicalName>cc_bg.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\cc_bg_okay_mask.png">
+            <LogicalName>cc_bg_okay_mask.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\cc_bg_cancel_mask.png">
+            <LogicalName>cc_bg_cancel_mask.png</LogicalName>
         </EmbeddedResource>
         <!-- Generic small (18x18) button art for the DraggableWindow close (_00) and pin (_01) buttons -->
         <EmbeddedResource Include="Assets\generic_small_button_00.png">

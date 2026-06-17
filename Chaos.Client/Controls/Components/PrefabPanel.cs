@@ -2,6 +2,7 @@
 using Chaos.Client.Data;
 using Chaos.Client.Data.Models;
 using Chaos.Client.Extensions;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Extensions.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -106,6 +107,8 @@ public abstract class PrefabPanel : UIPanel
         Texture2D? pressedTexture;
         Texture2D? disabledTexture;
 
+        Texture2D hoverTexture;
+
         if (isInterleavedPattern)
         {
             pressedTexture = count > 1 ? cache.GetPrefabTexture(PrefabSet.Name, prefab.Control.Name, count - 1) : null;
@@ -116,6 +119,18 @@ public abstract class PrefabPanel : UIPanel
             disabledTexture = count > 2 ? cache.GetPrefabTexture(PrefabSet.Name, prefab.Control.Name, 2) : null;
         }
 
+        if (normalTexture != null)
+        {
+	        hoverTexture = ImageUtil.BuildButtonHoverTint(ChaosGame.Device, normalTexture);
+	        pressedTexture ??= ImageUtil.BuildButtonPressTint(ChaosGame.Device, normalTexture);
+        } else
+        {
+            int width = (int)Math.Round(r.Width);
+            int height = (int)Math.Round(r.Height);
+            hoverTexture = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, width, height);
+            pressedTexture ??= ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, width, height);
+        }
+
         return new T
         {
             Name = prefab.Control.Name,
@@ -124,9 +139,10 @@ public abstract class PrefabPanel : UIPanel
             Width = (int)r.Width,
             Height = (int)r.Height,
             NormalTexture = normalTexture,
+            HoverTexture = hoverTexture,
             PressedTexture = pressedTexture,
             DisabledTexture = disabledTexture,
-            SelectedTexture = pressedTexture
+            SelectedTexture = pressedTexture,
         };
     }
 

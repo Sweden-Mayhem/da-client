@@ -23,6 +23,9 @@ public static class ImageUtil
     /// <summary>Red 50/50 blend used for the projectile-impact flash.</summary>
     public static readonly Color HitTint = LegendColors.Red;
 
+    public static readonly Color ButtonHoverTint = new(32, 32, 32, 32);
+    public static readonly Color ButtonPressTint = new(0, 0, 0, 48);
+
     /// <summary>
     ///     Applies a 50/50 per-channel additive blend with <paramref name="tint" /> in-place. Alpha is preserved and
     ///     fully-transparent pixels are skipped.
@@ -41,6 +44,32 @@ public static class ImageUtil
                 (byte)((p.G + tint.G) / 2),
                 (byte)((p.B + tint.B) / 2),
                 p.A);
+        }
+    }
+
+    public static void Overlay(Color[] pixels, int count, Color tint)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            var p = pixels[i];
+
+            pixels[i].R = (byte)(pixels[i].R * (255 - tint.A) / 255 + tint.R);
+            pixels[i].G = (byte)(pixels[i].G * (255 - tint.A) / 255 + tint.G);
+            pixels[i].B = (byte)(pixels[i].B * (255 - tint.A) / 255 + tint.B);
+            pixels[i].A = (byte)(pixels[i].A + (255 - pixels[i].A) * tint.A / 255);
+        }
+    }
+
+    public static void Tint(Color[] pixels, int count, Color tint)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            var p = pixels[i];
+    
+            pixels[i].R = (byte)(pixels[i].R * tint.R / 255);
+            pixels[i].G = (byte)(pixels[i].G * tint.G / 255);
+            pixels[i].B = (byte)(pixels[i].B * tint.B / 255);
+            pixels[i].A = (byte)(pixels[i].A * tint.A / 255);
         }
     }
 
@@ -109,6 +138,60 @@ public static class ImageUtil
                     pixel.A);
             }
         }
+    }
+
+    public static Texture2D BuildButtonMaskHoverTint(GraphicsDevice device, Texture2D source)
+    {
+        using var scope = new PixelBufferScope(source);
+        Tint(scope.Pixels, scope.Count, ButtonHoverTint);
+    
+        var result = new Texture2D(device, scope.Width, scope.Height);
+        scope.CommitTo(result);
+    
+        return result;
+    }
+
+    public static Texture2D BuildButtonMaskHoverTint(GraphicsDevice device, int width, int height)
+    {
+    	return BuildBox(device, width, height, ButtonHoverTint);
+    }
+
+    public static Texture2D BuildButtonMaskPressTint(GraphicsDevice device, Texture2D source)
+    {
+        using var scope = new PixelBufferScope(source);
+        Tint(scope.Pixels, scope.Count, ButtonPressTint);
+    
+        var result = new Texture2D(device, scope.Width, scope.Height);
+        scope.CommitTo(result);
+    
+        return result;
+    }
+
+    public static Texture2D BuildButtonMaskPressTint(GraphicsDevice device, int width, int height)
+    {
+    	return BuildBox(device, width, height, ButtonPressTint);
+    }
+
+    public static Texture2D BuildButtonHoverTint(GraphicsDevice device, Texture2D source)
+    {
+        using var scope = new PixelBufferScope(source);
+        Overlay(scope.Pixels, scope.Count, ButtonHoverTint);
+    
+        var result = new Texture2D(device, scope.Width, scope.Height);
+        scope.CommitTo(result);
+    
+        return result;
+    }
+
+    public static Texture2D BuildButtonPressTint(GraphicsDevice device, Texture2D source)
+    {
+        using var scope = new PixelBufferScope(source);
+        Overlay(scope.Pixels, scope.Count, ButtonPressTint);
+    
+        var result = new Texture2D(device, scope.Width, scope.Height);
+        scope.CommitTo(result);
+    
+        return result;
     }
 
     /// <summary>
@@ -286,6 +369,21 @@ public static class ImageUtil
     {
         if (((uint)x < (uint)width) && ((uint)y < (uint)height))
             pixels[y * width + x] = color;
+    }
+
+    public static Texture2D BuildBox(GraphicsDevice device, int width, int height, Color color)
+    {
+        var pixels = new Color[width * height];
+
+        for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
+            {
+                pixels[y * width + x] = color;
+            }
+
+        var tex = new Texture2D(device, width, height);
+        tex.SetData(pixels);
+        return tex;
     }
 
     /// <summary>
