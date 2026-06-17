@@ -112,13 +112,9 @@ public sealed partial class WorldScreen
 
     //--- movement ---
 
-    /// <summary>
-    ///     Client-side prediction: sends Walk packet and immediately starts the walk animation locally without waiting for
-    ///     server confirmation. The server response reconciles position if needed.
-    /// </summary>
     private void PredictAndWalk(WorldEntity player, Direction direction)
     {
-        //bounds check - don't walk off the map edge
+        //bounds check: don't walk off the map edge
         (var dx, var dy) = direction.ToTileOffset();
         var newX = player.TileX + dx;
         var newY = player.TileY + dy;
@@ -126,7 +122,7 @@ public sealed partial class WorldScreen
         if (MapFile is null || (newX < 0) || (newY < 0) || (newX >= MapFile.Width) || (newY >= MapFile.Height))
             return;
 
-        //swimming gate - retail behavior, off by default, toggled via GlobalSettings.RequireSwimmingSkill
+        //swimming gate. retail behavior, off by default, toggled via GlobalSettings.RequireSwimmingSkill
         if (GlobalSettings.RequireSwimmingSkill
             && player.IsOnSwimmingTile
             && !IsGameMaster
@@ -144,7 +140,7 @@ public sealed partial class WorldScreen
         if (!IsTilePassable(newX, newY))
             return;
 
-        //closed door safety net - keyboard movement should already be gated in MoveOrTurn, but
+        //closed door safety net; keyboard movement should already be gated in MoveOrTurn, but
         //this catches the queued-walk and path-executor paths too
         if (IsClosedDoorAt(newX, newY))
             return;
@@ -308,7 +304,7 @@ public sealed partial class WorldScreen
 
     private void HandleServerMessage(ServerMessageArgs args)
     {
-        //group/guild chat reuses the channel system internally, so forming a group/guild emits a "You have joined channel
+        //group/guild chat reuses the channel system internally, so forming a group/guild sends a "You have joined channel
         //!group"/"!guild" (and a "left channel ..." on disband) notice using the channel override name. That is pure
         //plumbing - the player already gets "You form a group with X" - and naming an internal "!group" channel only
         //confuses (it reads like a user channel). Drop just those reserved notices; real channel joins still show.
@@ -321,10 +317,13 @@ public sealed partial class WorldScreen
                 WorldState.Chat.AddMessage(args.Message, TextColors.Whisper, ChatChannel.Whisper);
                 WorldState.Chat.AddOrangeBarMessage(args.Message, TextColors.Whisper);
 
-                //a RECEIVED whisper is "[Sender]: msg" (a sent echo is "[Target]> msg", which we ignore here since the
-                //send path already records the target). Seed the reply target so the whisper key replies to the sender.
                 if (ExtractWhisperSender(args.Message) is { } whisperSender)
+                {
                     ActiveChatInput?.SeedWhisperTargetIfEmpty(whisperSender);
+
+                    if (ClientSettings.WhisperSound)
+                        Game.SoundSystem.PlaySound(158);
+                }
 
                 break;
 
@@ -411,11 +410,6 @@ public sealed partial class WorldScreen
         }
     }
 
-    /// <summary>
-    ///     Parses the server's UserOptions response. Two formats:
-    ///     Full request: "0{desc}:{state}\t{desc}:{state}\t..." - '0' prefix, digits stripped, options ordered by position.
-    ///     Single toggle: "{digit}{desc}:{state}" - leading digit identifies the option (1-based).
-    /// </summary>
     private void ParseUserOptions(string message)
     {
         if (message.Length < 2)
@@ -446,9 +440,6 @@ public sealed partial class WorldScreen
             ParseOptionEntry(i, entries[i]);
     }
 
-    /// <summary>
-    ///     Parses a single option entry in the format "{description,-25}:{ON/OFF,-3}" and applies it.
-    /// </summary>
     private void ParseOptionEntry(int optionIndex, string entry)
     {
         if (!UserOptions.IsServerSetting(optionIndex))
@@ -541,7 +532,7 @@ public sealed partial class WorldScreen
         }
 
         //phase 1: try full-art illustration spf. The original DA client attempts this unconditionally for every
-        //dialog/menu packet - the only gate is whether the NPC name matches an entry in the merged illustration
+        //dialog/menu packet. The only gate is whether the NPC name matches an entry in the merged illustration
         //metadata (npci.tbl inside npcbase.dat + server-pushed NPCIllust metafile). IllustrationIndex picks which
         //filename variant to load when a name has multiple.
         if (!string.IsNullOrEmpty(NpcSession.NpcName))
@@ -641,7 +632,7 @@ public sealed partial class WorldScreen
     private void HandleRefreshResponse()
         =>
 
-            //server acknowledged the refresh request - re-center camera
+            //server acknowledged the refresh request; re-center camera
             FollowPlayerCamera();
 
     //--- exchange ---
@@ -653,7 +644,7 @@ public sealed partial class WorldScreen
         ItemAmount.ShowForSlot(fromSlot);
 
         //surface the slot's hover description (e.g. "Apple[ 10 ]") in the HUD bar while the popup
-        //is open - matches retail behavior of pinning the operated-on item's tooltip text.
+        //is open. matches retail behavior of pinning the operated-on item's tooltip text.
         WorldHud.SetDescription(WorldState.Inventory.GetSlot(fromSlot).Name);
     }
 
@@ -694,7 +685,7 @@ public sealed partial class WorldScreen
         var board = WorldState.Board;
         var posts = board.Posts.ToList();
 
-        //ensure session is open - server can send board data directly (e.g. tile click) without going through BoardList
+        //ensure session is open. server can send board data directly (e.g. tile click) without going through BoardList
         if (!board.IsSessionOpen)
             board.OpenSession();
 
@@ -731,7 +722,7 @@ public sealed partial class WorldScreen
 
         var board = WorldState.Board;
 
-        //ensure session is open - server can send a post directly without going through BoardList
+        //ensure session is open. server can send a post directly without going through BoardList
         if (!board.IsSessionOpen)
             board.OpenSession();
 
@@ -796,8 +787,7 @@ public sealed partial class WorldScreen
             case ServerGroupSwitch.RequestToJoin:
             {
                 // Retail behavior: the leader's client silently auto-forwards as TryInvite
-                // with no UI prompt. Ref: docs/research/group-ui-original-re.md §5.1 / §7.1
-                // (verified round-2). The orange-bar notice is a QoL addition retail omits.
+                // with no UI prompt (verified). The orange-bar notice is a QoL addition retail omits.
                 WorldState.Chat.AddOrangeBarMessage($"{sourceName} wants to join your group.");
                 Game.Connection.SendGroupInvite(ClientGroupSwitch.TryInvite, sourceName);
 
@@ -961,18 +951,18 @@ public sealed partial class WorldScreen
         StatusBook.SetFamilyInfo(args.SpouseName ?? string.Empty);
         LoadPlayerFamilyList();
 
-        //paperdoll - render the player's full aisling at south-facing idle
+        //paperdoll: render the player's full aisling at south-facing idle
         var playerEntity = WorldState.GetPlayerEntity();
 
         if (playerEntity?.Appearance is { } appearance)
             StatusBook.SetPaperdoll(Game.AislingRenderer, in appearance);
 
-        //group open state - server is source of truth, sync all ui
+        //group open state. server is source of truth, sync all ui
         StatusBook.SetGroupOpen(args.GroupOpen);
         WorldState.UserOptions.SetValue(12, args.GroupOpen);
         WorldHud.SetGroupOpen(args.GroupOpen);
 
-        //group members - parse groupstring into state, ui subscribes via event
+        //group members: parse groupstring into state, ui subscribes via event
         if (!string.IsNullOrEmpty(args.GroupString))
         {
             if (args.GroupString.StartsWithI(GROUP_MEMBERS_PREFIX))
@@ -1083,7 +1073,7 @@ public sealed partial class WorldScreen
         if (entity is null)
             return;
 
-        //emotes are body animations - ignore if any body anim or emote overlay is already playing
+        //emotes are body animations; ignore if any body anim or emote overlay is already playing
         if ((entity.AnimState == EntityAnimState.BodyAnim) || (entity.ActiveEmoteFrame >= 0))
             return;
 
@@ -1110,7 +1100,7 @@ public sealed partial class WorldScreen
                 AnimationSystem.StartBodyAnimation(entity, args.BodyAnimation, args.AnimationSpeed);
             } else if (DataUtilities.IsEmote(args.BodyAnimation))
             {
-                //emote overlay - face/bubble icon composited into the aisling sprite
+                //emote overlay: face/bubble icon composited into the aisling sprite
                 (var startFrame, var frameCount, var durationMs) = AnimationSystem.ResolveEmoteFrames(args.BodyAnimation);
 
                 if (startFrame >= 0)
@@ -1240,7 +1230,7 @@ public sealed partial class WorldScreen
                 ? animationSpeed
                 : 50;
 
-        //cancel any existing effect on the same entity - only one effect per entity at a time
+        //cancel any existing effect on the same entity; only one effect per entity at a time
         if (targetEntityId.HasValue)
             WorldState.ActiveEffects.RemoveAll(e => e.TargetEntityId == targetEntityId);
 
@@ -1339,7 +1329,7 @@ public sealed partial class WorldScreen
     //--- health / effects / light ---
 
     //a channel message is "[!name] sender: msg" (an optional "{=c" colour code may lead). Pulls out the "!name" channel
-    //key when the leading bracket holds a channel-prefixed name; false for ordinary broadcasts.
+    //key when the leading bracket holds a channel-prefixed name. Returns false for ordinary broadcasts.
     private static bool TryParseChannelName(string message, out string channelName)
     {
         channelName = string.Empty;
@@ -1460,7 +1450,7 @@ public sealed partial class WorldScreen
 
     private void HandleExitResponse(ExitResponseArgs args)
     {
-        //server confirmed exit - send the actual logout (isrequest=false triggers server-side redirect to login)
+        //server confirmed exit; send the actual logout (isrequest=false triggers server-side redirect to login)
         if (args.ExitConfirmed)
             Game.Connection.RequestExit(false);
     }
@@ -1518,7 +1508,7 @@ public sealed partial class WorldScreen
     }
     #endregion
 
-    //Up=0, Right=1, Down=2, Left=3 - matches server DirectionalRelationTo in tile space
+    //Up=0, Right=1, Down=2, Left=3 (matches server DirectionalRelationTo in tile space)
     private static int GetProjectileDirection(int dtx, int dty)
     {
         var absDtx = Math.Abs(dtx);

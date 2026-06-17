@@ -318,7 +318,7 @@ public sealed class StatsPanel : ExpandablePanel
     //the _nstatus art has the field NAMES (STR, INT, HP, GOLD, Level, ...) painted into the background image, with no
     //control to hover - so the player could read the values' tooltips but not the labels'. Lay a transparent
     //InfoHotspot over each baked word (the gap from the column's left edge to its value box) that shows the SAME stat
-    //help as hovering the value. Geometry derives from the value-label rects so it tracks the prefab; the leftBound is
+    //help as hovering the value. Geometry comes from the value-label rects so it tracks the prefab; the leftBound is
     //the per-column left edge of the word area, eyeballed from the rendered art (nudge a column if a word is missed).
     private void BuildInfoHotspots()
     {

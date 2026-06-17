@@ -69,7 +69,7 @@ public sealed partial class WorldScreen : IScreen
     private const int HITBOX_WIDTH = 28;
     private const int HITBOX_HEIGHT = 60;
 
-    //doubleclick entity cache expiry - slightly larger than the dispatcher's 300ms double-click window so the cache
+    //doubleclick entity cache expiry; slightly larger than the dispatcher's 300ms double-click window so the cache
     //remains valid through the full doubleclick detection window
     private const int DOUBLE_CLICK_CACHE_WINDOW_MS = 550;
 
@@ -88,7 +88,7 @@ public sealed partial class WorldScreen : IScreen
     private readonly EntityOverlayManager Overlays = new();
     private readonly PathfindingState Pathfinding = new();
     //FIFO of the destination tiles of walks we've predicted but the server hasn't confirmed yet (one entry per
-    //Walk packet, in send order). The server emits one ClientWalkResponse per accepted walk in the same order, so
+    //Walk packet, in send order). The server sends one ClientWalkResponse per accepted walk in the same order, so
     //each response confirms the OLDEST predicted destination. We compare the server's resulting tile to that
     //prediction: if they match we stay in sync (no-op); if they DIVERGE - or there's no prediction (a genuine
     //server-initiated walk: push tile, knockback, teleport) - we hard-resync to the server's tile. This is what
@@ -113,7 +113,7 @@ public sealed partial class WorldScreen : IScreen
     private ScaleHost BoardListHost = null!;
     private ScaleHost MailListHost = null!;
 
-    //board/mail controls - 7 instances for 7 prefabs
+    //board/mail controls (7 instances for 7 prefabs)
     private bool AwaitingMapData;
     private BoardListControl BoardList = null!;
     private OkPopupMessageControl BoardResponsePopup = null!;
@@ -213,7 +213,7 @@ public sealed partial class WorldScreen : IScreen
     private GoldAmountControl GoldDrop = null!;
     private GroupRecruitPanel GroupBoxViewer = null!;
 
-    //true when j was pressed - the next selfprofile response triggers group highlighting instead of opening the panel
+    //true when j was pressed; the next selfprofile response triggers group highlighting instead of opening the panel
     private bool GroupHighlightRequested;
     private float GroupHighlightTimer;
     private GroupTabControl GroupPanel = null!;
@@ -288,6 +288,7 @@ public sealed partial class WorldScreen : IScreen
     //true while the cursor is over any HUD/menu/window control this frame - the world goes inert to the mouse (no
     //ground marker, hand cursor, or entity-name hover), same as while an NPC dialog is open. Computed in Update.
     private bool PointerOverUi;
+    private (int X, int Y)? HoveredFgTile;
     private OtherProfileTabControl OtherProfile = null!;
     private Action? PendingBoardSuccessAction;
     private Action? PendingDeleteAction;
@@ -347,7 +348,7 @@ public sealed partial class WorldScreen : IScreen
     private TileClickTracker RightClickTracker;
     private RasterizerState ScissorRasterizerState = null!;
 
-    //true when the client explicitly requested its own profile - prevents unsolicited selfprofile packets from opening the panel
+    //true when the client explicitly requested its own profile; prevents unsolicited selfprofile packets from opening the panel
     private bool SelfProfileRequested;
     private StatusBookTab SelfProfileRequestedTab = StatusBookTab.Equipment;
     private SettingsControl SettingsDialog = null!;
@@ -378,7 +379,7 @@ public sealed partial class WorldScreen : IScreen
     private bool HasEnteredWorld;
     private int WorldEntryTick;
 
-    //the local player is dead while their HP is 0 - derived straight from the authoritative attributes, so there is no
+    //the local player is dead while their HP is 0 - read straight from the authoritative attributes, so there is no
     //tracked flag to set or reset. Matches the server exactly: the skull/dying phase keeps HP at 0 (the server's IsAlive
     //gates block everything), and the Sgrios realm spirit walks again because it is given 1 HP on arrival.
     private static bool IsPlayerDead => WorldState.Attributes.Current is { CurrentHp: <= 0 };
@@ -467,7 +468,7 @@ public sealed partial class WorldScreen : IScreen
     {
         Device = graphicsDevice;
 
-        //create both hud layouts - '/' key swaps between them
+        //create both hud layouts ('/' key swaps between them)
         //zindex=-1 so hud frames render behind all popup panels
         SmallHud = new WorldHudControl
         {
@@ -503,7 +504,7 @@ public sealed partial class WorldScreen : IScreen
 
         TileCursorTexture = CreateTileCursorTexture(graphicsDevice, Color.White);
 
-        //overlay panels - zindex: -2 sub-panels, -1 slide panels, 0 standard (default), 1 popups, 2 context menu
+        //overlay panels. zindex: -2 sub-panels, -1 slide panels, 0 standard (default), 1 popups, 2 context menu
         NpcSession = new NpcSessionControl();
         WireNpcSession();
 
@@ -559,7 +560,7 @@ public sealed partial class WorldScreen : IScreen
 
                         break;
                     case 12:
-                        //server-authoritative - send toggle, server responds with updated profile
+                        //server-authoritative; send toggle, server responds with updated profile
                         Game.Connection.ToggleGroup();
 
                         return;
@@ -595,7 +596,6 @@ public sealed partial class WorldScreen : IScreen
         {
             Game.Connection.SendGroupInvite(ClientGroupSwitch.TryInvite, name);
             // Retail sends a SelfProfileRequest (0x2D) after a kick to refresh group state.
-            // Ref: docs/research/group-ui-original-re.md §7.2.7.
             Game.Connection.RequestSelfProfile();
         };
 
@@ -627,13 +627,11 @@ public sealed partial class WorldScreen : IScreen
         GroupPanel.RecruitPanel.OnRemoveGroupBox += () =>
         {
             //RemoveGroupBox (0x2E/6) writes the owner's own name in the TargetName
-            //field on the wire per the retail client (ref: group-ui-original-re.md
-            //§6.3). The server doesn't check the value but protocol parity matters.
+            //field on the wire per the retail client. The server doesn't check the value but protocol parity matters.
             Game.Connection.SendGroupInvite(ClientGroupSwitch.RemoveGroupBox, WorldState.PlayerName);
             //Retail sends a SelfProfileRequest (0x2D) after RemoveGroupBox so the
             //server's profile response confirms the state transition. Queue both
             //packets on the wire before flipping the local flag.
-            //Ref: docs/research/group-ui-original-re.md §7.2.7.
             Game.Connection.RequestSelfProfile();
             WorldState.Group.MarkGroupBoxInactive();
 
@@ -641,7 +639,6 @@ public sealed partial class WorldScreen : IScreen
             //NOT broadcast Display(), so no fresh DisplayAisling (0x33) packet
             //arrives and WorldEntity.GroupBoxText stays stale. Clear our own
             //overhead banner manually.
-            //Ref: docs/research/group-protocol-spec.md §Gap 2.
             if (WorldState.GetPlayerEntity() is { } player)
                 player.GroupBoxText = null;
         };
@@ -1387,7 +1384,7 @@ public sealed partial class WorldScreen : IScreen
         //and the redirect switches us to the lobby (see BeginLogout + HandleExitResponse + WorldScreen.Update's PendingLoginSwitch).
         menuBar.AddEntry("Log out", BeginLogout, "Log out\nLeave the world and return to the login screen. Your character is saved automatically.");
 
-        //--- fixed on-screen hotbars: single-row, auto-bound views of the top rows ---
+        //fixed on-screen hotbars: single-row, auto-bound views of the top rows
         //reuse the panel class (the collapsed-HUD look); each self-subscribes to its WorldState view model, so these
         //extra instances stay in sync with no wiring. Positioned/scaled each frame in Update (see AnchorHotbars).
         //the large HUD layout (_nbk_l) is the fully-collapsed single-row look: 1 row of 12 + gold, no skill/spell buttons
@@ -1560,7 +1557,7 @@ public sealed partial class WorldScreen : IScreen
 
     //pushes the current attributes into the standalone stats window (same source the HUD's stats panel uses)
     //last seen player level, so a genuine level-up (Level going UP) can play the fanfare exactly once. -1 until the first
-    //attributes packet seeds it (which never plays a sound). Reset per session since each login builds a new WorldScreen.
+    //attributes packet fills it (which never plays a sound). Reset per session since each login builds a new WorldScreen.
     private int LastKnownLevel = -1;
 
     //last seen player HP, so a DROP can drive the camera shake + red damage pulse. -1 until the first attributes packet.
@@ -1591,8 +1588,8 @@ public sealed partial class WorldScreen : IScreen
             MailMenuEntry.ShowMarker = attrs.HasUnreadMail;
 
         //local level-up fanfare: the server no longer plays a sound on level-up (it sends only the burst animation), so
-        //the leveling player hears the embedded level_up.mp3 here. Only on an actual increase; the first call just
-        //seeds LastKnownLevel. Also gated on ItemSoundArmed (the same grace past first world entry the item/gold cues use) so the staged
+        //the leveling player hears the embedded level_up.mp3 here. Only on an actual increase; the first fill just
+        //seeds. Also gated on ItemSoundArmed (the same grace past first world entry the item/gold cues use) so the staged
         //attribute packets that stream in during login can never be misread as a level-up.
         if ((LastKnownLevel >= 0) && (attrs.Level > LastKnownLevel) && ItemSoundArmed)
             Game.SoundSystem.PlaySound(SoundSystem.SoundLevelUp);
@@ -1608,7 +1605,7 @@ public sealed partial class WorldScreen : IScreen
         Game.Connection.RequestExit();
     }
 
-    //--- silent reconnect ---
+    //silent reconnect
     private const int RECONNECT_FONT = 18;
     private const int RECONNECT_TEXT_H = 40; //label band height; the text is centered within it
 
@@ -1662,7 +1659,7 @@ public sealed partial class WorldScreen : IScreen
 
         const string text = "Reconnecting to server...";
 
-        //centered on screen. Height MUST be set: UIElement.Draw early-returns when its ClipRect (derived from
+        //centered on screen. Height MUST be set: UIElement.Draw early-returns when its ClipRect (computed from
         //Width x Height) is empty, so a zero-height label clips its own text away. The text centers inside this band.
         var y = (h - RECONNECT_TEXT_H) / 2;
 

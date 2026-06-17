@@ -91,7 +91,7 @@ public sealed class WorldMap : UIPanel
 
     /// <summary>
     ///     Raised when the player asks to travel to a destination. The host shows the shared OK/Cancel dialog
-    ///     ("Travel to {name}?") and invokes the supplied confirm/cancel callbacks. Keeps the in-game dialog graphics
+    ///     ("Travel to {name}?") and runs the supplied confirm/cancel callbacks. Keeps the in-game dialog graphics
     ///     instead of a bespoke confirm.
     /// </summary>
     public Action<string, Action, Action>? TravelRequested;

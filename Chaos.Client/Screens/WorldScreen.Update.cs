@@ -95,7 +95,7 @@ public sealed partial class WorldScreen
 
         var elapsedMs = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
 
-        //global tile animation tick - 100ms resolution (matches tile animation table format)
+        //global tile animation tick at 100ms resolution (matches tile animation table format)
         AnimationTick = (int)(gameTime.TotalGameTime.TotalMilliseconds / 100);
         MapRenderer.UpdatePaletteCycling(AnimationTick);
 
@@ -104,8 +104,8 @@ public sealed partial class WorldScreen
         var smoothOthers = ClientSettings.SmoothCreatureMovement;     //enemies / NPCs / other players
         var player = WorldState.GetPlayerEntity();
 
-        //animation advancement doesn't depend on sort order - iterate unordered to avoid a stale sort
-        //(SortDepth is position-derived; movement later in Update would invalidate any sort taken here).
+        //animation advancement doesn't depend on sort order; go through entities unsorted to avoid a stale sort
+        //(SortDepth is position-based; movement later in Update would invalidate any sort taken here).
         foreach (var entity in WorldState.GetEntities())
         {
             //update water tile state before animation so swimming idle tick advances
@@ -332,15 +332,15 @@ public sealed partial class WorldScreen
 
                     if (!pathDir.HasValue)
                     {
-                        //path head is no longer adjacent (server correction moved us) - rebuild instead of giving up
+                        //path head is no longer adjacent (server correction moved us); rebuild instead of giving up
                         RecoverPath(player);
                     } else if (IsClosedDoorAt(nextPoint.X, nextPoint.Y))
                     {
-                        //a closed door stops the walker - opening it is the player's act
+                        //a closed door stops the walker; opening it is the player's act
                         Pathfinding.Path = null;
                     } else if (!IsGameMaster && !IsTilePassable(nextPoint.X, nextPoint.Y))
                     {
-                        //something stepped into the next tile - re-route around it, keeping the chase alive
+                        //something stepped into the next tile; re-route around it, keeping the chase alive
                         RecoverPath(player);
                     } else
                     {
@@ -357,7 +357,7 @@ public sealed partial class WorldScreen
                 }
             } else if (Pathfinding.TargetEntityId.HasValue)
             {
-                //path exhausted with entity target - check if adjacent and assail, or re-pathfind
+                //path exhausted with entity target; check if adjacent and assail, or re-pathfind
                 var target = WorldState.GetEntity(Pathfinding.TargetEntityId.Value);
 
                 if (target is null)
@@ -368,7 +368,7 @@ public sealed partial class WorldScreen
                              target.TileX,
                              target.TileY))
                 {
-                    //adjacent - turn toward target and assail
+                    //adjacent; turn toward target and assail
                     var faceDir = Pathfinder.DirectionToward(
                         player.TileX,
                         player.TileY,
@@ -384,7 +384,7 @@ public sealed partial class WorldScreen
                     Game.Connection.Spacebar();
                 } else
                 {
-                    //entity moved - re-pathfind on 100ms timer
+                    //entity moved; re-pathfind on 100ms timer
                     Pathfinding.RetargetTimer += elapsedMs;
 
                     if (Pathfinding.RetargetTimer >= 100f)
@@ -423,7 +423,7 @@ public sealed partial class WorldScreen
         if (DialogDim is not null)
             DialogDim.SuppressBaseDim = SpeakerSpotlightActive;
 
-        //viewport-layer updates - must always run regardless of which ui panel has input focus
+        //viewport-layer updates; must always run regardless of which ui panel has input focus
         //so that the world keeps animating visually behind open windows.
         if (MapFile is not null)
             Overlays.Update(
@@ -432,7 +432,7 @@ public sealed partial class WorldScreen
                 Game.CreatureRenderer,
                 gameTime);
 
-        //gather light sources for this frame and pass them along. Gated on the darkness being active (a dark
+        //gather light sources for this frame and feed them to the renderers. Gated on the darkness being active (a dark
         //dungeon, or a day/night map at night) so foreground-tile lights work on town maps, not just MapFlags.Darkness
         //dungeons. LightAnimTime drives the flame flicker and is reused by the resize-time re-gather in Wiring.
         LightAnimTime = (float)gameTime.TotalGameTime.TotalSeconds;
@@ -464,7 +464,7 @@ public sealed partial class WorldScreen
         //resolve which tooltip (if any) the cursor is over and show it after the configurable delay
         UpdateTooltips((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-        //--- track which entity the mouse is hovering over ---
+        //which entity the mouse is hovering over this frame
         //suppressed entirely while an NPC dialog is open OR the cursor is over any HUD/menu/window control: no hand
         //cursor, no hover name tag, no hover highlight - the world behind a modal (or under a panel) should be inert to
         //the mouse. Cached so DrawTileCursors can suppress the ground marker on the same condition.
@@ -486,6 +486,31 @@ public sealed partial class WorldScreen
         //the hand cursor shows over anything interactable: an enemy / NPC / player (newHoveredId) or a ground item
         var overInteractable = newHoveredId.HasValue || (hoverEntity?.Type == ClientEntityType.GroundItem);
 
+        //signs and doors: pixel-perfect check first, then fall back to tile check for highlighting
+        var hoveredFg = !PointerOverUi ? FindSignDoorAtCursor(InputBuffer.MouseX, InputBuffer.MouseY) : null;
+
+        if (hoveredFg.HasValue)
+            overInteractable = true;
+
+        //also match when the cursor is directly on a tile with a sign or door
+        if (!hoveredFg.HasValue && !PointerOverUi && MapFile is not null)
+        {
+            (var gx, var gy) = ScreenToTile(InputBuffer.MouseX, InputBuffer.MouseY);
+
+            if ((gx >= 0) && (gy >= 0) && (gx < MapFile.Width) && (gy < MapFile.Height))
+            {
+                var tile = MapFile.Tiles[gx, gy];
+
+                if (IsSignOrDoorFg(tile.LeftForeground) || IsSignOrDoorFg(tile.RightForeground))
+                {
+                    overInteractable = true;
+                    hoveredFg = (gx, gy);
+                }
+            }
+        }
+
+        HoveredFgTile = hoveredFg;
+
         Game.UseHandCursor = overInteractable;
 
         //clickable links in an open board post / mail message: show the hand cursor while hovering an https:// link (the
@@ -502,9 +527,9 @@ public sealed partial class WorldScreen
         //tick casting timer (chant lines are sent on a 1-second interval)
         CastingSystem.Update(elapsedMs, Game.Connection);
 
-        //spacebar assail is handled in OnRootKeyDown - the dispatcher delivers both the
+        //spacebar assail is handled in OnRootKeyDown. the dispatcher delivers both the
         //initial press and os key-repeat keydowns through the event pipeline, so dialogs
-        //that handle spacebar (via e.Handled = true) naturally block it.
+        //that eat spacebar (via e.Handled = true) naturally block it.
 
         var skipDispatch = false;
 
@@ -598,7 +623,7 @@ public sealed partial class WorldScreen
         if (IsUnloaded)
             return;
 
-        //all movement has been processed at this point - sort once and publish the frame state.
+        //all movement has been processed at this point; sort once and publish the frame state.
         PopulateFrameState(newHoveredId);
 
         Root!.Update(gameTime);
@@ -606,7 +631,7 @@ public sealed partial class WorldScreen
         UpdateFeedbackSounds();
     }
 
-    //the chase target stashed by PauseChaseForAction while a skill/spell runs; resumed in Update once the action ends
+    //the chase target stashed by PauseChaseForAction while a skill/spell runs. resumed in Update once the action ends
     private uint? ResumeChaseTargetId;
 
     //tracks whether the player was walking on the previous frame (walk-start transition detection)
@@ -633,7 +658,7 @@ public sealed partial class WorldScreen
 
         if (isWalking && !WasWalkingFootstep)
         {
-            //just left the tile - push-off step, and reset the mid-step tracker so the 50% step fires
+            //just left the tile; push-off step, and reset the mid-step tracker so the 50% step fires
             FiredMidStep = false;
             Game.SoundSystem.PlayFootstep();
         }
@@ -715,7 +740,7 @@ public sealed partial class WorldScreen
             SmallHud.Inventory.SlotLabels = invLabels;
     }
 
-    //applies the live hotbar scale and re-centers the bars: inventory at top-center, skills + spells at bottom-center
+    //applies the live hotbar scale and re-centers the bars. inventory sits at top-center, skills + spells at bottom-center
     //(spells just under skills). Runs every frame so it follows window resizes and a future scale slider.
     private const float HOTBAR_TARGET_ALPHA = 0.35f;
     private const float HOTBAR_FADE_SPEED = 4f; //per second
@@ -725,8 +750,8 @@ public sealed partial class WorldScreen
     private void UpdateMinimap()
     {
         //wait for the map to be fully preloaded before generating the overview. Generating from not-yet-created tile
-        //textures renders garbage/blank on some drivers, which then gets baked into the inked map and cached for this map
-        //- leaving the minimap AND town map blank until the next map change (re-entering the map worked because the tiles
+        //textures renders garbage/blank on some drivers, which then gets baked into the inked map and cached for this map,
+        //leaving the minimap AND town map blank until the next map change (re-entering the map worked because the tiles
         //were cached by then).
         if (!ClientSettings.ShowMinimap || (MapFile is null) || !MapPreloaded)
         {
@@ -970,11 +995,6 @@ public sealed partial class WorldScreen
         host.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
     }
 
-    /// <summary>
-    ///     Publishes derived per-frame state (sort order, hover, tile under cursor) to <see cref="WorldState.CurrentFrame" /> after
-    ///     all movement has been processed for the frame. Called once at the end of Update; Draw and overlay systems read
-    ///     from <c>WorldState.Frame</c> rather than recomputing.
-    /// </summary>
     private void PopulateFrameState(uint? newHoveredId)
     {
         //capture prev before Clear wipes it so the dirty-check still has last frame's value.
@@ -1039,7 +1059,7 @@ public sealed partial class WorldScreen
                 continue;
             }
 
-            //iteration cap defends against pathological cases where the projectile genuinely
+            //loop cap defends against pathological cases where the projectile genuinely
             //can't catch a moving target within one frame's worth of elapsed time.
             const int MAX_STEPS_PER_FRAME = 64;
             var steps = 0;
@@ -1133,13 +1153,6 @@ public sealed partial class WorldScreen
         return best;
     }
 
-    /// <summary>
-    ///     Resolves the single tooltip the cursor is over this frame and shows it through the shared
-    ///     <see cref="ItemTooltip" /> after <see cref="ClientSettings.TooltipDelaySeconds" />. Switching directly from one
-    ///     target to another while a tooltip is already up swaps content instantly (no re-delay); leaving everything hides
-    ///     it. Sources, in priority order: an inventory slot, the equipment book (item icon then stat value), the Stats
-    ///     window stat value.
-    /// </summary>
     //hides the shared tooltip and clears all the hover targets + resolver state that would re-show it next frame. Called
     //when the world fades in after connecting so nothing lingers into the reveal.
     private void ResetTooltips()
@@ -1205,7 +1218,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //still hovering the element that was just clicked - stay hidden
+        //still hovering the element that was just clicked; stay hidden
         if (TooltipClickSuppressedKey is not null)
             return;
 
@@ -1241,7 +1254,7 @@ public sealed partial class WorldScreen
             return (x, y) => ItemTooltip.Show(npcName, 0, 0, x, y);
         }
 
-        //0.5 - a skill/spell in the NPC teaching list (ShowSkills/ShowSpells). Polled like book/stats tooltips.
+        //priority 0.5: a skill/spell in the NPC teaching list (ShowSkills/ShowSpells). Polled like book/stats tooltips.
         if (NpcSession.Visible)
         {
             var (dx, dy) = MapToDialog(InputBuffer.MouseX, InputBuffer.MouseY);
@@ -1517,12 +1530,12 @@ public sealed partial class WorldScreen
         return true;
     }
 
-    //every class's parsed SClass metadata, merged - built lazily for cross-class lookups (see LookupAbility)
+    //every class's parsed SClass metadata, merged and built lazily for cross-class lookups (see LookupAbility)
     private List<AbilityMetadata>? AllClassAbilityMetadata;
 
-    //looks up a skill/spell's parsed metadata by name: the player's own class set first (the overwhelmingly common
-    //case), then EVERY class's SClass file - NPCs teach cross-class abilities (e.g. Devlin's Dachaidh), whose detail
-    //lives in another class's metafile and used to come up blank in the teach-list hover tooltip
+    //looks up a skill/spell's parsed metadata by name. checks the player's own class set first (the overwhelmingly
+    //common case), then every class's SClass file. NPCs teach cross-class abilities (e.g. Devlin's Dachaidh), whose
+    //detail lives in another class's metafile and used to come up blank in the teach-list hover tooltip
     private AbilityMetadataEntry? LookupAbility(string name, bool isSpell)
     {
         if (PlayerAbilityMetadata is { } meta && Find(meta) is { } own)

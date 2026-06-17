@@ -419,7 +419,7 @@ public sealed class TownMapControl : UIPanel
     /// <summary>
     ///     Draws a scroll texture unrolling horizontally from its center: the two end strips (rollers / curls, each
     ///     <paramref name="endFrac" /> of the texture width) slide apart, UNCOVERING the stationary middle. The middle
-    ///     is drawn at a CONSTANT float scale with its position derived linearly from the source offset, so every
+    ///     is drawn at a CONSTANT float scale with its position computed linearly from the source offset, so every
     ///     texel maps to mathematically the same screen position on every frame - only the crop boundary moves. (Int
     ///     dest rects looked "anchored" but their width rounded independently of the source width, so the effective
     ///     scale breathed frame-to-frame = the jitter.) Returns the revealed middle (the writable area).

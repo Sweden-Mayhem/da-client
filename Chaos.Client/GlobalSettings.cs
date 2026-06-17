@@ -9,10 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Chaos.Client;
 
-/// <summary>
-///     Static configuration for the client: version, data path, lobby host/port, and sampler state. Triggers all one-time
-///     initialization (encoding providers, data archives, text colors) via the static constructor.
-/// </summary>
 public static class GlobalSettings
 {
     private static readonly string[] PreLoadedAssemblies = ["Chaos.Networking"];
@@ -20,16 +16,17 @@ public static class GlobalSettings
     public static readonly SamplerState Sampler = SamplerState.PointClamp; //SamplerState.LinearClamp;
     private static ushort ClientVersion => 741;
 
-    /// <summary>Build version sent to the server at login so it can reject out-of-date clients.</summary>
-    public const string CustomClientVersion = "0.9.1";
+    public const string CustomClientVersion = "0.9.2";
 
-    // the folder the executable lives in; for a self-extracting build AppContext.BaseDirectory is the temp
-    // extraction dir, so we use the real exe path and look for the Data folder next to da-swm.exe
+    // The folder the executable actually lives in. For a self-extracting single-file build,
+    // AppContext.BaseDirectory is the temp extraction dir, so we use the real exe path instead;
+    // the Data folder sits next to da-swm.exe.
     private static readonly string AppDir =
         Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
 
-    // Connection details are hard-coded here; there is no config file to ship or edit
-    // The DA_* environment variables exist only for local development and are never set on a player's machine
+    // Sweden Mayhem connection details are hard-coded here. There is no config file to ship or
+    // edit. The DA_* environment variables below exist only for local development (pointing the
+    // client at a server on 127.0.0.1); they are never set on a player's machine.
     private const string ServerHost = "darkages.swedenmayhem.se";
     private const int ServerPort = 4200;
 
@@ -52,10 +49,6 @@ public static class GlobalSettings
     public static int LobbyPort
         => int.TryParse(Environment.GetEnvironmentVariable("DA_LOBBY_PORT"), out var env) ? env : ServerPort;
 
-    /// <summary>
-    ///     When true, walking onto a water tile requires either the GM flag or the "Swimming" skill.
-    ///     When false (default), any character can swim freely and pathfinding routes through water tiles.
-    /// </summary>
     public static bool RequireSwimmingSkill => false;
 
     static GlobalSettings() => InitializeOthers();

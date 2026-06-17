@@ -33,8 +33,8 @@ public sealed class ChatInputControl : UIPanel
     private readonly UITextBox TextBox;
     private readonly List<string> WhisperHistory = [];
 
-    //shell-style recall of sent lines, Up walks toward the oldest, Down toward the draft being typed
-    //HistoryNav is how many entries back from the newest, 0 is the live draft, not kept between sessions
+    //bash-style recall of previously sent lines: Up walks toward the oldest, Down toward the in-progress draft.
+    //HistoryNav is the number of entries back from the newest (0 = the live draft). Not persisted between sessions.
     private readonly List<string> SentHistory = [];
     private int HistoryNav;
     private string HistoryDraft = string.Empty;
@@ -45,8 +45,8 @@ public sealed class ChatInputControl : UIPanel
     private int WhisperHistoryIndex;
     private string? WhisperTarget;
 
-    //the last place a message was sent so Enter reopens it
-    //whispering a person is left out since it has its own keybind, but guild, group and custom channels are remembered
+    //the last non-whisper "place" a message was sent, so Enter reopens it. Whispering a PERSON is deliberately excluded
+    //(it has its own keybind). Guild/group and custom "!name" channels are remembered (the channel kept in LastChannelTarget).
     private enum ChatPlace { Normal, Shout, Guild, Group, Whisper, Channel }
     private ChatPlace LastPlace = ChatPlace.Normal;
     private string? LastChannelTarget;
@@ -58,11 +58,8 @@ public sealed class ChatInputControl : UIPanel
     public bool IsFocused => TextBox.IsFocused;
 
 
-    /// <summary>Gives the local player's name for the normal-mode prefix, set by the screen</summary>
     public Func<string>? PlayerNameProvider { get; set; }
 
-    /// <summary>Pixel size of the optional TrueType font for the typing line so it matches the chat log and the size slider
-    ///     0 keeps the bitmap font</summary>
     public int CustomFontSize
     {
         set
@@ -120,20 +117,22 @@ public sealed class ChatInputControl : UIPanel
 
         AddChild(TextBox);
 
-        //register the chat textbox so popups don't steal keyboard focus while typing
+        //register the chat textbox so popups don't tear keyboard focus away while typing.
         if (InputDispatcher.Instance is { } dispatcher)
             dispatcher.ChatInputTextBox = TextBox;
 
-        //clicking into the box must arm a real chat mode, treated like pressing Enter, else Enter would send nothing
-        //OnFocused only fires on a click since the Focus methods set IsFocused directly, so this never double-fires
+        //clicking directly into the box (instead of pressing Enter) must still arm a real chat mode. Otherwise the
+        //textbox accepts text but Enter sends nothing, because Mode is still None. A bare click-focus is promoted to
+        //the normal typing line (or whisper, if that tab is active), exactly like pressing Enter. OnFocused fires only
+        //on a click (the Focus* methods set IsFocused directly), so this never double-fires for our own focus changes.
         TextBox.OnFocused += _ =>
         {
             if (Mode == ChatMode.None)
                 FocusForTyping();
         };
 
-        //when whispering a person, backspace on an empty message goes back to picking the name, prefilled so you can edit it
-        //channels have no name step so leave them alone
+        //whispering a PERSON: backspace on an empty message goes back to picking the name (prefilled so you can edit it).
+        //channels (!group/!guild) have no name step, so leave them be.
         TextBox.OnBackspaceWhenEmpty += () =>
         {
             if ((Mode == ChatMode.WhisperMessage) && WhisperTarget is { } target && !target.StartsWith('!'))
@@ -143,8 +142,8 @@ public sealed class ChatInputControl : UIPanel
             }
         };
 
-        //if focus is taken away from outside, like a click landing outside the chat window mid-type
-        //tear down the typing state cleanly instead of leaving the prefix and mode stuck with no caret
+        //if focus is taken away from outside (e.g. a click lands outside the chat window mid-type), tear down the
+        //typing state cleanly instead of leaving the prefix/mode stranded with no caret.
         UITextBox.TextBoxFocusLost += OnTextBoxFocusLost;
     }
 
@@ -156,16 +155,12 @@ public sealed class ChatInputControl : UIPanel
 
     private void OnTextBoxFocusLost(UITextBox textBox)
     {
-        //defocus from outside is the same as pressing Escape, drop any prompt, whisper or shout state and reset the prefix
-        //our own Unfocus sets Mode to None before blurring, so this does nothing for our own focus changes
+        //external defocus is equivalent to pressing Escape: drop any prompt/whisper/shout state and reset the prefix.
+        //(internal Unfocus sets Mode to None before blurring, so this is inert for our own focus changes.)
         if ((textBox == TextBox) && (Mode != ChatMode.None))
             HandleEscape();
     }
 
-    /// <summary>
-    ///     Moves and resizes the input so it can sit somewhere other than its prefab slot, like the bottom of the chat window
-    ///     Updates the text field width too
-    /// </summary>
     public void SetBounds(int x, int y, int width, int height)
     {
         X = x;
@@ -188,8 +183,6 @@ public sealed class ChatInputControl : UIPanel
     public event IgnoreListRequestedHandler? IgnoreListRequested;
     public event FocusChangedHandler? FocusChanged;
 
-    /// <summary>Fires when the player presses Tab or Shift+Tab while typing, to cycle the active chat tab
-    ///     The host cycles its tab strip which also points this input at the new tab</summary>
     public event Action<int>? TabCycleRequested;
 
     //--- layout ---
@@ -220,7 +213,7 @@ public sealed class ChatInputControl : UIPanel
     private void FocusInternal(ChatMode mode, string prefix, Color color)
     {
         Mode = mode;
-        TextBox.MaxLength = 512; //default, the channel and whisper paths tighten it after this
+        TextBox.MaxLength = 512; //default, the channel/whisper paths tighten it AFTER this
         UpdateLayout(prefix, color);
         TextBox.ForegroundColor = color;
         TextBox.IsFocused = true;
@@ -243,12 +236,15 @@ public sealed class ChatInputControl : UIPanel
         FocusInternal(mode, prefix, color);
     }
 
-    /// <summary>Opens the input to match the current tab, whisper-name entry on the Whisper tab otherwise a normal line
-    ///     Shared by the Enter key and a click into the box so both follow the active tab</summary>
     public void FocusForTyping()
     {
-        //Enter opens the last place, whichever tab you last clicked or sent to, they're kept in sync
-        //a person whisper from its keybind never becomes the last place, so Enter keeps returning to the last channel
+        if (Mode == ChatMode.Prompt)
+        {
+            HandleEscape();
+
+            return;
+        }
+
         switch (LastPlace)
         {
             case ChatPlace.Shout:
@@ -278,12 +274,8 @@ public sealed class ChatInputControl : UIPanel
         }
     }
 
-    /// <summary>Opens a normal public line</summary>
     public void FocusSay() => Focus($"{PlayerNameProvider?.Invoke() ?? string.Empty}: ", Color.White);
 
-    /// <summary>Records the clicked tab as the input's destination so Enter targets it
-    ///     a custom channel, group, guild, whisper, or public for All, Public and System
-    ///     If the input is already open it switches right away, otherwise it just records it without popping the input open</summary>
     public void SetInputToTab(ChatChannel? channel, string? channelName)
     {
         if (channelName is { Length: > 1 } chan)
@@ -297,14 +289,14 @@ public sealed class ChatInputControl : UIPanel
                 ChatChannel.Group   => ChatPlace.Group,
                 ChatChannel.Guild   => ChatPlace.Guild,
                 ChatChannel.Whisper => ChatPlace.Whisper,
-                _                   => ChatPlace.Normal //All, Public and System go to the public line
+                _                   => ChatPlace.Normal //All / Public / System -> public "/say"
             };
 
         if (IsFocused)
             FocusForTyping();
     }
 
-    //remember a channel just used so Enter reopens it
+    //remember a just-used channel target so Enter reopens it
     private void RecordChannelPlace(string target)
     {
         if (target.EqualsI("!guild"))
@@ -322,8 +314,8 @@ public sealed class ChatInputControl : UIPanel
     {
         WhisperHistoryIndex = 0;
 
-        //if we've whispered someone already, skip picking the name and go straight to the message for them
-        //backspace on an empty message drops back to choosing the name
+        //if we have whispered someone already, skip picking the name and go straight to the message for them.
+        //backspace on an empty message drops back to choosing the name (see the OnBackspaceWhenEmpty wiring).
         if (WhisperHistory.Count > 0)
         {
             StartWhisperMessage(WhisperHistory[0]);
@@ -334,7 +326,7 @@ public sealed class ChatInputControl : UIPanel
         FocusInternal(ChatMode.WhisperName, "to []? ", TextColors.Whisper);
     }
 
-    //open the input ready to whisper a known person
+    //open the input ready to type a whisper to a known person
     private void StartWhisperMessage(string target)
     {
         WhisperTarget = target;
@@ -343,15 +335,11 @@ public sealed class ChatInputControl : UIPanel
         TextBox.Text = string.Empty;
     }
 
-    /// <summary>Opens the input in shout mode with the "Name! " prefix</summary>
     public void FocusShout()
         => FocusInternal(ChatMode.Shout, $"{PlayerNameProvider?.Invoke() ?? string.Empty}! ", TextColors.Shout);
 
-    /// <summary>Opens the input to message the guild channel
-    ///     The server routes a whisper to "!guild" to guild chat, so this is a pre-targeted whisper with a guild prefix</summary>
     public void FocusGuild() => FocusChannel("!guild", "[Guild] ", TextColors.GuildChat);
 
-    /// <summary>Opens the input to message the group channel, a whisper to "!group" the server routes to group chat</summary>
     public void FocusGroup() => FocusChannel("!group", "[Group] ", TextColors.GroupChat);
 
     private void FocusChannel(string channel, string prefix, Color color)
@@ -402,8 +390,6 @@ public sealed class ChatInputControl : UIPanel
         FocusChanged?.Invoke(false);
     }
 
-    /// <summary>Sends a line as a normal public message through MessageSent, used for things like the "+" tab button
-    ///     Does nothing for blank input</summary>
     public void SendPublic(string message)
     {
         if (!string.IsNullOrWhiteSpace(message))
@@ -437,8 +423,8 @@ public sealed class ChatInputControl : UIPanel
             WhisperHistory.RemoveAt(WhisperHistory.Count - 1);
     }
 
-    //when a whisper arrives and the player has never whispered anyone, make the sender the default target
-    //so the whisper key replies to them, only seeded when empty so it never overrides a target the player chose
+    //when a whisper arrives and the player has never whispered anyone, make the sender the default whisper target so the
+    //whisper key replies to them. We only seed when empty so it never overrides a target the player has chosen.
     public void SeedWhisperTargetIfEmpty(string name)
     {
         if ((WhisperHistory.Count == 0) && !string.IsNullOrEmpty(name))
@@ -456,7 +442,7 @@ public sealed class ChatInputControl : UIPanel
 
     //--- sent-line history ---
 
-    //records a line just sent so Up can recall it, skips a repeat of the most recent line
+    //records a line that was just sent so Up can recall it. De-dupes a repeat of the most recent line.
     private void PushHistory(string message)
     {
         if (message.Length == 0)
@@ -471,13 +457,13 @@ public sealed class ChatInputControl : UIPanel
             SentHistory.RemoveAt(0);
     }
 
-    //walks the recall, dir +1 goes further back to older lines, dir -1 forward toward the live draft
+    //walks the recall: dir +1 = further back (older), dir -1 = forward toward the live draft (HistoryNav 0).
     private void NavigateHistory(int dir)
     {
         if (SentHistory.Count == 0)
             return;
 
-        //stepping into history from the live line, stash what was being typed so Down can bring it back
+        //stepping into history from the live line: stash what was being typed so Down can bring it back
         if (HistoryNav == 0)
             HistoryDraft = TextBox.Text;
 
@@ -528,8 +514,8 @@ public sealed class ChatInputControl : UIPanel
     {
         var message = TextBox.Text.Trim();
 
-        //empty or whitespace-only input, treat Enter like Escape, close the input and send nothing
-        //so we never push a blank line to the server, which would show as an empty gap in everyone's chat
+        //empty / whitespace-only chat input: treat Enter like Escape and close without sending,
+        //so we never push a blank line to the server (which would echo back as an empty gap in everyone's chat)
         if ((message.Length == 0) && Mode is ChatMode.Normal or ChatMode.Shout or ChatMode.WhisperMessage)
         {
             Unfocus();
@@ -537,8 +523,11 @@ public sealed class ChatInputControl : UIPanel
             return;
         }
 
-        //a line starting with "/" is a command, the server only runs commands from public messages, so always send it normally
-        //only chat modes are affected, a prompt, ignore-list entry or whisper-name pick keeps its "/" literally
+        //a line starting with "/" is a command. The server only runs commands from PUBLIC messages, so ALWAYS send it as
+        //a normal message regardless of the current channel/mode. Typing e.g. "/joinchannel x" while in guild
+        //or a custom channel would otherwise say it there instead of sending the command. The "last place" is left unchanged.
+        //Only the chat-message modes are affected. A prompt (gold/item amount), ignore-list entry, or whisper-name pick is
+        //not chat and must keep its "/" literally.
         if (message.StartsWith('/') && Mode is ChatMode.Normal or ChatMode.Shout or ChatMode.WhisperMessage)
         {
             PushHistory(message);
@@ -604,14 +593,14 @@ public sealed class ChatInputControl : UIPanel
             case ChatMode.WhisperMessage:
                 if (WhisperTarget is not null)
                 {
-                    //a channel target is a remembered place, a person whisper is not
-                    //a person whisper is kept in the whisper-name history and cycle, unlike channels
+                    //a channel target ("!...") is a remembered "place". A person whisper is NOT remembered as a place
+                    //(it IS kept in the whisper-name history/cycle, unlike channels).
                     if (WhisperTarget.StartsWith('!'))
                         RecordChannelPlace(WhisperTarget);
                     else
                         AddWhisperTarget(WhisperTarget);
 
-                    PushHistory(message); //the message body joins the shared Up/Down recall like a public line
+                    PushHistory(message); //the message body joins the shared Up/Down recall, same as a public line
                     WhisperSent?.Invoke(WhisperTarget, message);
                 }
 
@@ -684,8 +673,8 @@ public sealed class ChatInputControl : UIPanel
         if (!IsFocused)
             return;
 
-        //Tab and Shift+Tab while typing cycle the chat tab forward and back, like clicking the next or prev tab
-        //the switch also points this input at that tab's channel, the TextBox eats the Tab key so poll it here
+        //Tab / Shift+Tab while typing cycles the chat tab forward/back, just like clicking the next/prev tab (the tab
+        //switch also re-targets this input to that tab's channel). The TextBox swallows the Tab KeyDown, so poll it here.
         if (InputBuffer.WasKeyPressed(Keys.Tab))
         {
             var back = (InputBuffer.CurrentModifiers & KeyModifiers.Shift) != 0;
@@ -694,8 +683,11 @@ public sealed class ChatInputControl : UIPanel
             return;
         }
 
-        //typing a channel command then a space switches the input to that channel and drops the command text
-        //covers say, whisper, yell, guild, group and "/!name" for a custom channel, polled since the TextBox owns the keys
+        //typing a chat command followed by a space in any message line switches the input to that channel; the command
+        //text is removed. Works from Normal/Shout/channel/guild/group lines so you can hop between channels mid-type.
+        //"/say " (or "/s ") public, "/whisper " (or "/w ") whisper-name, "/yell "//"/shout " (or "/y ") yell, "/guild ",
+        //"/group " (or "/g "), and "/!name " for a custom channel (the "!" disambiguates from server slash-commands like
+        ///joinchannel, which pass straight through). Polled (the TextBox owns the keystrokes), matched when the space lands.
         if (Mode is ChatMode.Normal or ChatMode.Shout or ChatMode.WhisperMessage)
         {
             var typed = TextBox.Text;
@@ -745,7 +737,7 @@ public sealed class ChatInputControl : UIPanel
                 return;
             }
 
-            //custom channel, "/!name " talks in channel "!name", a whisper the server routes to that channel
+            //custom channel: "/!name " -> talk in channel "!name" (a whisper the server routes to the channel)
             if ((typed.Length > 3) && (typed[0] == '/') && (typed[1] == '!') && (typed[^1] == ' '))
             {
                 var channel = typed[1..^1].Trim();
@@ -760,8 +752,9 @@ public sealed class ChatInputControl : UIPanel
             }
         }
 
-        //Up and Down cycle whisper targets while picking a name, otherwise they recall sent lines
-        //polled because the focused TextBox eats the arrow keys for caret moves before they could reach here
+        //Up/Down cycle whisper targets while picking a name. Otherwise (normal/shout typing) they recall sent lines.
+        //Polled from InputBuffer because the focused TextBox grabs the arrow KeyDowns for caret moves before they
+        //could bubble here.
         if (Mode == ChatMode.WhisperName)
         {
             if (InputBuffer.WasKeyPressed(Keys.Up))
@@ -772,8 +765,8 @@ public sealed class ChatInputControl : UIPanel
             return;
         }
 
-        //sent-line recall works in every message-typing mode off the one shared history
-        //WhisperName is the exception above where Up and Down cycle the target instead
+        //sent-line recall works in every message-typing mode (public/yell/whisper/guild/group/channel) off the one shared
+        //history; WhisperName is the exception above (its Up/Down cycles the target instead).
         if (Mode is ChatMode.Normal or ChatMode.Shout or ChatMode.WhisperMessage)
         {
             if (InputBuffer.WasKeyPressed(Keys.Up))

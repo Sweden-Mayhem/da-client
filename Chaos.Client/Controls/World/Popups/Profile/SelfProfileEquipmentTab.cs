@@ -362,7 +362,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
 
     //lay a transparent InfoHotspot over each baked field NAME (the words left of the value boxes in the _nui_eq art).
     //The stat words reuse the same StatInfo help as their value hover / the Stats window; the identity words get a
-    //short note. Geometry derives from the value-label rects (so it tracks the prefab); leftBound is the per-column
+    //short note. Geometry comes from the value-label rects (so it tracks the prefab); leftBound is the per-column
     //left edge of the word, eyeballed from the rendered art (nudge if a word is missed).
     private void BuildInfoHotspots()
     {

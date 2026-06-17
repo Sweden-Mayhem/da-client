@@ -1,6 +1,7 @@
 #region
 using Chaos.Client.Data;
 using Chaos.Client.Data.Models;
+using Chaos.Client.Rendering.Utility;
 using DALib.Data;
 using DALib.Definitions;
 using DALib.Drawing;
@@ -26,13 +27,9 @@ public sealed class MapRenderer : IDisposable
     private TextureAtlas? FgAtlas;
 
     //DEBUG ("/debugOptions" -> Extend background): when on, the off-map void is filled by repeating the nearest
-    //EDGE background tile forever instead of showing black. Background only - foreground/entities stay on the map.
+    //EDGE background tile forever instead of showing black. Background only, foreground/entities stay on the map.
     public static bool ExtendBackground;
 
-    /// <summary>
-    ///     Extra tile margin based on the tallest foreground tile on the current map. Used by callers to expand visible
-    ///     bounds for foreground culling.
-    /// </summary>
     public int ForegroundExtraMargin { get; private set; }
 
     public void Dispose()
@@ -55,11 +52,134 @@ public sealed class MapRenderer : IDisposable
 
         foreach (var image in FgImageCache.Values)
             image.Dispose();
+    }
+    
+    public Rectangle? GetFgScreenRect(int tileId, float worldX, float worldY, Camera camera)
+    {
+        int width, height;
 
-        BgTextureCache.Clear();
-        BgImageCache.Clear();
-        FgTextureCache.Clear();
-        FgImageCache.Clear();
+        if (CyclingManager is not null && CyclingManager.FgOverrides.TryGetValue(tileId, out var cyclingRegion))
+        {
+            width = cyclingRegion.SourceRect.Width;
+            height = cyclingRegion.SourceRect.Height;
+        }
+        else 
+        {
+            var region = FgAtlas?.TryGetRegion(tileId);
+
+            if (region.HasValue)
+            {
+                width = region.Value.SourceRect.Width;
+                height = region.Value.SourceRect.Height;
+            }
+            else
+            {
+                var texture = GetOrCreateFgTexture(tileId);
+
+                if (texture is null)
+                    return null;
+
+                width = texture.Width;
+                height = texture.Height;
+            }
+        }
+
+        var fgWorldY = worldY + CONSTANTS.HALF_TILE_HEIGHT * 2 - height;
+        var screenPos = camera.WorldToScreen(new Vector2(worldX, fgWorldY));
+
+        return new Rectangle((int)screenPos.X, (int)screenPos.Y, width, height);
+    }
+
+    /// <summary>True when the foreground sprite has an opaque (alpha > 0) pixel at (localX, localY)
+    /// relative to its top-left corner. False for transparent pixels or out-of-bounds coords.</summary>
+    public bool IsFgPixelOpaque(int tileId, int localX, int localY)
+    {
+        if ((localX < 0) || (localY < 0))
+            return false;
+
+        var image = GetOrCreateFgImage(tileId);
+
+        if (image is null || (localX >= image.Width) || (localY >= image.Height))
+            return false;
+
+        using var bmp = SKBitmap.FromImage(image);
+        var color = bmp.GetPixel(localX, localY);
+
+        return color.Alpha > 0;
+    }
+
+    private SKImage? GetOrCreateFgImage(int tileId)
+    {
+        if (FgImageCache.TryGetValue(tileId, out var cached))
+            return cached;
+
+        var palettized = DataContext.Tiles.GetForegroundTile(tileId);
+
+        if (palettized is null)
+            return null;
+
+        var image = Graphics.RenderImage(palettized.Entity.Decompress(), palettized.Palette);
+        FgImageCache[tileId] = image;
+
+        return image;
+    }
+
+    private readonly Dictionary<int, Texture2D> HoverTintedFgCache = [];
+
+    public void DrawForegroundTileHoverTinted(
+        SpriteBatch spriteBatch, Camera camera, MapFile mapFile, int x, int y)
+    {
+        var tile = mapFile.Tiles[x, y];
+        var worldPos = Camera.TileToWorld(x, y, mapFile.Height);
+        var gd = spriteBatch.GraphicsDevice;
+
+        if (tile.LeftForeground.IsRenderedTileIndex())
+            DrawSingleFgTinted(spriteBatch, gd, camera, tile.LeftForeground, worldPos.X, worldPos.Y);
+
+        if (tile.RightForeground.IsRenderedTileIndex())
+            DrawSingleFgTinted(spriteBatch, gd, camera, tile.RightForeground, worldPos.X + 28, worldPos.Y);
+    }
+
+    private void DrawSingleFgTinted(SpriteBatch sb, GraphicsDevice gd, Camera camera, short fgId, float worldX, float worldY)
+    {
+        if (!HoverTintedFgCache.TryGetValue(fgId, out var tintedTex))
+        {
+            var image = GetOrCreateFgImage(fgId);
+
+            if (image is null)
+                return;
+
+            using var bmp = SKBitmap.FromImage(image);
+            var pixels = bmp.Pixels;
+
+            var mgPixels = new Color[pixels.Length];
+
+            for (var i = 0; i < pixels.Length; i++)
+            {
+                var sk = pixels[i];
+
+                if (sk.Alpha == 0)
+                {
+                    mgPixels[i] = Color.Transparent;
+
+                    continue;
+                }
+
+                var r = Math.Clamp((128 * sk.Red + 2 * sk.Blue) / 256 + 59, 0, 255);
+                var g = Math.Clamp((131 * sk.Green - 2 * sk.Blue) / 256 + 82, 0, 255);
+                var b = Math.Clamp((133 * sk.Blue - 2 * sk.Green) / 256 + 120, 0, 255);
+                mgPixels[i] = new Color((byte)r, (byte)g, (byte)b, sk.Alpha);
+            }
+
+            tintedTex = new Texture2D(gd, bmp.Width, bmp.Height);
+            tintedTex.SetData(mgPixels);
+            HoverTintedFgCache[fgId] = tintedTex;
+        }
+
+        var height = tintedTex.Height;
+        var fgWorldY = worldY + CONSTANTS.HALF_TILE_HEIGHT * 2 - height;
+        var screenPos = camera.WorldToScreen(new Vector2(worldX, fgWorldY));
+        sb.Draw(tintedTex, screenPos, Color.White);
     }
 
     private void BuildBgAtlas(GraphicsDevice device)
@@ -78,7 +198,7 @@ public sealed class MapRenderer : IDisposable
 
         atlas.Build();
 
-        //dispose source images, atlas has used their pixels
+        //dispose source images once the atlas has their pixels
         foreach (var image in BgImageCache.Values)
             image.Dispose();
 
@@ -99,7 +219,7 @@ public sealed class MapRenderer : IDisposable
 
         atlas.Build();
 
-        //dispose source images, atlas has used their pixels
+        //dispose source images once the atlas has their pixels
         foreach (var image in FgImageCache.Values)
             image.Dispose();
 
@@ -108,10 +228,6 @@ public sealed class MapRenderer : IDisposable
         FgAtlas = atlas;
     }
 
-    /// <summary>
-    ///     Convenience method that draws background + foreground without entity interleaving. Foreground uses simple y-major
-    ///     order (correct for maps without entities).
-    /// </summary>
     public void Draw(
         SpriteBatch spriteBatch,
         GraphicsDevice device,
@@ -142,10 +258,6 @@ public sealed class MapRenderer : IDisposable
         }
     }
 
-    /// <summary>
-    ///     Draws background tiles in y-major order (floor tiles, no overlap concerns).
-    ///     Uses the background tile atlas when available for single-draw-call batching.
-    /// </summary>
     public void DrawBackground(
         SpriteBatch spriteBatch,
         MapFile mapFile,
@@ -154,7 +266,7 @@ public sealed class MapRenderer : IDisposable
     {
         var extend = ExtendBackground;
 
-        //extend mode goes through the full visible range (past the map edges) and looks up the CLAMPED edge tile for
+        //extend mode steps through the full visible range (past the map edges) and looks up the CLAMPED edge tile for
         //off-map positions, so the outermost background repeats into the void instead of going black.
         (var bgMinX, var bgMinY, var bgMaxX, var bgMaxY) = camera.GetVisibleTileBounds(mapFile.Width, mapFile.Height, clampToMap: !extend);
 
@@ -165,7 +277,7 @@ public sealed class MapRenderer : IDisposable
         {
             for (var x = bgMinX; x <= bgMaxX; x++)
             {
-                //lookup coords: in-bounds as-is; off-map clamped to the nearest edge tile (extend mode only)
+                //lookup coords: in-bounds as-is, off-map clamped to the nearest edge tile (extend mode only)
                 var lx = extend ? Math.Clamp(x, 0, maxX) : x;
                 var ly = extend ? Math.Clamp(y, 0, maxY) : y;
 
@@ -185,12 +297,12 @@ public sealed class MapRenderer : IDisposable
                     || (screenPos.Y >= camera.ViewportHeight))
                     continue;
 
-                //prefer atlas path, all bg tiles in a single texture enables spritebatch batching
+                //prefer the atlas path, all bg tiles in one texture enables spritebatch batching
                 if (BgAtlas is not null)
                 {
                     AtlasRegion? region;
 
-                    //cycling tiles have pre-baked variants in the atlas, use the current step's region
+                    //cycling tiles have pre-baked variants in the atlas, pick the current step's region
                     if (CyclingManager is not null && CyclingManager.BgOverrides.TryGetValue(bgIndex, out var cyclingRegion))
                         region = cyclingRegion;
                     else
@@ -217,10 +329,6 @@ public sealed class MapRenderer : IDisposable
         }
     }
 
-    /// <summary>
-    ///     Draws the foreground tiles (left + right) at a specific tile position. Called by the game screen during diagonal
-    ///     stripe iteration for correct draw ordering.
-    /// </summary>
     public void DrawForegroundTile(
         SpriteBatch spriteBatch,
         GraphicsDevice device,
@@ -231,7 +339,8 @@ public sealed class MapRenderer : IDisposable
         int animationTick,
         Func<int, bool>? skipForeground = null,
         bool plain = false,
-        int footPx = 0)
+        int footPx = 0,
+        Color? tint = null)
     {
         var tile = mapFile.Tiles[x, y];
         var worldPos = Camera.TileToWorld(x, y, mapFile.Height);
@@ -243,7 +352,7 @@ public sealed class MapRenderer : IDisposable
                 DataContext.Tiles.GetFgAnimation(tile.LeftForeground),
                 animationTick);
 
-            DrawSingleFgTile(spriteBatch, device, camera, lfgTileId, worldPos.X, worldPos.Y, plain, footPx);
+            DrawSingleFgTile(spriteBatch, device, camera, lfgTileId, worldPos.X, worldPos.Y, plain, footPx, tint);
         }
 
         //right foreground
@@ -254,13 +363,13 @@ public sealed class MapRenderer : IDisposable
                 DataContext.Tiles.GetFgAnimation(tile.RightForeground),
                 animationTick);
 
-            DrawSingleFgTile(spriteBatch, device, camera, rfgTileId, worldPos.X + CONSTANTS.HALF_TILE_WIDTH, worldPos.Y, plain, footPx);
+            DrawSingleFgTile(spriteBatch, device, camera, rfgTileId, worldPos.X + CONSTANTS.HALF_TILE_WIDTH, worldPos.Y, plain, footPx, tint);
         }
     }
 
     //plain = draw the sprite as a flat silhouette (Color.White, no per-tile screen-blend toggling) so a caller can use
-    //it as an occluder/mask under its own blend state. footPx > 0 = draw ONLY the bottom footPx rows (the in-tile foot)
-    //instead of the whole sprite - used as the shadow caster so a tall canopy doesn't cast, only the ground contact.
+    //it as an occluder/mask under its own blend state. footPx > 0 draws ONLY the bottom footPx rows (the in-tile foot)
+    //rather than the whole sprite, used as the shadow caster so a tall canopy doesn't cast, only the ground contact.
     private void DrawSingleFgTile(
         SpriteBatch spriteBatch,
         GraphicsDevice device,
@@ -269,9 +378,11 @@ public sealed class MapRenderer : IDisposable
         float worldX,
         float worldY,
         bool plain = false,
-        int footPx = 0)
+        int footPx = 0,
+        Color? tint = null)
     {
-        //try atlas path (cycling override → atlas → fallback)
+        var drawColor = tint ?? Color.White;
+        //try atlas path (cycling override, then atlas, then fallback)
         AtlasRegion? region = null;
 
         if (CyclingManager is not null && CyclingManager.FgOverrides.TryGetValue(tileId, out var fgCyclingRegion))
@@ -300,7 +411,7 @@ public sealed class MapRenderer : IDisposable
                 if (screenBlend)
                     device.BlendState = BlendStates.Screen;
 
-                spriteBatch.Draw(region.Value.Atlas, screenPos, rect, Color.White);
+                spriteBatch.Draw(region.Value.Atlas, screenPos, rect, drawColor);
 
                 if (screenBlend)
                     device.BlendState = BlendState.AlphaBlend;
@@ -332,7 +443,7 @@ public sealed class MapRenderer : IDisposable
             if (screenBlend)
                 device.BlendState = BlendStates.Screen;
 
-            spriteBatch.Draw(texture, fallbackScreenPos, Color.White);
+            spriteBatch.Draw(texture, fallbackScreenPos, drawColor);
 
             if (screenBlend)
                 device.BlendState = BlendState.AlphaBlend;
@@ -387,8 +498,8 @@ public sealed class MapRenderer : IDisposable
         return texture;
     }
 
-    //margin: accept sprites up to this many pixels OFF-screen (the lighting occluder map is padded past the viewport
-    //so off-screen sprites can still block edge lights; 0 = plain on-screen culling)
+    //margin: accept sprites up to this many pixels OFF-screen. The lighting occluder map is padded past the viewport
+    //so off-screen sprites can still block edge lights. 0 = plain on-screen culling.
     private static bool IsOnScreen(
         Vector2 screenPos,
         int width,
@@ -411,14 +522,6 @@ public sealed class MapRenderer : IDisposable
         return (sotpData[sotpIndex] & TileFlags.Transparent) != 0;
     }
 
-    /// <summary>
-    ///     Preloads all unique tiles used by the map into texture atlases, including palette cycling variants. Call once after
-    ///     loading a new map.
-    /// </summary>
-    /// <remarks>
-    ///     Archive reads are sequential (not thread-safe), but tile rendering is parallelized on the CPU. The resulting
-    ///     images are packed into atlas pages (one GPU upload per page).
-    /// </remarks>
     public void PreloadMapTiles(
         GraphicsDevice device,
         MapFile mapFile,
@@ -565,9 +668,6 @@ public sealed class MapRenderer : IDisposable
         onProgress?.Invoke(1f);
     }
 
-    /// <summary>
-    ///     Resolves an animated tile to its current frame's tile ID. Returns the original ID if not animated.
-    /// </summary>
     private static int ResolveAnimatedTileId(int tileId, TileAnimationEntry? anim, int animationTick)
     {
         if (anim is null)

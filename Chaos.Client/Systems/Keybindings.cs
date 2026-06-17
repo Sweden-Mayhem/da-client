@@ -58,8 +58,8 @@ public enum GameAction
     Screenshot,
     ToggleDebugOverlay,
 
-    //emotes - one GameAction per emote BodyAnimation. Order MUST match Keybindings.EmoteOrder (index arithmetic maps
-    //the action back to its BodyAnimation); defaults are the classic Ctrl / Ctrl+Alt / Alt + number-row banks
+    //emotes: one GameAction per emote BodyAnimation. Order MUST match Keybindings.EmoteOrder (index arithmetic maps
+    //the action back to its BodyAnimation). Defaults are the classic Ctrl / Ctrl+Alt / Alt + number-row banks.
     EmoteSmile, EmoteCry, EmoteFrown, EmoteWink, EmoteSurprise, EmoteTongue, EmotePleasant, EmoteSnore, EmoteMouth,
     EmoteBlowKiss, EmoteWave, EmoteRockOn, EmotePeace, EmoteStop, EmoteOuch, EmoteImpatient, EmoteShock, EmotePleasure,
     EmoteLove, EmoteSweatDrop, EmoteWhistle, EmoteIrritation, EmoteSilly, EmoteCute, EmoteYelling, EmoteMischievous,
@@ -104,10 +104,8 @@ public readonly record struct KeyBind(Keys Key, KeyModifiers Mods)
         return prefix + Keybindings.KeyName(Key);
     }
 
-    /// <summary>
-    ///     Compact text for tight spots like the hotbar slot labels: single-letter modifier prefixes (Ctrl -&gt; "C+",
-    ///     Alt -&gt; "A+", Shift -&gt; "S+") + the key name, e.g. "S+1", "C+A+1", "F1". Empty string when unbound.
-    /// </summary>
+    /// <summary>Compact text for tight spots like the hotbar slot labels. Modifier prefixes are single letters
+    ///     (Ctrl="C+", Alt="A+", Shift="S+") followed by the key name, e.g. "S+1", "C+A+1", "F1". Empty string when unbound.</summary>
     public string DisplayShort()
     {
         if (!IsBound)
@@ -146,16 +144,8 @@ public readonly record struct KeyBind(Keys Key, KeyModifiers Mods)
     }
 }
 
-/// <summary>Metadata for one action: display label and category. Defaults live in <see cref="Keybindings.BuildDefaults" />.
-///     <paramref name="Bindable" /> false hides the action from the Controls window (it stays a real action other code can
-///     trigger, just not one the player rebinds - e.g. the social-status picker, opened by clicking the equipment book).</summary>
 public readonly record struct ActionInfo(GameAction Action, string Label, BindCategory Category, bool Bindable = true);
 
-/// <summary>
-///     Player-configurable keyboard bindings. Two keys per action (primary + secondary). Defaults mimic modern games
-///     (WASD + arrows to move, WoW/GW2-style panel letters). Only Enter (open chat) and Escape (cancel) are fixed and
-///     not represented here. Persisted to Darkages.cfg via <see cref="WriteConfig" /> / <see cref="ApplyConfigLine" />.
-/// </summary>
 public static class Keybindings
 {
     private const KeyModifiers MOD_MASK = KeyModifiers.Shift | KeyModifiers.Ctrl | KeyModifiers.Alt;
@@ -169,11 +159,6 @@ public static class Keybindings
 
     private static readonly GameAction[] MovementActions = [GameAction.MoveUp, GameAction.MoveDown, GameAction.MoveLeft, GameAction.MoveRight];
 
-    /// <summary>
-    ///     Every emote BodyAnimation in classic-bank order: Ctrl bank (indices 0-10), Ctrl+Alt bank (11-21), Alt bank
-    ///     (22-32). This is also the GameAction order (EmoteSmile..EmoteConfused) and the emote window's display order, so
-    ///     an emote action maps to its animation by <c>EmoteOrder[action - GameAction.EmoteSmile]</c>.
-    /// </summary>
     public static readonly BodyAnimation[] EmoteOrder =
     [
         BodyAnimation.Smile, BodyAnimation.Cry, BodyAnimation.Frown, BodyAnimation.Wink, BodyAnimation.Surprise,
@@ -185,8 +170,6 @@ public static class Keybindings
         BodyAnimation.Tears, BodyAnimation.FiredUp, BodyAnimation.Confused
     ];
 
-    /// <summary>Human label for an emote, e.g. "Blow Kiss" (a space before each interior capital). Shared by the
-    ///     Controls window rows and the emote menu cells.</summary>
     public static string EmoteLabel(BodyAnimation emote)
     {
         var name = emote.ToString();
@@ -211,28 +194,25 @@ public static class Keybindings
     /// <summary>Current bindings. Value is (primary, secondary).</summary>
     public static readonly Dictionary<GameAction, (KeyBind Primary, KeyBind Secondary)> Binds = new();
 
-    /// <summary>Raised whenever a binding changes (rebind, clear, or reset) so live UI - e.g. the hotbar slot labels - can refresh.</summary>
+    /// <summary>Raised whenever a binding changes (rebind, clear, or reset) so live UI can refresh (e.g. hotbar slot labels).</summary>
     public static event Action? Changed;
 
     /// <summary>Held modifier that makes the movement keys turn the character in place instead of walking. None = off.</summary>
     public static KeyModifiers TurnModifier { get; set; } = KeyModifiers.Shift;
 
-    /// <summary>True while the Controls window is waiting to capture a key for rebinding. The world/global key handlers
-    ///     check this and ignore input so the captured key only changes the binding (it does not also fire its action).</summary>
     public static bool IsCapturing { get; set; }
 
     static Keybindings() => ResetDefaults();
 
     public static BindCategory CategoryOf(GameAction action) => Categories.GetValueOrDefault(action, BindCategory.Misc);
 
-    /// <summary>Restores every binding (and the turn modifier) to the built-in modern defaults.</summary>
     public static void ResetDefaults()
     {
         TurnModifier = KeyModifiers.Shift;
         Binds.Clear();
 
         //seed EVERY action as unbound first, so an action with no default (e.g. TargetFriendly/TargetEnemy) still has an
-        //entry - Get()/Resolve() index Binds directly and would otherwise throw KeyNotFound for it
+        //entry. Get()/Resolve() index Binds directly and would otherwise throw KeyNotFound for it.
         foreach (var action in Enum.GetValues<GameAction>())
             Binds[action] = (KeyBind.None, KeyBind.None);
 
@@ -242,7 +222,6 @@ public static class Keybindings
         Changed?.Invoke();
     }
 
-    /// <summary>Resolves a pressed key + modifiers to the action it triggers, or null.</summary>
     public static GameAction? Resolve(Keys key, KeyModifiers mods)
     {
         mods &= MOD_MASK;
@@ -256,8 +235,8 @@ public static class Keybindings
                 return info.Action;
         }
 
-        //when the turn modifier is held, movement keys still resolve (the dispatcher turns instead of walks), so the turn
-        //modifier (default Shift) works for movement without breaking Shift+number = spell, which matched exactly above
+        //turn modifier held: movement keys still resolve (the dispatcher turns instead of walks). this lets the turn
+        //modifier (default Shift) work for movement without breaking Shift+number = spell, which matched exactly above.
         if ((TurnModifier != KeyModifiers.None) && ((mods & TurnModifier) != 0))
         {
             var stripped = mods & ~TurnModifier;
@@ -274,15 +253,8 @@ public static class Keybindings
         return null;
     }
 
-    /// <summary>True when the turn-in-place modifier is currently part of the given modifier set.</summary>
     public static bool IsTurnHeld(KeyModifiers mods) => (TurnModifier != KeyModifiers.None) && ((mods & TurnModifier) != 0);
 
-    /// <summary>
-    ///     The movement action whose key is currently HELD down, or null. Lets the world loop drive walking from the
-    ///     physical key state each frame (smooth, continuous) instead of from OS key-repeat events (which pause for the
-    ///     repeat delay after the first press). Sets <paramref name="turnOnly" /> when the turn modifier is also held.
-    ///     Mirrors <see cref="Resolve" />'s modifier rules and checks MoveUp/Down/Left/Right in order.
-    /// </summary>
     public static GameAction? HeldMovement(out bool turnOnly)
     {
         var mods = InputBuffer.CurrentModifiers & MOD_MASK;
@@ -304,12 +276,11 @@ public static class Keybindings
 
         return null;
 
-        //exact-modifier match walks; the turn modifier may be additionally held to pivot in place instead
+        //exact-modifier match walks. If the turn modifier is also held, pivot in place instead.
         bool Held(KeyBind b)
             => b.IsBound && InputBuffer.IsKeyHeld(b.Key) && ((mods == b.Mods) || (turnActive && ((mods & ~TurnModifier) == b.Mods)));
     }
 
-    /// <summary>True every frame the action's bound key is physically held, with modifier matching.</summary>
     public static bool IsActionHeld(GameAction action)
     {
         var (p, s) = Binds[action];
@@ -319,7 +290,6 @@ public static class Keybindings
                || (s.IsBound && InputBuffer.IsKeyHeld(s.Key) && (mods == s.Mods));
     }
 
-    /// <summary>One-shot, modifier-aware check for the global (ChaosGame) actions - true the frame the action's key is pressed.</summary>
     public static bool Triggered(GameAction action)
     {
         var (p, s) = Binds[action];
@@ -332,10 +302,6 @@ public static class Keybindings
 
     public static (KeyBind Primary, KeyBind Secondary) Get(GameAction action) => Binds[action];
 
-    /// <summary>
-    ///     Assigns <paramref name="bind" /> to a slot (0 = primary, 1 = secondary) of an action, first clearing that exact
-    ///     combo from every other slot so a key never drives two actions (modern "steal" behaviour).
-    /// </summary>
     public static void Set(GameAction action, int slot, KeyBind bind)
     {
         if (bind.IsBound)
@@ -371,11 +337,6 @@ public static class Keybindings
         Changed?.Invoke();
     }
 
-    /// <summary>
-    ///     The 12 short hotbar labels for a contiguous slot-action bank (<see cref="GameAction.Skill1" />,
-    ///     <see cref="GameAction.Spell1" />, or <see cref="GameAction.Item1" />), each showing that slot's actual bound key
-    ///     (e.g. "1", "S+1", "F1"). Falls back to the secondary bind when the primary is unbound; blank when neither is.
-    /// </summary>
     public static string[] SlotBarLabels(GameAction firstSlot)
     {
         var labels = new string[12];
@@ -389,7 +350,6 @@ public static class Keybindings
         return labels;
     }
 
-    /// <summary>Friendly single-key name (no modifiers) for the UI and Display().</summary>
     public static string KeyName(Keys key)
         => key switch
         {
@@ -421,7 +381,6 @@ public static class Keybindings
 
     //--- persistence (called by ClientSettings) ---
 
-    /// <summary>Applies one Darkages.cfg line (key already split from value). Ignores lines it does not own.</summary>
     public static void ApplyConfigLine(string key, string value)
     {
         if (key == "SwmTurnModifier")
@@ -446,7 +405,6 @@ public static class Keybindings
         Binds[action] = (primary, secondary);
     }
 
-    /// <summary>Writes the turn modifier and every binding to the open settings writer.</summary>
     public static void WriteConfig(TextWriter writer)
     {
         writer.WriteLine($"SwmTurnModifier : {(int)TurnModifier}");
@@ -482,8 +440,8 @@ public static class Keybindings
             new(GameAction.ToggleTownMinimap, "Town minimap (corner)", BindCategory.Panels),
             new(GameAction.ToggleOptions, "Options", BindCategory.Panels),
             new(GameAction.ToggleWorldList, "Who is online", BindCategory.Panels),
-            //the old Settings/Macros/Friends slide menu is replaced by the Options window + the Friends key,
-            //so it is no longer bindable (hidden from Options > Controls); the dispatch case stays but is unreachable
+            //deprecated: the old Settings/Macros/Friends slide menu is replaced by the Options window + the Friends key,
+            //so it is no longer bindable (hidden from Options > Controls). The dispatch case stays but is unreachable.
             new(GameAction.ToggleSettings, "Settings / macros / friends", BindCategory.Panels, Bindable: false),
             new(GameAction.ToggleBulletinBoard, "Mail and Help", BindCategory.Panels),
             new(GameAction.ToggleFriends, "Friends", BindCategory.Panels),
@@ -529,31 +487,31 @@ public static class Keybindings
         KeyBind K(Keys k) => new(k, KeyModifiers.None);
         KeyBind Shifted(Keys k) => new(k, KeyModifiers.Shift);
 
-        //movement - WASD + arrow keys
+        //movement: WASD + arrow keys
         yield return (GameAction.MoveUp, K(Keys.W), K(Keys.Up));
         yield return (GameAction.MoveDown, K(Keys.S), K(Keys.Down));
         yield return (GameAction.MoveLeft, K(Keys.A), K(Keys.Left));
         yield return (GameAction.MoveRight, K(Keys.D), K(Keys.Right));
 
-        //panels - WoW/GW2-style letters
+        //panels: WoW/GW2-style letters
         yield return (GameAction.ToggleInventory, K(Keys.I), K(Keys.B));
         yield return (GameAction.ToggleSkills, K(Keys.K), KeyBind.None);
         yield return (GameAction.ToggleSpells, K(Keys.P), KeyBind.None);
         yield return (GameAction.ToggleStats, K(Keys.C), KeyBind.None);
         yield return (GameAction.ToggleEquipment, K(Keys.U), K(Keys.H));
-        //J opens the Legend tab of the same Equipment book; toggling it closes the book (see WorldScreen ToggleStatusBook)
+        //J opens the Legend tab of the same Equipment book. Toggling it closes the book (see WorldScreen ToggleStatusBook)
         yield return (GameAction.ToggleLegend, K(Keys.J), KeyBind.None);
         yield return (GameAction.ToggleActions, K(Keys.N), KeyBind.None);
         yield return (GameAction.ToggleGroup, K(Keys.G), KeyBind.None);
         yield return (GameAction.ToggleTownMap, K(Keys.M), KeyBind.None);
         yield return (GameAction.ToggleMinimap, K(Keys.Tab), KeyBind.None);
         yield return (GameAction.ToggleTownMinimap, Shifted(Keys.M), KeyBind.None);
-        yield return (GameAction.ToggleOptions, Shifted(Keys.O), KeyBind.None); //Shift+O (plain O opens Friends)
-        yield return (GameAction.ToggleWorldList, K(Keys.L), KeyBind.None);
-        //the old "Settings / macros / friends" slide menu is deprecated (Options window + Friends key replace it), unbound
+        yield return (GameAction.ToggleOptions, Shifted(Keys.O), KeyBind.None); //Shift+O (plain O opens Who is online)
+        yield return (GameAction.ToggleWorldList, K(Keys.O), KeyBind.None);
+        //the old "Settings / macros / friends" slide menu is deprecated (Options window + Friends key replace it): unbound
         yield return (GameAction.ToggleSettings, KeyBind.None, KeyBind.None);
         yield return (GameAction.ToggleBulletinBoard, K(Keys.R), KeyBind.None);
-        yield return (GameAction.ToggleFriends, K(Keys.O), KeyBind.None);
+        yield return (GameAction.ToggleFriends, K(Keys.L), K(Keys.Y));
         yield return (GameAction.ToggleSocialStatus, KeyBind.None, KeyBind.None);
         yield return (GameAction.ToggleEmotes, K(Keys.Q), KeyBind.None);
 
@@ -575,7 +533,7 @@ public static class Keybindings
         yield return (GameAction.FocusWhisper, Shifted(Keys.OemQuotes), KeyBind.None);
         //J now opens the Legend book
         yield return (GameAction.FlashGroup, K(Keys.OemComma), K(Keys.OemPeriod));
-        //log out back to the lobby - Ctrl+Q by default (Q alone opens the emote menu)
+        //log out back to the lobby: Ctrl+Q by default (Q alone opens the emote menu)
         yield return (GameAction.LogOut, new KeyBind(Keys.Q, KeyModifiers.Ctrl), KeyBind.None);
 
         //system
@@ -583,7 +541,7 @@ public static class Keybindings
         yield return (GameAction.Screenshot, K(Keys.PrintScreen), KeyBind.None);
         yield return (GameAction.ToggleDebugOverlay, KeyBind.None, KeyBind.None);
 
-        //emotes - three number-row banks (keys 1-0 then "-") with Ctrl, Ctrl+Alt, and Alt as modifiers
+        //emotes: the classic banks across the number row (keys 1-0 then "-"), Ctrl bank first, then Ctrl+Alt, then Alt
         for (var i = 0; i < EmoteOrder.Length; i++)
         {
             var action = (GameAction)((int)GameAction.EmoteSmile + i);

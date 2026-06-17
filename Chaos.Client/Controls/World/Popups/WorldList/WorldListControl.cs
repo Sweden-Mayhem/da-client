@@ -145,13 +145,13 @@ public sealed class WorldListControl : PrefabPanel
         var countryBtnRect = GetRect("CountryBtn");
         var masterBtnRect = GetRect("MasterBtn");
 
-        //spacing derived from the y gap between the first two prefab buttons
+        //spacing taken from the y gap between the first two prefab buttons
         var tabStride = masterBtnRect.Y - countryBtnRect.Y;
 
         if (tabStride <= 0)
             tabStride = 22;
 
-        //label stride derived from the y gap between first two prefab labels (same stride)
+        //label stride taken from the y gap between first two prefab labels (same stride)
         var labelStride = tabStride;
 
         var cache = UiRenderer.Instance!;

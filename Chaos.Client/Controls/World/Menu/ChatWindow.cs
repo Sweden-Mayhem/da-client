@@ -11,19 +11,16 @@ using Microsoft.Xna.Framework;
 
 namespace Chaos.Client.Controls.World.Menu;
 
-/// <summary>
-///     Chat as a draggable window. Hosts the original HUD <see cref="ChatPanel" /> and fades out when idle. Resizable.
-/// </summary>
 public sealed class ChatWindow : DraggableWindow
 {
-    private const int CHAT_FONT = 14; //base TrueType size at 1.0x; the "Chat font size" slider multiplies it
+    private const int CHAT_FONT = 14; //base TrueType size at 1.0x, multiplied by the "Chat font size" slider
     private const int TABS_H = 18; //the tab strip across the top of the content
 
     private readonly ChatPanel Chat;
     private readonly ChatTabBar Tabs;
 
     //small right-click tab menu shown over the content: a per-tab "Highlight" toggle (all tabs) + "Leave channel" (custom
-    //channels only). TabMenuKey is the persisted highlight key; TabMenuChannel is the "!name" for Leave.
+    //channels only). TabMenuKey is the persisted highlight key, TabMenuChannel is the "!name" for Leave.
     private readonly UIPanel TabMenu;
     private readonly UILabel TabMenuTitle;
     private readonly Checkbox TabMenuHighlight;
@@ -33,8 +30,8 @@ public sealed class ChatWindow : DraggableWindow
     private string? TabMenuChannel;
     private bool TabMenuWasVisible;
 
-    //"Set color" submenu: a colour-tinted list (no numbers to memorize). The names are what /setchannelcolor accepts; the
-    //letters are the matching colour-code chars used to tint each label its own colour.
+    //"Set color" submenu: a colour-tinted list (no numbers to memorize). The names are what /setchannelcolor accepts.
+    //The letters are the matching colour-code chars used to tint each label its own colour.
     private readonly UIPanel TabColorMenu;
     private string? TabColorChannel;
     private bool TabColorWasVisible;
@@ -53,13 +50,14 @@ public sealed class ChatWindow : DraggableWindow
     //seconds the window stays shown after the input loses focus (set on blur, counts down in Update)
     private float ShowTimer;
 
-    //position/size persistence -same center-relative X, anchor-relative Y encoding as the minimap and menu button
+    //position/size persistence uses the same center-relative X, anchor-relative Y encoding as the minimap and menu button
     private bool OffsetLoaded;
     private bool HasOffset;
     private bool WasDragging;
-    private bool SuppressResizeSave; //prevents ClampToScreen's forced shrink from overwriting the user's preferred size
-    //OffsetX: center-relative (X - screenW/2). OffsetY: anchor-relative, positive = distance from top,
-    //negative = distance from bottom (Y - screenH), matching the element's vertical-center half.
+    private bool SuppressResizeSave;
+    private int LastUiW = -1, LastUiH = -1;
+    //OffsetX is center-relative (X - screenW/2). OffsetY is anchor-relative: positive is distance from top,
+    //negative is distance from bottom (Y - screenH), matching the element's vertical-center half.
     private int OffsetX, OffsetY;
 
     //HUD-avoidance rects filled by WorldScreen.AnchorHotbars() each frame (hotbars, orbs, minimap, menu button)
@@ -77,21 +75,18 @@ public sealed class ChatWindow : DraggableWindow
     private const int MIN_CHAT_W = 150;
     private const int MIN_CHAT_H = 80;
 
-    /// <summary>The typing line. Lives in this (visible) window so input works even though the old HUD is hidden.</summary>
     public ChatInputControl ChatInput { get; }
 
-    /// <summary>The chat tab the player is currently viewing (null = All). When it is the Whisper tab, opening the input
-    ///     for typing goes straight to whisper entry.</summary>
     public ChatChannel? ActiveChannel => Tabs.ActiveChannel;
 
     public ChatWindow(int width, int height)
-        //wood frame like the rest of the windows; no close box (chat is always present and fades on its own)
+        //wood frame like the rest of the windows, no close box (chat is always present and fades on its own)
         : base("Chat", width, height, showClose: false, useWoodFrame: true)
     {
         AutoFade = true;
         IdleOpacity = 0f; //fully fade out when idle (chrome, text, and scrollbar)
         Resizable = true;
-        Fade = 0f; //start invisible on login; new lines (incl. the login channel messages) flash it visible (below)
+        Fade = 0f; //start invisible on login. New lines (incl. the login channel messages) flash it visible (below)
 
         //lay out off the base Content box (sized for the active frame mode) so the wood inset is respected automatically
         var contentW = Content.Width;
@@ -134,7 +129,7 @@ public sealed class ChatWindow : DraggableWindow
         Tabs.TabSelected += (channel, name) => ChatInput?.SetInputToTab(channel, name);
 
         //typing line, hosted here so it stays functional regardless of the hidden HUD (WorldScreen wires its send events).
-        //it uses the SAME (scaled) TrueType font as the chat log, so what you type matches what is shown - and so it can
+        //it uses the SAME (scaled) TrueType font as the chat log, so what you type matches what is shown and it can
         //display characters the bitmap font lacks (å/ä/ö).
         ChatInput = new ChatInputControl(DataContext.UserControls.Get("_nbk_s")!) { CustomFontSize = FontSize };
         ChatInput.SetBounds(2, contentH - InputH, contentW - 4, InputH);
@@ -272,8 +267,8 @@ public sealed class ChatWindow : DraggableWindow
         if (InputDispatcher.Instance is { } dispatcher)
             dispatcher.ChatInputContainer = this;
 
-        //a new message does not reveal the window - it only pulses the relevant tab (handled in ChatTabBar, and
-        //only for an inactive, non-"All" tab). Fading the whole window in happens only when the player starts typing.
+        //NOTE: a new message does NOT reveal the window. It only pulses the relevant tab (handled in ChatTabBar, and
+        //only for an inactive, non-"All" tab). Fading the whole window IN happens ONLY when the player starts typing.
     }
 
     //base size * the slider (clamped); the input line is tall enough for that font plus a little breathing room
@@ -331,8 +326,11 @@ public sealed class ChatWindow : DraggableWindow
             }
         }
 
-        //non-drag: recompute X/Y from stored offsets so the chat follows its anchor edge on screen resize
-        if (!IsUserDragging && HasOffset)
+        //non-drag: recompute X/Y from stored offsets ON WINDOW RESIZE so the chat follows its anchor edge
+        var uiW = ChaosGame.UiWidth;
+        var uiH = ChaosGame.UiHeight;
+
+        if (!IsUserDragging && HasOffset && ((uiW != LastUiW) || (uiH != LastUiH)))
         {
             X = ChaosGame.UiWidth / 2 + OffsetX;
             Y = OffsetY >= 0 ? OffsetY : ChaosGame.UiHeight + OffsetY;
@@ -358,8 +356,16 @@ public sealed class ChatWindow : DraggableWindow
 
         base.Update(gameTime); //DraggableWindow: handles drag movement + KeepOnScreen (50%)
 
-        //push chat onto screen, avoiding HUD elements; shrink if the remaining slot is too small
-        ClampToScreen();
+        if ((uiW != LastUiW) || (uiH != LastUiH))
+        {
+            ClampToScreen();
+            LastUiW = uiW;
+            LastUiH = uiH;
+        }
+
+        //at most 10% of the chat window may be off-screen at any time
+        X = Math.Clamp(X, -(int)(Width * 0.05f), ChaosGame.UiWidth - (int)(Width * 0.95f));
+        Y = Math.Clamp(Y, -(int)(Height * 0.05f), ChaosGame.UiHeight - (int)(Height * 0.95f));
 
         //detect drag end and persist the clamped position
         if (WasDragging && !IsUserDragging)
@@ -377,7 +383,7 @@ public sealed class ChatWindow : DraggableWindow
         var uiW = ChaosGame.UiWidth;
         var uiH = ChaosGame.UiHeight;
 
-        //available region -starts as full screen, each HUD element shrinks it from the relevant side
+        //available region starts as full screen; each HUD element shrinks it from the relevant side
         var loX = 0;
         var hiX = uiW;
         var loY = 0;
@@ -392,22 +398,22 @@ public sealed class ChatWindow : DraggableWindow
             var hR = h.X + h.Width;
             var hB = h.Y + h.Height;
 
-            //vertical constraint: apply when the HUD horizontally overlaps the chat
+            //vertical constraint, applied when the HUD horizontally overlaps the chat
             if ((h.X < X + Width) && (hR > X))
             {
                 if (h.Y + h.Height / 2 <= chatCY)
-                    loY = Math.Max(loY, hB); //HUD above chat centre → floor rises
+                    loY = Math.Max(loY, hB); //HUD above chat centre, floor rises
                 else
-                    hiY = Math.Min(hiY, h.Y); //HUD below chat centre → ceiling drops
+                    hiY = Math.Min(hiY, h.Y); //HUD below chat centre, ceiling drops
             }
 
-            //horizontal constraint: apply when the HUD vertically overlaps the chat
+            //horizontal constraint, applied when the HUD vertically overlaps the chat
             if ((h.Y < Y + Height) && (hB > Y))
             {
                 if (h.X + h.Width / 2 <= chatCX)
-                    loX = Math.Max(loX, hR); //HUD left of chat centre → left wall moves right
+                    loX = Math.Max(loX, hR); //HUD left of chat centre, left wall moves right
                 else
-                    hiX = Math.Min(hiX, h.X); //HUD right of chat centre → right wall moves left
+                    hiX = Math.Min(hiX, h.X); //HUD right of chat centre, right wall moves left
             }
         }
 
@@ -429,7 +435,7 @@ public sealed class ChatWindow : DraggableWindow
     {
         var avail = hi - lo;
 
-        if (avail <= 0) //conflicting constraints -fall back to screen-edge clamp only
+        if (avail <= 0) //conflicting constraints; fall back to screen-edge clamp only
         {
             newSize = Math.Max(minSize, Math.Min(size, screenSize));
             newPos = Math.Clamp(pos, 0, Math.Max(0, screenSize - newSize));
@@ -442,7 +448,7 @@ public sealed class ChatWindow : DraggableWindow
             newSize = Math.Max(minSize, avail);
             newPos = nearFarEdge ? hi - newSize : lo; //anchor to whichever screen edge the chat is nearest
         }
-        else //fits -just push into the slot
+        else //fits, just push into the slot
         {
             newSize = size;
             newPos = Math.Clamp(pos, lo, hi - size);
@@ -462,8 +468,6 @@ public sealed class ChatWindow : DraggableWindow
         ClientSettings.Save();
     }
 
-    /// <summary>Commits the current position and size to settings. Called by WorldScreen after the one-time default
-    ///     placement so the default is persisted just like a user drag.</summary>
     public void CommitPosition() => SavePosition();
 
     //pops the tab menu under the right-clicked tab (clamped inside the content). "Leave" shows only for custom channels.
@@ -549,11 +553,8 @@ public sealed class ChatWindow : DraggableWindow
         base.OnMouseDown(e);
     }
 
-    /// <summary>The player name under a screen point in the chat log (for click-to-whisper / hover cursor), or null.</summary>
     public string? NameAt(int screenX, int screenY) => Chat.NameAt(screenX, screenY);
 
-    /// <summary>Re-renders all stored chat lines with or without timestamps depending on the current setting.
-    ///     Call after toggling <see cref="ClientSettings.ShowChatTimestamp" />.</summary>
     public void RefreshChatTimestamps() => Chat.RefreshTimestamps();
 
     protected override void OnResized()
@@ -570,7 +571,7 @@ public sealed class ChatWindow : DraggableWindow
     protected override float AutoFadeOutSeconds => 0.9f;
 
     //fade the chat text and scrollbar along with the chrome (the base only fades the frame). The tab strip fades too,
-    //except a tab that is currently pulsing to flag unread messages -that stays visible (handled inside ChatTabBar).
+    //except a tab that is currently pulsing to flag unread messages; that stays visible (handled inside ChatTabBar).
     protected override void OnFade(float opacity)
     {
         Chat.SetContentOpacity(opacity);

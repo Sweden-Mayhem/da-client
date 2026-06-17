@@ -9,18 +9,13 @@ using Microsoft.Xna.Framework;
 
 namespace Chaos.Client.Controls.World.Menu;
 
-/// <summary>
-///     The custom settings window: a draggable dark/bronze window the owner fills with <see cref="Slider" /> and
-///     <see cref="Checkbox" /> rows via <see cref="AddSlider" /> / <see cref="AddCheckbox" />. Rows stack top-down;
-///     each control pushes its value out live through its callback (the owner applies + persists it).
-/// </summary>
 public sealed class OptionsWindow : DraggableWindow
 {
     //wide enough that the TrueType (Cinzel) slider labels (e.g. "Chat window fade after") fit without clipping,
     //plus DEFAULT_WIDTH extra on the right for the scrollbar
     private const int W = 452 + ScrollBarControl.DEFAULT_WIDTH;
-    //max window height, matched to the Controls window so the long option list shows more rows per screen
-    //ChromeHeight for wood (non-flush) = FRAME + TITLE_H + FRAME = 38
+    // max window height, matched to the Controls window so the long option list shows more rows per screen.
+    // ChromeHeight for wood (non-flush) = FRAME + TITLE_H + FRAME = 38
     private const int H_MAX = 544;
 
     private const int PAD = 12;
@@ -34,13 +29,13 @@ public sealed class OptionsWindow : DraggableWindow
     private static readonly Color LabelColor = new(200, 198, 190);
     private static readonly Color ValueColor = new(196, 168, 110);
 
-    //row panel and scrollbar - rows go into RowsHost, Viewport clips the visible area
+    //rows go into RowsHost, Viewport clips the visible area, scrollbar sits to the right
     private readonly UIPanel Viewport;
     private readonly UIPanel RowsHost;
     private readonly ScrollBarControl ScrollBar;
     private int ScrollOffset;
     private int NextY;
-    private int RowW;  //usable row width = Content.Width - scrollbar
+    private int RowW;  //usable row width (Content.Width minus scrollbar)
 
     public OptionsWindow()
         : base("Options", W, H_MAX, useWoodFrame: true)
@@ -86,7 +81,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY = PAD;
     }
 
-    /// <summary>Adds a "&lt;label&gt;  [==O==]  &lt;value&gt;" row. <paramref name="format" /> renders the live value text.</summary>
     public void AddSlider(
         string label,
         float min,
@@ -138,7 +132,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY += SLIDER_ROW;
     }
 
-    /// <summary>Adds a full-width checkbox row.</summary>
     public void AddCheckbox(string label, bool value, Action<bool> onChanged)
     {
         var checkbox = new Checkbox(label, RowW - 2 * PAD, value)
@@ -152,8 +145,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY += CHECK_ROW;
     }
 
-    /// <summary>Adds a "&lt;label&gt;  [ &lt;value&gt; ]" row whose button cycles through <paramref name="options" /> on each
-    ///     click (a simple stand-in for a drop-down). Reports the new index via <paramref name="onChanged" />.</summary>
     public void AddChoice(string label, string[] options, int currentIndex, Action<int> onChanged)
     {
         RowsHost.AddChild(
@@ -188,7 +179,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY += SLIDER_ROW;
     }
 
-    /// <summary>Adds a full-width button row (e.g. "Controls...", which opens the keybinding window).</summary>
     public void AddButton(string label, Action onClick)
     {
         var button = new MenuButton(label, RowW - 2 * PAD, 22)
@@ -202,7 +192,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY += CHECK_ROW + 4;
     }
 
-    /// <summary>Adds a centered, non-interactive note row (e.g. "More options in-game" in the lobby).</summary>
     public void AddNote(string text)
     {
         RowsHost.AddChild(
@@ -222,10 +211,6 @@ public sealed class OptionsWindow : DraggableWindow
         NextY += CHECK_ROW;
     }
 
-    /// <summary>
-    ///     Finalizes the window after all rows are added. Shrinks the window if content fits within the max height;
-    ///     otherwise enables scrolling. Call ONCE after all rows are added.
-    /// </summary>
     public void FitHeight()
     {
         var contentH = NextY + PAD;
@@ -261,13 +246,6 @@ public sealed class OptionsWindow : DraggableWindow
         e.Handled = true;
     }
 
-    /// <summary>
-    ///     Builds the standard settings window, shared by the world screen and the lobby. Each row applies live (where it
-    ///     can) and persists to Darkages.cfg. <paramref name="applyWindowScale" /> live-applies the hud window scale in the
-    ///     world (null in the lobby, where it only persists). <paramref name="compact" /> (the lobby) keeps only the core
-    ///     pre-game settings (Sound, Music, VSync) and shows a "More options in-game" note instead of the keybind button;
-    ///     pass false in the world for the full menu.
-    /// </summary>
     public static OptionsWindow Create(ChaosGame game, ControlsWindow controls, Action<float>? applyWindowScale, bool compact = false, Action? onChatRefresh = null)
     {
         var win = new OptionsWindow();
@@ -287,7 +265,7 @@ public sealed class OptionsWindow : DraggableWindow
                 v =>
                 {
                     if (applyWindowScale is not null)
-                        applyWindowScale(v); //rescales the open hud windows live in the world (and sets WindowScale)
+                        applyWindowScale(v); //world: rescales the open hud windows live (and sets WindowScale)
                     else
                         ClientSettings.WindowScale = v;
 
@@ -314,7 +292,7 @@ public sealed class OptionsWindow : DraggableWindow
             });
 
         //footstep + chat-bubble volumes are in-world cues, so they stay out of the minimal lobby (compact) menu. Kept right
-        //after Sound/Music as one volume group; the footstep TUNING (even frames + per-step debug) comes after.
+        //after Sound/Music as one volume group. The footstep TUNING (even frames + per-step debug) comes after.
         if (!compact)
         {
             win.AddSlider(
@@ -336,7 +314,7 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             //(the per-step "Step 1..4" debug toggles were removed from the menu; the FootstepStepsEnabled flags + their
-            //persistence stay, so they can be added back later if needed.)
+            //persistence stay, so they can be re-exposed later if needed.)
         }
 
         if (!compact)
@@ -464,6 +442,14 @@ public sealed class OptionsWindow : DraggableWindow
                 v =>
                 {
                     ClientSettings.CameraEffects = v;
+                    ClientSettings.Save();
+                });
+
+            win.AddCheckbox(
+                "Sound on whisper", ClientSettings.WhisperSound,
+                v =>
+                {
+                    ClientSettings.WhisperSound = v;
                     ClientSettings.Save();
                 });
 

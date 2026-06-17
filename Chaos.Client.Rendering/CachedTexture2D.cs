@@ -6,8 +6,8 @@ namespace Chaos.Client.Rendering;
 
 /// <summary>
 ///     A Texture2D subclass whose Dispose is a no-op. Only the owning TextureCache can release GPU memory via
-///     ForceDispose(). This allows cached textures to be freely assigned to UI controls without worrying about
-///     double-dispose or premature release.
+///     ForceDispose(). Cached textures can be freely assigned to UI controls without risk of double-dispose or
+///     premature release.
 /// </summary>
 public sealed class CachedTexture2D : Texture2D
 {

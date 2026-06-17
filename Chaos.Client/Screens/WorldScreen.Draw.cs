@@ -22,7 +22,7 @@ public sealed partial class WorldScreen
 {
     public bool UsesNativeUi => true;
 
-    //world renders into the 640x480 target here; the UI is drawn separately at native resolution in DrawNativeUi.
+    //world renders into the 640x480 target here; the UI is drawn separately at native resolution in DrawNativeUi
     public void DrawWorld(SpriteBatch spriteBatch, GameTime gameTime)
     {
         //keep the camera viewport matched to the (window-filling) render target, so the player stays centered and
@@ -33,8 +33,8 @@ public sealed partial class WorldScreen
         //sort once per frame, cached via dirty flag and reused by all draw sub-passes
         var sortedEntities = WorldState.CurrentFrame.SortedEntities;
 
-        //pre-render silhouettes (local-player overdraw) before world drawing
-        //matches retail which redraws the local player at 50% alpha after foregrounds
+        //pre-render silhouettes before world drawing to match retail FUN_005d4360,
+        //which redraws the local player at 50% alpha after foregrounds
         if (MapFile is not null && MapPreloaded)
         {
             SilhouetteRenderer.Clear();
@@ -96,7 +96,7 @@ public sealed partial class WorldScreen
             });
         }
 
-        //pass 1: world rendering, clipped to the hud viewport area with camera transform
+        //world rendering pass 1, clipped to the hud viewport area with the camera transform
         if (MapFile is not null && MapPreloaded)
         {
             var viewportRect = WorldRenderRect;
@@ -104,7 +104,7 @@ public sealed partial class WorldScreen
 
             var transform = Matrix.CreateTranslation(viewportRect.X, viewportRect.Y, 0);
 
-            //background tiles + tile cursor: batched (many draws, no blend changes)
+            //background tiles and tile cursor batched with no blend changes
             spriteBatch.Begin(samplerState: GlobalSettings.Sampler, rasterizerState: ScissorRasterizerState, transformMatrix: transform);
 
             MapRenderer.DrawBackground(
@@ -115,7 +115,7 @@ public sealed partial class WorldScreen
             DrawTileCursor(spriteBatch);
             spriteBatch.End();
 
-            //foreground, entities, effects: immediate mode (per-stripe ordering, blend switches for additive effects)
+            //foreground, entities, effects in immediate mode for per-stripe ordering and additive blend switches
             spriteBatch.Begin(
                 SpriteSortMode.Immediate,
                 BlendState.AlphaBlend,
@@ -130,9 +130,9 @@ public sealed partial class WorldScreen
             SilhouetteRenderer.DrawSilhouettes(spriteBatch);
             spriteBatch.End();
 
-            //deferred lighting: night ambient + glow pools, multiplied over the world. Per lamp the glow is ray-marched
-            //against the FEET of foreground below it (DrawLightOccluderMap) so those bottom pixels cast a real shadow
-            //past them; then the object's full silhouette erases the glow so it isn't lit (DrawLightSilhouetteErase).
+            //deferred lighting multiplies night ambient and glow pools over the world. Per lamp the glow is ray-marched
+            //against the feet of foreground below it (DrawLightOccluderMap) so those bottom pixels cast a real shadow,
+            //then the object's full silhouette erases the glow so it isn't lit (DrawLightSilhouetteErase)
             if (DarknessRenderer.IsActive)
             {
                 var occluderPad = Math.Clamp(TileLights.GatherMarginTiles * 14, 128, 512);
@@ -150,20 +150,20 @@ public sealed partial class WorldScreen
                     DarknessRenderer.GetSweepAmbientTexture()); //spatial ambient during a transition: day/night sweeps in from a top corner
             }
 
-            //dusk/dawn glow, a very subtle warm bloom over the twilight-lit world (gates itself on DuskGlow). Runs
+            //dusk/dawn glow: a subtle warm bloom over the twilight-lit world (gates itself on DuskGlow). Runs
             //before the cool night-shadow tint so the bloom samples the warm lit world, not the cooled shadows
             DrawDuskBloom(spriteBatch);
 
-            //night-shadow grade: mute and cool the shadows (after the bloom, using this frame's light buffer). The cool
+            //night-shadow grade mutes and cools the shadows after the bloom, using this frame's light buffer. The cool
             //floor is geometry-cropped to the map's screen parallelogram (its 4 corner tips, N/E/S/W) so the blue filter
-            //never bleeds into the off-map void, regardless of any transparent holes in the floor sprites
+            //never bleeds into the off-map void regardless of any transparent holes in the floor sprites
             if (DarknessRenderer.IsActive)
                 LightingRenderer.ApplyNightShadowTint(spriteBatch, Game.WorldTarget, WorldRenderRect, DarknessRenderer.NightShadowTint, GetMapScreenQuad());
 
-            //night vignette, black edges pressing in as it gets dark (gates itself on the same night ramp)
+            //night vignette: black edges pressing in as it gets dark (gates itself on the same night ramp)
             DrawNightVignette(spriteBatch);
 
-            //weather overlay drawn after darkness so snowflakes/rain remain visible on dark maps
+            //weather overlay: drawn after darkness so snowflakes/rain remain visible on dark maps
             if (WeatherRenderer.IsActive)
             {
                 spriteBatch.Begin(
@@ -175,10 +175,10 @@ public sealed partial class WorldScreen
                 spriteBatch.End();
             }
 
-            //blind overlay: black out viewport, then redraw only the player character. drawn before
+            //blind overlay: black out viewport then redraw only the player character. drawn before
             //entity overlays so chat bubbles, name tags, chant text, etc. remain visible while blinded,
             //matching retail (which implements blind as a per-entity darkness mask rather than a
-            //viewport fill, so its independent overlay panes are unaffected)
+            //viewport fill, so its independent overlay panes are unaffected).
             if (WorldState.Attributes.Current?.Blind is true)
             {
                 spriteBatch.Begin(
@@ -219,8 +219,8 @@ public sealed partial class WorldScreen
             Overlays.Draw(spriteBatch, Camera, MapFile.Height);
             spriteBatch.End();
 
-            //spotlight the dialog speaker: dim the world (same look as the dialog dimmer) and re-draw the speaker NPC bright
-            //on top, so it stands out above the darkening. World pass = correct world position + scale for the creature.
+            //spotlight the dialog speaker: dim the world (same look as the dialog dimmer) and re-draw the speaker NPC
+            //bright on top so it stands out. World pass gives the correct world position and scale for the creature
             if (SpeakerSpotlightActive)
             {
                 spriteBatch.Begin(
@@ -263,11 +263,10 @@ public sealed partial class WorldScreen
             }
         }
 
-        //tab map overlay drawn on top of world, under hud
-        //tabmaprenderer manages its own spritebatch begin/end blocks (stencil passes for entity overlap)
-        //NoTabMap map flag (0x40) suppresses both the toggle (InputHandlers) and the render
-        //while an NPC dialog is open it hides like the rest of the HUD (OpenFraction stays > 0 through the open and close
-        //animation, so it stays hidden until the dialog has fully closed, then reappears)
+        //tab map overlay drawn on top of world, under hud. TabMapRenderer manages its own spritebatch begin/end
+        //blocks for stencil passes. NoTabMap map flag (0x40) suppresses both the toggle and the render.
+        //while an NPC dialog is open it hides like the rest of the HUD (OpenFraction stays > 0 through the open and
+        //close animation, so it stays hidden until the dialog has fully closed)
         var dialogOpenFraction = NpcSessionHost?.OpenFraction ?? 0f;
 
         if (TabMapVisible && MapFile is not null && !CurrentMapFlags.HasFlag(MapFlags.NoTabMap) && (dialogOpenFraction <= 0f))
@@ -327,17 +326,17 @@ public sealed partial class WorldScreen
 
         if (openFraction > 0f)
         {
-            //dialog is opening/open: render all HUD children to an offscreen target so they can be drawn at
-            //reduced alpha, while the dialog system (ZIndex >= 149999) draws at full alpha on top.
+            //dialog is opening or open: render all HUD children to an offscreen target so they can be drawn at
+            //reduced alpha while the dialog system (ZIndex >= 149999) draws at full alpha on top
             var device = spriteBatch.GraphicsDevice;
 
             if (HudRenderTarget is null || HudRenderTarget.IsDisposed
                 || (HudRenderTarget.Width != ChaosGame.UiWidth) || (HudRenderTarget.Height != ChaosGame.UiHeight))
             {
                 HudRenderTarget?.Dispose();
-                //PreserveContents: ScaleHost and DraggableWindow both call SetRenderTarget internally and restore via
-                //GetRenderTargets()/SetRenderTargets(). Without PreserveContents, each such detour would discard the
-                //pixels already drawn to this target, making earlier-drawn HUD elements vanish.
+                //PreserveContents is required because ScaleHost and DraggableWindow both rebind the render target
+                //internally and restore it. Without this, each such detour discards pixels already drawn to this
+                //target and earlier HUD elements vanish
                 HudRenderTarget = new RenderTarget2D(device, ChaosGame.UiWidth, ChaosGame.UiHeight,
                     false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
             }
@@ -347,7 +346,7 @@ public sealed partial class WorldScreen
             spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
             DrawCameraEffects(spriteBatch);
             DrawDeathVignette(spriteBatch);
-            //cast bar has the LOWEST UI priority: drawn first so every overlay, window, and tooltip sits on top of it
+            //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
             DrawCastBar(spriteBatch);
             if (!NpcSession.Visible)
                 Overlays.DrawChatBubblesNative(spriteBatch);
@@ -366,7 +365,7 @@ public sealed partial class WorldScreen
             DrawDragIcon(spriteBatch);
             spriteBatch.End();
 
-            //back to the backbuffer: draw HUD at faded alpha, then dialog system at full alpha
+            //back to the backbuffer: HUD at faded alpha, then dialog system at full alpha
             device.SetRenderTarget(null);
             spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
             spriteBatch.Draw(HudRenderTarget, new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight), Color.White * (1f - openFraction));
@@ -387,7 +386,7 @@ public sealed partial class WorldScreen
             spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
             DrawCameraEffects(spriteBatch);
             DrawDeathVignette(spriteBatch);
-            //cast bar has the LOWEST UI priority: drawn first so every overlay, window, and tooltip sits on top of it
+            //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
             DrawCastBar(spriteBatch);
             if (!NpcSession.Visible)
                 Overlays.DrawChatBubblesNative(spriteBatch);
@@ -409,9 +408,9 @@ public sealed partial class WorldScreen
 
     private const int CAST_BAR_FONT_SIZE = 16;
 
-    //a cast progress bar while a multi-line spell is being chanted, so the few-second delay before the spell
-    //fires reads as casting instead of nothing happening. Centered horizontally, just above the bottom hotbars
-    //the spell name sits above the bar. Hidden for instant (0-line) casts (they never chant)
+    //a WoW-style cast progress bar while a multi-line spell is being chanted, so the few-second delay reads as
+    //"casting" rather than nothing happening. Centered horizontally just above the bottom hotbars, spell name above.
+    //Hidden for instant (0-line) casts since they never chant
     private void DrawCastBar(SpriteBatch spriteBatch)
     {
         if (!CastingSystem.IsChanting)
@@ -457,8 +456,8 @@ public sealed partial class WorldScreen
         }
     }
 
-    //the map's 4 screen-space corner tips, N (top of tile 0,0), E (right of W-1,0), S (bottom of W-1,H-1), W (left of
-    //0,H-1), forming the parallelogram the night-shadow grade is cropped to. Slightly past each tile's extreme point so
+    //the map's 4 screen-space corner tips (N top of tile 0,0; E right of W-1,0; S bottom of W-1,H-1; W left of 0,H-1)
+    //forming the parallelogram the night-shadow grade is cropped to. Slightly past each tile's extreme point so
     //the edge tiles are fully inside
     private Vector2[] GetMapScreenQuad()
     {
@@ -482,7 +481,7 @@ public sealed partial class WorldScreen
         ];
     }
 
-    //unused for this screen (ChaosGame calls DrawWorld + DrawNativeUi directly), but satisfies IScreen.
+    //unused for this screen (ChaosGame uses DrawWorld + DrawNativeUi directly), but satisfies IScreen
     public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
     {
         DrawWorld(spriteBatch, gameTime);
@@ -490,9 +489,6 @@ public sealed partial class WorldScreen
     }
 
     #region Swimming
-    /// <summary>
-    ///     Updates the entity's water tile state from the current map tile's gndattr data.
-    /// </summary>
     private void UpdateEntityWaterState(WorldEntity entity)
     {
         if (MapFile is null
@@ -537,11 +533,8 @@ public sealed partial class WorldScreen
     #endregion
 
     #region Diagonal Stripe Rendering
-    /// <summary>
-    ///     Goes through foreground tiles, entities, and effects in diagonal stripe order (depth = x+y ascending). Per stripe draw
-    ///     order: ground items, aislings, creatures, ground effects, entity effects, foreground tiles. Within each
-    ///     category, entities draw in list order (arrival order, later arrivals on top).
-    /// </summary>
+    //diagonal stripe order (depth = x+y ascending). Per stripe: ground items, aislings, creatures, ground effects,
+    //entity effects, foreground tiles. Within each category entities draw in arrival order, later arrivals on top
     private void DrawForegroundAndEntities(SpriteBatch spriteBatch, IReadOnlyList<WorldEntity> sortedEntities)
     {
         if (MapFile is null)
@@ -601,7 +594,7 @@ public sealed partial class WorldScreen
             for (var i = stripeStart; i < stripeEnd; i++)
                 DrawEntityEffects(spriteBatch, sortedEntities[i]);
 
-            //8. foreground tiles (on top, trees and buildings occlude entities behind them)
+            //8. foreground tiles (on top; trees and buildings occlude entities behind them)
             var tileXStart = Math.Max(fgMinX, depth - fgMaxY);
             var tileXEnd = Math.Min(fgMaxX, depth - fgMinY);
 
@@ -615,6 +608,10 @@ public sealed partial class WorldScreen
                     depth - tileX,
                     AnimationTick);
         }
+
+        //sign highlight disabled until polished
+        //if (HoveredFgTile is (var htx, var hty) && IsSignFgAt(htx, hty))
+        //    MapRenderer.DrawForegroundTileHoverTinted(spriteBatch, Camera, MapFile, htx, hty);
     }
 
     //erase blend: dest *= (1 - srcAlpha). Where the foreground silhouette is opaque, the glow underneath is wiped to 0.
@@ -626,8 +623,8 @@ public sealed partial class WorldScreen
         AlphaDestinationBlend = Blend.InverseSourceAlpha
     };
 
-    //returns the per-light skip predicate: a tile never acts as an occluder/blocker when it is a light emitter, a
-    //globally no-shadow tile ([no_shadow] in the ini), or this light's own configured ignore tile (e.g. its post)
+    //per-light "skip" predicate: a tile is never an occluder when it is a light emitter, a globally no-shadow tile
+    //([no_shadow] in the ini), or this light's own configured ignore tile (e.g. its post)
     private static Func<int, bool> LightSkip(LightSource light)
     {
         var ignore = light.Ignore;
@@ -637,9 +634,9 @@ public sealed partial class WorldScreen
                      || ((ignore is not null) && (Array.IndexOf(ignore, id) >= 0));
     }
 
-    //how many iso-depth steps DOWN (in front) this light reaches, based on how high it sits above its tile (OffsetY).
-    //A ground light (OffsetY 0) reaches 0 = its own depth only; the higher it is, the more rows of front foreground it
-    //lights before the silhouette/occluder passes cut it off. Tunable px-per-step lives in DebugSettings.
+    //iso-depth steps downward (in front) that this light reaches, based on how high it sits above its tile (OffsetY).
+    //A ground light reaches only its own depth; a higher lamp lights more rows of front foreground before the
+    //silhouette/occluder passes cut it off. Tunable px-per-step lives in DebugSettings
     private static int LightDownReach(LightSource light)
     {
         var step = DebugSettings.LightDownReachPxPerStep;
@@ -648,11 +645,11 @@ public sealed partial class WorldScreen
         return Math.Clamp(raw, 0, DebugSettings.LightDownReachMaxSteps);
     }
 
-    //renders the shadow casters for one lamp into the bound (padded) occluder map: the in-tile foot (bottom pixels) of
-    //every foreground sprite sitting below the lamp (iso depth tx+ty greater). The ray-march shader then blocks the
-    //lamp's light from passing those pixels, a real cast shadow into the pool. A tall canopy doesn't cast (foot only)
-    //the 3x3 offsets (times DILATE px) the occluder feet are stamped at, to widen thin bars (a fence is ~1-2px and the
-    //ray-march steps ~5px apart, so without this it hits a bar at some fragments and steps over it at others = speckle)
+    //renders shadow casters for one lamp into the bound (padded) occluder map. The in-tile foot (bottom pixels) of
+    //every foreground sprite below the lamp (iso depth tx+ty greater) is stamped so the ray-march shader blocks the
+    //lamp's light there for a real cast shadow. A tall canopy doesn't cast (foot only)
+    //the 3x3 offsets (x DILATE px) widen thin bars because a fence is ~1-2px and the ray-march steps ~5px apart,
+    //so without dilation it hits a bar at some fragments and steps over it at others (speckle)
     private static readonly (int X, int Y)[] DilateOffsets =
     [
         (0, 0), (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)
@@ -663,8 +660,8 @@ public sealed partial class WorldScreen
         if (MapFile is null || !MapPreloaded || !DebugSettings.LightShadows || (DebugSettings.LightShadowFootPx <= 0))
             return;
 
-        //a raised light reaches down (greater iso depth = in front) by reach tiles before its glow is blocked/erased,
-        //so a high lamp lights the foreground a few tiles below it. reach grows with how high the light sits (OffsetY)
+        //a raised light reaches DOWN (greater iso depth = in front) by reach tiles before its glow is blocked/erased,
+        //so a high lamp lights the foreground a few tiles below it. reach grows with how high the light sits (OffsetY).
         var lightDepth = light.TileX + light.TileY + LightDownReach(light);
         var skip = LightSkip(light);
         var foot = DebugSettings.LightShadowFootPx;
@@ -672,10 +669,10 @@ public sealed partial class WorldScreen
         var padTiles = 1 + (int)MathF.Ceiling(occluderPad / 14f);
         var (minX, minY, maxX, maxY) = Camera.GetVisibleTileBounds(MapFile.Width, MapFile.Height, padTiles);
 
-        const int DILATE = 2; //pixels each thin bar grows by, so the march can't miss it
+        const int DILATE = 2; //pixels each thin bar grows by so the march can't miss it
 
-        //the occluder map is padded; shift so viewport pixel (0,0) lands at (pad,pad). Stamp the feet at a 3x3 set of
-        //small offsets so thin occluders are dilated into something the march reliably samples = smooth shadows.
+        //the occluder map is padded; shift so viewport pixel (0,0) lands at (pad,pad). Stamp the feet at a 3x3 set
+        //of small offsets so thin occluders are dilated into something the march reliably samples for smooth shadows
         foreach (var (ox, oy) in DilateOffsets)
         {
             var transform = Matrix.CreateTranslation(WorldRenderRect.X + occluderPad + (ox * DILATE), WorldRenderRect.Y + occluderPad + (oy * DILATE), 0);
@@ -691,8 +688,8 @@ public sealed partial class WorldScreen
         }
     }
 
-    //erases (from the bound glow buffer) the full silhouette of every foreground sprite below the lamp, so the object
-    //itself never lights up (its front face stays dark, the lamp is behind it)
+    //erases the full silhouette of every foreground sprite below the lamp from the bound glow buffer, so the object
+    //itself never lights up (its front face stays dark because the lamp is behind it)
     private void DrawLightSilhouetteErase(SpriteBatch spriteBatch, LightSource light, Matrix transform)
     {
         if (MapFile is null || !MapPreloaded)
@@ -772,9 +769,9 @@ public sealed partial class WorldScreen
             if (effect.IsComplete)
                 continue;
 
-            //an effect anchored to a live entity is drawn by DrawEntityEffects (it follows the entity). Everything else
-            //draws here at its captured tile: a ground-targeted effect, or an entity-targeted effect whose target was
-            //removed (a killing-blow spell on a dying monster), so it still shows once the entity is gone
+            //an effect anchored to a LIVE entity is drawn by DrawEntityEffects (it follows the entity). Everything else
+            //draws here at its captured tile: a ground-targeted effect, OR an entity-targeted effect whose target was
+            //removed (a killing-blow spell on a dying monster) - so it still shows once the entity is gone.
             if (effect.TargetEntityId is { } targetId && (WorldState.GetEntity(targetId) is not null))
                 continue;
 
@@ -858,13 +855,13 @@ public sealed partial class WorldScreen
             alpha);
 
     //dusk/dawn bloom
-    //full-res ping-pong targets for the separable blur, rebuilt on world-size change, disposed in UnloadContent. Full
-    //res (not a downscale) so the blur kernel is centred per output pixel and moves with the world content (a low-res
-    //blur grid is screen-locked and the glow crawls as the camera scrolls, same reason the shadow blur is full res)
+    //full-res ping-pong targets for the separable blur; rebuilt on world-size change, disposed in UnloadContent.
+    //Full-res (not a downscale) so the blur kernel is centred per output pixel and moves with the world content.
+    //A low-res blur grid is screen-locked and the glow crawls as the camera scrolls (same reason the shadow blur is full-res)
     private RenderTarget2D? BloomA;
     private RenderTarget2D? BloomB;
 
-    //accumulate weighted blur taps: dest.rgb += src.rgb (the per-tap weight is carried in the draw colour)
+    //accumulate weighted blur taps. dest.rgb += src.rgb, weight carried in the draw colour
     private static readonly BlendState BloomAccumulate = new()
     {
         ColorSourceBlend = Blend.One,
@@ -874,7 +871,7 @@ public sealed partial class WorldScreen
     };
 
     //add the blurred glow back onto the world, weighted by dest alpha (map coverage), so it never blooms past the map
-    //edge into the black void. dest.rgb += src.rgb * dest.a, dest alpha preserved
+    //edge into the void. dest.rgb += src.rgb * dest.a, dest alpha preserved
     private static readonly BlendState BloomComposite = new()
     {
         ColorSourceBlend = Blend.DestinationAlpha,
@@ -884,20 +881,10 @@ public sealed partial class WorldScreen
     };
 
     //bloom blur: taps per side and pixel step between them (full-res, separable). The kernel is centred on each output
-    //pixel so it is translation-invariant, it moves with the world content instead of crawling against a fixed grid
+    //pixel so it is translation-invariant and moves with the world content instead of crawling against a fixed grid
     private const int BLOOM_TAPS = 7;
     private const int BLOOM_STEP = 2;
 
-    /// <summary>
-    ///     A warm glow over the darkened world: the world target is blurred with a FULL-RES separable box blur, then
-    ///     added back tinted amber. <see cref="DarknessRenderer.DuskGlow" /> ramps 0..1 from day to full night; the
-    ///     strength runs DUSK_BLOOM_MAX at the faint end up to NIGHT_BLOOM_MAX, cubic-weighted toward night so dusk/dawn
-    ///     stay a subtle cosy lift while at night the bloom is carried almost entirely by the bright lit spots (the
-    ///     blurred frame is dark everywhere else), making lights pierce the darkness. The blur is full res (not a
-    ///     downscale) so it does not crawl as the camera scrolls, and the add-back is masked by map coverage
-    ///     (the world's alpha) so it never blooms into the off-map void. Free in daylight (the glow gate). The world
-    ///     target survives the rebind because it is created with RenderTargetUsage.PreserveContents.
-    /// </summary>
     private void DrawDuskBloom(SpriteBatch spriteBatch)
     {
         var glow = DarknessRenderer.DuskGlow;
@@ -919,8 +906,8 @@ public sealed partial class WorldScreen
             BloomA?.Dispose();
             BloomB?.Dispose();
             //16-bit/channel: the bloom samples the (16-bit) darkened world, blurs, and adds back onto it. An 8-bit blur
-            //buffer would quantize the added glow and step as the night deepens, keep the whole world chain 16-bit until
-            //the dithered final blit
+            //buffer would quantize the added glow and step as the night deepens - keep the whole world chain 16-bit until
+            //the dithered final blit.
             BloomA = new RenderTarget2D(device, w, h, false, SurfaceFormat.HalfVector4, DepthFormat.None);
             BloomB = new RenderTarget2D(device, w, h, false, SurfaceFormat.HalfVector4, DepthFormat.None);
         }
@@ -928,10 +915,10 @@ public sealed partial class WorldScreen
         var wgt = Color.White * (1f / ((2 * BLOOM_TAPS) + 1));
         var full = new Rectangle(0, 0, w, h);
 
-        //horizontal blur: world -> BloomA. Offset the source rect (not the dest position) so every tap covers the whole
-        //buffer, taps that run off the edge clamp to the edge texel (LinearClamp). Offsetting the dest instead left an
-        //unwritten gap on each edge, so the accumulation summed fewer than (2*TAPS+1) taps there and the bloom was
-        //under-weighted in an edge band (dark edges when the bloom ramps in). Full dest normalizes brightness to the edge
+        //horizontal blur: world -> BloomA. Offset the source rect (not the dest position) so every tap covers the
+        //whole buffer. Taps that run off the edge clamp to the edge texel (LinearClamp). Offsetting the dest instead
+        //left an unwritten gap on each edge, summing fewer than (2*TAPS+1) taps there and under-weighting the bloom
+        //near the edges, which produced dark bands when the bloom ramped in
         device.SetRenderTarget(BloomA);
         device.Clear(Color.Transparent);
         spriteBatch.Begin(blendState: BloomAccumulate, samplerState: SamplerState.LinearClamp);
@@ -966,12 +953,6 @@ public sealed partial class WorldScreen
     private static Texture2D? NightVignetteTexture;
     private static float NightVignetteBuiltInner = -1f; //the VignetteInner the cached texture was built with
 
-    /// <summary>
-    ///     A black radial vignette over the world that deepens with the night: strength is the night ramp
-    ///     (<see cref="DarknessRenderer.DuskGlow" />) squared, so dusk/dawn get only a hint while full night presses
-    ///     in dark from the edges. Drawn in the world pass right after the darkness overlay and bloom, so it
-    ///     upscales chunky with the pixels and the bloom's lights still pierce it. Free in daylight (the gate).
-    /// </summary>
     private void DrawNightVignette(SpriteBatch spriteBatch)
     {
         var glow = DarknessRenderer.DuskGlow;
@@ -997,8 +978,8 @@ public sealed partial class WorldScreen
         spriteBatch.End();
     }
 
-    //a premultiplied radial BLACK vignette built once: clear in the centre, deepening toward the edges/corners.
-    //Stretched to the world target each draw and tinted by the live night strength.
+    //a premultiplied radial black vignette built once: clear in the centre, deepening toward the edges.
+    //Stretched to the world target each draw and tinted by the live night strength
     private static Texture2D EnsureNightVignette(GraphicsDevice device)
     {
         var inner = DebugSettings.VignetteInner;
@@ -1019,8 +1000,8 @@ public sealed partial class WorldScreen
                 var dx = x - centre;
                 var dy = y - centre;
 
-                //normalized to the edge midpoint (d = 1 there, clamped past it), not the corner (corner
-                //normalization left the screen edges at roughly half strength and the vignette read as nothing)
+                //normalized to the EDGE midpoint (d = 1 there, clamped past it), not the corner - the corner
+                //normalization left the screen edges at roughly half strength and the vignette read as nothing
                 var d = MathF.Sqrt((dx * dx) + (dy * dy)) / centre; //0 centre .. 1 edge midpoint .. clamped corner
                 var t = Math.Clamp((d - inner) / (1f - inner), 0f, 1f);
                 t = t * t * (3f - (2f * t)); //smoothstep
@@ -1034,11 +1015,10 @@ public sealed partial class WorldScreen
         return NightVignetteTexture;
     }
 
-    //through-walls overlay: re-draw every active effect/projectile/dying dissolve at the Behind-walls opacity alpha
-    //after the foreground, so an animation shows semi-transparently where a wall/foreground tile would otherwise hide
-    //it, the same trick the entity silhouettes and the tile cursor use. No depth gating: it overlays the whole world.
-    //On open ground this adds a faint second copy of the effect over the full-intensity stripe draw (additive effects
-    //read slightly brighter), the alpha is the user's slider so 0 = off, low values keep the open-ground change subtle
+    //through-walls overlay: re-draws every active effect, projectile, and dying dissolve at the "Behind-walls opacity"
+    //alpha after the foreground so an animation shows semi-transparently where a wall would hide it. Same trick as
+    //entity silhouettes and the tile cursor. No depth gating; it overlays the whole world. On open ground this adds a
+    //faint second copy over the full-intensity stripe draw; setting the slider to 0 turns it off entirely
     private void DrawEffectsThroughWalls(SpriteBatch spriteBatch)
     {
         if (MapFile is null)
@@ -1054,7 +1034,7 @@ public sealed partial class WorldScreen
             if (effect.IsComplete)
                 continue;
 
-            //an effect attached to a live entity follows it, otherwise it sits at its captured tile (ground effect, or a
+            //an effect attached to a live entity follows it; otherwise it sits at its captured tile (ground effect, or a
             //killing-blow effect whose target has been removed)
             if (effect.TargetEntityId is { } targetId && (WorldState.GetEntity(targetId) is { } target))
             {
@@ -1130,9 +1110,9 @@ public sealed partial class WorldScreen
     #endregion
 
     #region Entity Rendering
-    //re-draws the focused dialog speaker on top of the dim so the NPC you are talking to stands out clearly. Draws the
-    //dim itself (the native DialogDimmer skips its base+vignette via SuppressBaseDim while this runs, to avoid doubling),
-    //then the speaker bright over it. In the world pass, so the creature renders at the correct world position + scale.
+    //re-draws the focused dialog speaker on top of the dim so the NPC stands out clearly. Draws the dim itself (the
+    //native DialogDimmer skips its base and vignette via SuppressBaseDim while this runs to avoid doubling), then
+    //the speaker bright over it. In the world pass for the correct world position and scale
     private void DrawSpeakerSpotlight(SpriteBatch spriteBatch)
     {
         if (!SpeakerSpotlightActive || (MapFile is null))
@@ -1146,7 +1126,7 @@ public sealed partial class WorldScreen
         if (fraction <= 0f)
             return;
 
-        //dim the world view DARKER than the normal dialog dim (the speaker is spotlit bright on top, so the rest can go
+        //dim the world view darker than the normal dialog dim (the speaker is spotlit on top so the rest can go
         //quite dark for a strong focus), then re-draw the speaker over it
         DialogDimmer.DrawBaseAndVignette(
             spriteBatch,
@@ -1159,7 +1139,7 @@ public sealed partial class WorldScreen
         var tileCenterX = tileWorld.X + DaLibConstants.HALF_TILE_WIDTH;
         var tileCenterY = tileWorld.Y + DaLibConstants.HALF_TILE_HEIGHT;
 
-        //speaker at full alpha while the dialog is opening or fully open, only fade out with the dialog on close so
+        //speaker at full alpha while the dialog is opening or fully open; only fade with the dialog on close so
         //the NPC appears at full brightness immediately on first click, not fading in from invisible
         EntityAlphaMul = (NpcSessionHost?.IsFadingOut == true) ? fraction : 1f;
 
@@ -1171,8 +1151,8 @@ public sealed partial class WorldScreen
         EntityAlphaMul = 1f;
     }
 
-    //the spotlight dims the world MORE than the plain dialog dim (the speaker is lit bright on top, so a deep darken reads
-    //as a strong spotlight). Tunable.
+    //the spotlight dims the world more than the plain dialog dim (the speaker is lit bright on top so a deep darken
+    //reads as a strong spotlight). Tunable
     private const float SPOTLIGHT_BASE_ALPHA = 0.82f;
     private const float SPOTLIGHT_VIGNETTE_ALPHA = 0.4f;
 
@@ -1185,7 +1165,7 @@ public sealed partial class WorldScreen
         var tileCenterX = tileWorldPos.X + DaLibConstants.HALF_TILE_WIDTH;
         var tileCenterY = tileWorldPos.Y + DaLibConstants.HALF_TILE_HEIGHT;
 
-        //hit shake: 200ms delay then 4 frames (~16ms each) of flat left/right offset, no decay.
+        //hit shake: 200ms delay then 4 frames (~16ms each) of flat left/right offset, no decay
         const float HIT_SHAKE_ACTIVE = 64f; //4 × 16ms
 
         if (entity.HitShakeMs > 0 && entity.HitShakeMs <= HIT_SHAKE_ACTIVE)
@@ -1194,8 +1174,8 @@ public sealed partial class WorldScreen
             tileCenterX += 2f * direction;
         }
 
-        //cast a soft directional ground shadow under the entity, away from the nearest lamp (night only). Disabled for
-        //now (flip EntityGroundShadows to re-enable)
+        //soft directional ground shadow cast away from the nearest lamp (night only). Disabled for now;
+        //flip EntityGroundShadows to re-enable once the shadow behaviour is ready to ship
         if (EntityGroundShadows && entity.Type is ClientEntityType.Aisling or ClientEntityType.Creature)
             DrawGroundShadow(spriteBatch, entity, tileCenterX, tileCenterY);
 
@@ -1250,13 +1230,14 @@ public sealed partial class WorldScreen
     }
 
     //toggle for the entity ground drop-shadows (player/NPC/monster shadow cast away from the nearest lamp). Off for
-    //now. static readonly (not const) so flipping it doesn't trip the unreachable-code warning
+    //now; the behaviour needs more design before it ships. Static readonly rather than const so flipping it
+    //doesn't trip the unreachable-code warning
     private static readonly bool EntityGroundShadows = false;
 
     private const int ShadowBlobSize = 64;
     private Texture2D? ShadowBlob;
 
-    //a soft round blob (white, radial alpha falloff) - tinted black + stretched into a ground shadow ellipse at draw time
+    //a soft round blob (white, radial alpha falloff) tinted black and stretched into a ground shadow ellipse at draw time
     private Texture2D GetShadowBlob()
     {
         if (ShadowBlob is { IsDisposed: false })
@@ -1283,8 +1264,8 @@ public sealed partial class WorldScreen
         return ShadowBlob;
     }
 
-    //draws a soft directional ground shadow for an entity, cast away from the nearest lamp. Night only; strength fades
-    //with distance from the lamp so the shadow appears as you enter a pool and fades as you leave it.
+    //soft directional ground shadow for an entity, cast away from the nearest lamp. Night only; strength fades
+    //with distance from the lamp so the shadow appears as you enter a pool and fades as you leave it
     private void DrawGroundShadow(SpriteBatch spriteBatch, WorldEntity entity, float tileCenterX, float tileCenterY)
     {
         if (entity.IsHidden || !DarknessRenderer.IsActive)
@@ -1295,7 +1276,7 @@ public sealed partial class WorldScreen
         if (MapFile is null)
             return;
 
-        //nearest lamp whose pool reaches the entity
+        //find the nearest lamp whose pool reaches the entity
         var bestDistSq = float.MaxValue;
         var bestRadius = 0f;
         var bestIntensity = 0f;
@@ -1330,10 +1311,10 @@ public sealed partial class WorldScreen
 
         var dist = MathF.Sqrt(bestDistSq);
 
-        //cast the shadow AWAY from the lamp's GROUND position (its tile), not the raised glow point. The glow sits ~48px
-        //above the lantern (the config offset), so referencing it makes "above the lamp" need a big climb before the
-        //shadow flips up. Both the feet and the lamp tile are on the ground, so this vector is the natural on-ground
-        //"away from the lamp" direction (already foreshortened by the iso projection), and the shadow follows intuition.
+        //cast the shadow away from the lamp's ground position (its tile), not the raised glow point. The glow sits
+        //~48px above the lantern, so referencing it makes "above the lamp" require a big climb before the shadow flips
+        //up. Both the feet and the lamp tile are on the ground, so this vector is the natural on-ground direction
+        //away from the lamp (already foreshortened by the iso projection) and the shadow follows intuition
         var lampWorld = Camera.TileToWorld(bestTileX, bestTileY, MapFile.Height);
         var lampGround = Camera.WorldToScreen(new Vector2(lampWorld.X + DaLibConstants.HALF_TILE_WIDTH, lampWorld.Y + DaLibConstants.HALF_TILE_HEIGHT));
         var dir = new Vector2(feet.X - lampGround.X, feet.Y - lampGround.Y);
@@ -1341,14 +1322,14 @@ public sealed partial class WorldScreen
         dir = dirLen > 0.001f ? dir / dirLen : new Vector2(0f, 1f);
 
         var proximity = Math.Clamp(1f - (dist / bestRadius), 0f, 1f);
-        var alpha = 0.62f * proximity * bestIntensity; //strongest in the bright pool, fading out toward its rim
+        var alpha = 0.62f * proximity * bestIntensity; //strongest in the bright pool, fading toward its rim
 
         if (alpha < 0.02f)
             return;
 
-        //length grows with distance from the lamp, like a real overhead light: standing under it the light is nearly
-        //straight overhead so the shadow is stubby, further out the light comes in at a low angle and the shadow
-        //stretches
+        //length grows with distance from the lamp like a real overhead light: standing under it the shadow is stubby;
+        //further out the light comes in at a low angle and the shadow stretches. The old proximity-based length was
+        //backwards (longest right under the lamp) and made the shadow swing wildly when walking past
         var length = Math.Min(10f + (dist * 0.30f), 52f);
         var width = 12f + (length * 0.30f);
         var angle = MathF.Atan2(dir.Y, dir.X);
@@ -1365,9 +1346,7 @@ public sealed partial class WorldScreen
             0f);
     }
 
-    /// <summary>
-    ///     Draws a creature entity. Returns the screen-space Y of the texture bottom edge, or 0 if not drawn.
-    /// </summary>
+    //returns the screen-space Y of the texture bottom edge, or 0 if not drawn
     private int DrawCreature(
         SpriteBatch spriteBatch,
         WorldEntity entity,
@@ -1383,20 +1362,20 @@ public sealed partial class WorldScreen
         var info = animInfo.Value;
         (var frameIndex, var flip) = AnimationSystem.GetCreatureFrame(entity, in info);
 
-        //transparent entities draw faded in both passes so they compound multiplicatively with occlusion:
-        //stripe at TRANSPARENT_ALPHA + silhouette RT at TRANSPARENT_SILHOUETTE_ALPHA → ~50% open, ~25% behind FG.
-        //non-transparent entities draw opaque in both passes → 100% open, ~50% behind FG.
+        //transparent entities draw faded in both passes so they compound multiplicatively with occlusion.
+        //stripe at TRANSPARENT_ALPHA + silhouette RT at TRANSPARENT_SILHOUETTE_ALPHA = ~50% open, ~25% behind FG.
+        //non-transparent entities draw opaque in both passes = 100% open, ~50% behind FG
         var alpha = entity.IsHidden
             ? 0f
             : entity.IsTransparent
                 ? DrawingForSilhouette ? TRANSPARENT_SILHOUETTE_ALPHA : TRANSPARENT_ALPHA
                 : 1f;
 
-        alpha *= EntityAlphaMul; //transient fade for the spotlit speaker (1 for every normal draw)
+        alpha *= EntityAlphaMul; //transient fade for the spotlit speaker; 1 for every normal draw
 
         var tint = ResolveEntityTint(entity);
 
-        //mirror the aisling convention, swimming tiles replace the normal sprite path and must not double-tint the creature
+        //mirror the aisling convention: swimming tiles replace the normal sprite path and must not double-tint the creature
         var groundPaintHeight = entity.IsOnSwimmingTile ? 0 : entity.GroundPaintHeight;
 
         return creatureRenderer.Draw(
@@ -1421,7 +1400,7 @@ public sealed partial class WorldScreen
         float tileCenterY)
     {
         //hidden aislings have no visual (body sprite 0, all equipment 0) but are still present for
-        //hit-testing, skip the draw and anchor the hitbox bottom to the tile center (feet position)
+        //hit-testing; skip the draw and anchor the hitbox bottom to the tile center (feet position)
         if (entity.IsHidden)
         {
             var tileScreenPos = Camera.WorldToScreen(new Vector2(tileCenterX + entity.VisualOffset.X, tileCenterY + entity.VisualOffset.Y));
@@ -1429,7 +1408,7 @@ public sealed partial class WorldScreen
             return (int)tileScreenPos.Y;
         }
 
-        //morphed aislings (creature form) render as creatures, swimming overrides morphs too
+        //morphed aislings (creature form) render as creatures; swimming overrides morphs too
         if (entity.Appearance is null && entity is { SpriteId: > 0, IsOnSwimmingTile: false })
             return DrawCreature(
                 spriteBatch,
@@ -1443,7 +1422,7 @@ public sealed partial class WorldScreen
         var appearance = entity.Appearance ?? default;
         (var frameIndex, var flip, var animSuffix, var isFrontFacing) = AnimationSystem.GetAislingFrame(entity);
 
-        //swimming override, single sprite replaces all aisling layers, driven by existing animation state
+        //swimming override: single sprite replaces all aisling layers, driven by existing animation state
         if (entity.IsOnSwimmingTile)
         {
             var isFemale = entity.Appearance?.Gender == Gender.Female;
@@ -1455,8 +1434,8 @@ public sealed partial class WorldScreen
             if (framesPerDir <= 0)
                 return 0;
 
-            //walking: use walk frame index directly. idle: use idleanimtick for continuous cycling.
-            //frame 0 is the idle/standing pose, skip it so the swim animation only cycles walk frames (1..n)
+            //walking uses the walk frame index directly; idle uses idleanimtick for continuous cycling.
+            //frame 0 is the idle/standing pose, so skip it and cycle only walk frames (1..n)
             var walkFrames = framesPerDir - 1;
 
             var animIndex = walkFrames > 0
@@ -1476,7 +1455,7 @@ public sealed partial class WorldScreen
                 entity.VisualOffset);
         }
 
-        //rest position override, single spf sprite replaces all aisling layers
+        //rest position override: single spf sprite replaces all aisling layers
         if (entity.RestPosition != RestPosition.None)
             return Game.AislingRenderer.DrawResting(
                 spriteBatch,
@@ -1495,14 +1474,14 @@ public sealed partial class WorldScreen
 
         var tint = ResolveEntityTint(entity);
 
-        //transparent aislings draw faded in both passes so they compound multiplicatively with occlusion:
-        //stripe at TRANSPARENT_ALPHA + silhouette RT at TRANSPARENT_SILHOUETTE_ALPHA → ~50% open, ~25% behind FG.
-        //non-transparent aislings draw opaque in both passes → 100% open, ~50% behind FG.
+        //transparent aislings draw faded in both passes so they compound multiplicatively with occlusion.
+        //stripe at TRANSPARENT_ALPHA + silhouette RT at TRANSPARENT_SILHOUETTE_ALPHA = ~50% open, ~25% behind FG.
+        //non-transparent aislings draw opaque in both passes = 100% open, ~50% behind FG
         var alpha = entity.IsTransparent
             ? DrawingForSilhouette ? TRANSPARENT_SILHOUETTE_ALPHA : TRANSPARENT_ALPHA
             : 1f;
 
-        //transparent wins over dead, an invisible ghost isn't a sensible visual state, and stacking both alpha
+        //transparent wins over dead; "invisible ghost" isn't a sensible visual state and stacking both alpha
         //modulations would produce an effectively-invisible result
         var isDead = entity.IsDead && !entity.IsTransparent;
 
@@ -1569,10 +1548,6 @@ public sealed partial class WorldScreen
             entity.GroundTintColor);
     }
 
-    /// <summary>
-    ///     Creates a texture containing a dashed ellipse inscribed in the isometric tile diamond. Gaps at the 4 cardinal
-    ///     directions (top, right, bottom, left of the ellipse).
-    /// </summary>
     private static Texture2D CreateTileCursorTexture(GraphicsDevice device, Color color)
     {
         const int WIDTH = DaLibConstants.HALF_TILE_WIDTH * 2; //56
@@ -1666,10 +1641,8 @@ public sealed partial class WorldScreen
     private const int TARGETING_BEZIER_SEGMENTS = 28;
     private const float TARGETING_LINE_THICKNESS = 2f;
 
-    //draws:
-    //  - a size-pulsing icon overlaid on the hotbar slot (grows from center, always full alpha)
-    //  - a cubic bezier line from the slot to the cursor (or snapped to the hovered target entity)
-    //  - "Select target" label near the cursor/target
+    //draws a size-pulsing icon on the hotbar slot, a cubic bezier line from the slot to the cursor
+    //(or snapped to the hovered target entity), and a label near the cursor or target
     private void DrawTargetingCursor(SpriteBatch spriteBatch, GameTime gameTime)
     {
         if (!CastingSystem.IsTargeting || MapFile is null)
@@ -1680,8 +1653,8 @@ public sealed partial class WorldScreen
         if (targetingSlot is null)
             return;
 
-        //CastingSystem.TargetingSlot always points to the slot inside WorldHud.SpellBook (the hidden HUD), which has no
-        //ScaleHost ancestor. Find the visual slot by number in the first visible ScaleHost-wrapped panel instead.
+        //CastingSystem.TargetingSlot points to the slot inside WorldHud.SpellBook (the hidden HUD), which has no
+        //ScaleHost ancestor, so find the visual slot by number in the first visible ScaleHost-wrapped panel instead
         var slotNum = targetingSlot.Slot;
         PanelSlot? visualSlot = null;
         ScaleHost? scaleHost = null;
@@ -1713,13 +1686,13 @@ public sealed partial class WorldScreen
         if (visualSlot is null || scaleHost is null)
             return;
 
-        PanelSlot vs = visualSlot!; //non-nullable alias, null was just checked above
+        PanelSlot vs = visualSlot!; //null was checked above
         var icon = vs.NormalTexture ?? targetingSlot.NormalTexture;
 
         if (icon is null || icon.IsDisposed)
             return;
 
-        //compute the slot's actual on-screen center accounting for the ScaleHost magnification:
+        //on-screen center of the slot accounting for ScaleHost magnification:
         //  actual = hostOrigin + (nativePos - hostOrigin) * scale
         var hostScale = scaleHost.Scale;
         var ox = (float)scaleHost.ScreenX;
@@ -1727,8 +1700,8 @@ public sealed partial class WorldScreen
         var slotCenterX = ox + (vs.ScreenX + vs.Width * 0.5f - ox) * hostScale;
         var slotCenterY = oy + (vs.ScreenY + vs.Height * 0.5f - oy) * hostScale;
 
-        //the bezier always snaps to the closest target (no matter where the cursor is), that's what a plain cast hits
-        //falls back to the cursor only when there's no valid target in range
+        //the bezier always snaps to the closest target regardless of cursor position, since that's what a plain cast hits.
+        //Falls back to the cursor only when there's no valid target in range
         Vector2 endPoint;
         var isSnapped = false;
         var closest = CastTargetId is { } ctId ? WorldState.GetEntity(ctId) : null;
@@ -1748,8 +1721,8 @@ public sealed partial class WorldScreen
         } else
             endPoint = new Vector2(InputBuffer.MouseX, InputBuffer.MouseY);
 
-        //cubic bezier: arc upward from the slot. draw BEFORE the icon so the icon sits on top.
-        //three-pass line: black outline, then soft halo, then bright core.
+        //cubic bezier arcs upward from the slot; drawn before the icon so the icon sits on top.
+        //three-pass line: black outline, soft halo, bright core
         var startPoint = new Vector2(slotCenterX, slotCenterY);
 
         if (ClientSettings.SpellTargetLine)
@@ -1764,7 +1737,7 @@ public sealed partial class WorldScreen
             DrawBezierLine(spriteBatch, startPoint, cp1, cp2, endPoint, TARGETING_BEZIER_SEGMENTS, lineCore * 0.90f, 1.5f);
         }
 
-        //icon overlay: pulse from 1.0x to 1.5x the SLOT-SCALED native size, centered on the slot center
+        //icon overlay: pulse from 1.0x to 1.5x the slot-scaled native size, centered on the slot center
         var t = (float)gameTime.TotalGameTime.TotalSeconds;
         var iconScale = 1f + 0.5f * (0.5f + 0.5f * MathF.Sin(t * TARGETING_PULSE_SPEED));
         var iconW = (int)(vs.Width * hostScale * iconScale);
@@ -1773,8 +1746,8 @@ public sealed partial class WorldScreen
         var iconY = (int)(slotCenterY - iconH * 0.5f);
         spriteBatch.Draw(icon, new Rectangle(iconX, iconY, iconW, iconH), Color.White);
 
-        //two center-aligned lines below the snapped target: "Cast" then the spell name (the spell auto-targets the
-        //closest, so there's nothing to select, you're just casting it)
+        //two center-aligned lines below the snapped target: "Cast" then the spell name. The spell auto-targets the
+        //closest so there's nothing to select; you're just confirming the cast
         var castLine = TtfTextRenderer.GetLine("Cast", TARGETING_FONT_SIZE);
         var spellName = targetingSlot.AbilityName;
         var nameLine = string.IsNullOrEmpty(spellName) ? null : TtfTextRenderer.GetLine(spellName, TARGETING_FONT_SIZE);
@@ -1795,7 +1768,7 @@ public sealed partial class WorldScreen
         DrawCenteredLabel(nameLine, labelY + lineH);
     }
 
-    //draws a cubic bezier as a polyline of short rotated rectangles using a 1x1 pixel texture
+    //cubic bezier drawn as a polyline of short rotated rectangles using a 1x1 pixel texture
     private static void DrawBezierLine(
         SpriteBatch spriteBatch,
         Vector2 p0,
@@ -1807,7 +1780,7 @@ public sealed partial class WorldScreen
         float thickness)
     {
         var pixel = UIElement.GetPixel();
-        var origin = new Vector2(0f, 0.5f); //center thickness on the start point
+        var origin = new Vector2(0f, 0.5f); //centre thickness on the start point
         var prev = p0;
 
         for (var i = 1; i <= segments; i++)
@@ -1844,8 +1817,8 @@ public sealed partial class WorldScreen
 
         if (dragging?.DragTexture is { } panelIcon)
         {
-            //follow the real cursor and match the source panel's magnification (e.g. the 2x inventory), so the ghost
-            //sits under the mouse at the same size the item is shown. DragX/Y are in the panel's native space now.
+            //follow the real cursor and match the source panel's magnification so the ghost sits under the mouse at
+            //the same size the item is shown. DragX/Y are in the panel's native space
             var scale = 1f;
 
             for (var p = dragging.Parent; p is not null; p = p.Parent)
@@ -1880,12 +1853,12 @@ public sealed partial class WorldScreen
         }
     }
 
-    //ground pass (full alpha): drawn under the foreground, so on open ground the cursor is fully visible
+    //ground pass (full alpha): drawn under the foreground so on open ground the cursor is fully visible
     private void DrawTileCursor(SpriteBatch spriteBatch) => DrawTileCursors(spriteBatch, 1f);
 
-    //overlay pass (reduced alpha): drawn AFTER the foreground so the cursor shows THROUGH walls/foreground the same
-    //way silhouetted entities do. On open ground it just overlays the full-alpha ground draw (no visible change);
-    //behind foreground, where the ground draw was hidden, it reveals the cursor at ~50%.
+    //overlay pass (reduced alpha): drawn after the foreground so the cursor shows through walls the same way
+    //silhouetted entities do. On open ground it overlays the full-alpha ground draw (no visible change);
+    //behind foreground it reveals the cursor at ~50%
     private void DrawTileCursorOverlay(SpriteBatch spriteBatch) => DrawTileCursors(spriteBatch, SilhouetteRenderer.SilhouetteAlpha);
 
     private void DrawTileCursors(SpriteBatch spriteBatch, float alpha)
@@ -1894,8 +1867,7 @@ public sealed partial class WorldScreen
         if (MapFile is null || TileCursorTexture is null || NpcSession.Visible)
             return;
 
-        //red cursor around the enemy we are set to auto-attack: combat state, not cursor-driven, so it stays even when
-        //the pointer is over UI
+        //red cursor around the auto-attack target: combat state, not cursor-driven, so it stays even when the pointer is over UI
         (int X, int Y)? attackTile = null;
 
         if (Pathfinding.TargetEntityId is { } targetId && (WorldState.GetEntity(targetId) is { } target))
@@ -1904,8 +1876,8 @@ public sealed partial class WorldScreen
             DrawTileCursorAt(spriteBatch, target.TileX, target.TileY, TileCursorAttackColor * alpha);
         }
 
-        //while a spell is readied, highlight the auto-snapped CLOSEST target (to the cursor) in blue - even when the
-        //cursor isn't on it - so you can see what the cast will hit. This is the target a plain cast/click confirms.
+        //while a spell is readied, highlight the auto-snapped closest target in blue even when the cursor isn't on it,
+        //so you can see what the cast will hit. This is the target a plain cast confirms
         if ((CastTargetId is { } ctid) && (WorldState.GetEntity(ctid) is { } castTarget))
         {
             DrawTileCursorAt(spriteBatch, castTarget.TileX, castTarget.TileY, TileCursorDragColor * alpha);
@@ -1914,7 +1886,7 @@ public sealed partial class WorldScreen
         }
 
         //the cursor-driven hover/drag marker is suppressed while the pointer is over any UI control (only the combat
-        //ring above survives), matching the inert world hover
+        //ring survives), matching the inert world hover
         if (PointerOverUi || (WorldState.CurrentFrame.HoveredTile is not { } hoverTile))
             return;
 

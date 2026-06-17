@@ -46,7 +46,7 @@ public sealed class MinimapControl : UIElement
     private Texture2D? Texture;
     private Color[] Buffer = new Color[BASE_DIAMETER * BASE_DIAMETER];
 
-    //scale-derived sizes (the circle SIZE scales with the option; tile coverage does not)
+    //sizes based on scale (the circle SIZE scales with the option; tile coverage does not)
     private int Diam = BASE_DIAMETER;
     private int Border = BASE_BORDER;
     private int NameFont = BASE_NAME_FONT;

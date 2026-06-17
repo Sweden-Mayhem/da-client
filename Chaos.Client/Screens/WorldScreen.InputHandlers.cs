@@ -78,18 +78,18 @@ public sealed partial class WorldScreen
     private WorldEntity? FindClosestEnemy()
         => FindClosestEntityToCursor(e => (e.Type == ClientEntityType.Creature) && (e.CreatureType == CreatureType.Normal));
 
-    //nearest FRIENDLY to the ground cursor: yourself or a visible group member.
+    //nearest visible group member or yourself to the ground cursor
     private WorldEntity? FindClosestFriendly()
         => FindClosestEntityToCursor(e => (e.Id == Game.Connection.AislingId)
                                           || ((e.Type == ClientEntityType.Aisling) && WorldState.Group.Members.Contains(e.Name)));
 
-    //nearest valid target of ANY kind (INCLUDING yourself) to the ground cursor - the default the cast/highlight snaps
-    //to. So pointing near yourself snaps to you; pointing near an enemy snaps to it.
+    //nearest valid target of any kind (including yourself) to the ground cursor; this is the default the cast/highlight
+    //snaps to, so pointing near yourself snaps to you and pointing near an enemy snaps to it
     private WorldEntity? FindClosestTarget()
         => FindClosestEntityToCursor(e => e.Type is ClientEntityType.Creature or ClientEntityType.Aisling);
 
-    //shared nearest-by-tile (Manhattan) scan over visible, alive entities matching a predicate, measured from the TILE
-    //UNDER THE CURSOR (the ground cursor) - NOT the player - so the snapped target follows where you're pointing.
+    //shared nearest-by-tile (Manhattan) scan over visible, alive entities matching a predicate, measured from the tile
+    //under the cursor rather than the player so the snapped target follows where you're pointing
     private WorldEntity? FindClosestEntityToCursor(Func<WorldEntity, bool> match)
     {
         if (MapFile is null)
@@ -128,13 +128,10 @@ public sealed partial class WorldScreen
 
     private void HandleAbilityHoverExit() => HoveredAbilitySlot = null;
 
-    /// <summary>
-    ///     Returns true if the point is over any visible popup window, preventing drops from passing through.
-    /// </summary>
-    //true when the cursor is over any interactive HUD/menu/window control - anything the input dispatcher would hand a
-    //click to OTHER than the world root itself (the root is a non-pass-through panel that catches world clicks, so it is
-    //always the hit when the cursor is over empty world). Used to make the world inert to the mouse - no ground marker,
-    //hand cursor, or entity-name hover - while the pointer is on a piece of UI, the same way a modal dialog does.
+    //true when the cursor is over any interactive HUD/menu/window control, meaning anything the input dispatcher would
+    //hand a click to other than the world root itself (the root is a non-pass-through panel that catches world clicks,
+    //so it is always the hit when the cursor is over empty world). Used to suppress the ground marker, hand cursor,
+    //and entity-name hover while the pointer is on a piece of UI, the same way a modal dialog does.
     private bool IsPointerOverUi(int screenX, int screenY)
     {
         if (Root is null)
@@ -181,7 +178,7 @@ public sealed partial class WorldScreen
 
     private void HandleInventoryDropInViewport(byte slot, int mouseX, int mouseY)
     {
-        //dropped onto the exchange window - add item to exchange. Test the HOST's (scaled) on-screen bounds, since the
+        //dropped onto the exchange window: add item to exchange. Test the HOST's (scaled) on-screen bounds, since the
         //exchange is now magnified + centered by ExchangeHost; the bare control's rect is the un-scaled 640x480 layout.
         if ((slot != 0) && Exchange.Visible && (ExchangeHost?.ContainsPoint(mouseX, mouseY) ?? false))
         {
@@ -190,7 +187,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //dropped anywhere on the equipment book - equip the item (server picks the correct slot by item type)
+        //dropped anywhere on the equipment book: equip the item (server picks the correct slot by item type)
         if (slot != 0 && StatusBook.Visible && (StatusBookHost?.ContainsPoint(mouseX, mouseY) ?? false))
         {
             Game.Connection.UseItem(slot);
@@ -214,7 +211,7 @@ public sealed partial class WorldScreen
         if (MapFile is null)
             return;
 
-        //check if dropped on an entity (give item/gold to npc/player) - skip self (drop on ground instead).
+        //check if dropped on an entity (give item/gold to npc/player); skip self (drop on ground instead).
         //tile-first: the occupant of the tile you drop on wins, else the sprite under the cursor
         (var tileX, var tileY) = ScreenToTile(mouseX, mouseY);
         var entity = ResolveCursorTarget(mouseX, mouseY);
@@ -222,7 +219,7 @@ public sealed partial class WorldScreen
         var droppedOnEntity = entity?.Type is ClientEntityType.Aisling or ClientEntityType.Creature
                               && (entity.Id != Game.Connection.AislingId);
 
-        //gold bag (slot 0) - show the gold amount popup (GoldDropHost owns its scale + centering, anchored each frame)
+        //gold bag (slot 0): show the gold amount popup (GoldDropHost owns its scale + centering, anchored each frame)
         if (slot == 0)
         {
             GoldDrop.ShowForTarget(droppedOnEntity ? entity!.Id : null, tileX, tileY);
@@ -239,7 +236,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //stackable items with more than one - prompt for count before dropping
+        //stackable items with more than one: prompt for count before dropping
         var invSlot = WorldState.Inventory.GetSlot(slot);
 
         if (invSlot.Stackable && (invSlot.Count > 1))
@@ -265,11 +262,8 @@ public sealed partial class WorldScreen
 
     //--- skills / spells ---
 
-    /// <summary>
-    ///     Using a skill/spell pauses the auto-attack chase: the target is stashed and the chase cleared. Once the
-    ///     action fully ends (no chant/targeting, body animation done) the Update loop re-acquires the same enemy if
-    ///     it still exists (see the resume block in Update).
-    /// </summary>
+    //using a skill or spell pauses the auto-attack chase so the action can complete; the Update loop re-acquires
+    //the same enemy once the action ends (no chant/targeting, body animation done) if it still exists
     private void PauseChaseForAction()
     {
         if (Pathfinding.TargetEntityId is { } id)
@@ -345,7 +339,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //enter cast mode - wait for target selection
+        //enter cast mode and wait for target selection
         CastingSystem.BeginTargeting(spellSlot);
     }
 
@@ -373,7 +367,7 @@ public sealed partial class WorldScreen
     //--- hotkeys ---
     //Every key -> action mapping is player-configurable via the Keybindings system; OnRootKeyDown resolves the pressed
     //key to a GameAction and DispatchAction runs it. Only Enter (open chat) and Escape (cancel) are fixed. Emote hotkeys
-    //were removed here; emotes open from the menu or via their configurable action binds.
+    //were removed here (TODO: build an emote menu / radial wheel).
 
     //--- chant editing ---
 
@@ -564,11 +558,7 @@ public sealed partial class WorldScreen
 
     #region Root Event Handlers
 
-    /// <summary>
-    ///     Handles keyboard input that bubbles up to the root panel (no focused element handled it).
-    ///     Contains all game hotkeys, chat focus, movement, emotes, and slot actions.
-    /// </summary>
-    //closes the focused (topmost open, closeable) floating window; returns true if one was closed. The "focused" window
+    //closes the topmost open, closeable floating window; returns true if one was closed. The "focused" window
     //is simply the front-most one, since opening/clicking a window raises it to the top.
     private bool TryCloseFocusedWindow()
     {
@@ -591,7 +581,7 @@ public sealed partial class WorldScreen
 
     private void OnRootKeyDown(KeyDownEvent e)
     {
-        //the Controls window is capturing a key for rebinding - swallow everything so it only sets the bind
+        //the Controls window is capturing a key for rebinding; swallow everything so it only sets the bind
         if (Keybindings.IsCapturing)
             return;
 
@@ -614,8 +604,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //Enter (no modifiers) opens the chat input - fixed, never rebindable. Skip if another text field owns focus,
-        //otherwise pressing Enter inside a menu's input box would yank focus into chat instead of staying in the field.
+        //Enter (no modifiers) opens the chat input and is fixed, never rebindable. Skip if another text field owns
+        //focus, otherwise pressing Enter inside a menu's input box would yank focus into chat instead.
         if ((e.Key == Keys.Enter) && (e.Modifiers == KeyModifiers.None))
         {
             if (ActiveChatInput.IsFocused)
@@ -646,8 +636,8 @@ public sealed partial class WorldScreen
         if (category == BindCategory.System)
             return;
 
-        //panel toggles always run (so a panel key can close its own popup, or open over a dialog); gameplay actions
-        //(movement, hotbar, misc) are suppressed while a modal popup owns the control stack.
+        //panel toggles always run so a panel key can close its own popup or open over a dialog; gameplay actions
+        //(movement, hotbar, misc) are suppressed while a modal popup owns the control stack
         if ((category != BindCategory.Panels) && (Game.Dispatcher.ControlStackCount > 0))
             return;
 
@@ -656,7 +646,7 @@ public sealed partial class WorldScreen
 
     private void DispatchAction(GameAction action, KeyDownEvent e)
     {
-        //while dead every action that acts on the WORLD is inert; UI actions (panels, options, chat, log out) still work
+        //while dead every world action (move, fight, hotbar) is inert; UI actions (panels, options, chat, log out) still work
         if (IsPlayerDead && IsWorldAction(action))
         {
             e.Handled = true;
@@ -821,10 +811,7 @@ public sealed partial class WorldScreen
         e.Handled = true;
     }
 
-    /// <summary>
-    ///     Sends an emote, gated on the player standing still (emotes lock the body, so they can't start mid-walk or while
-    ///     another emote/body animation is running). Shared by the emote keybinds and the emote menu.
-    /// </summary>
+    //emotes lock the body, so the player must be standing still; shared by keybinds and the emote menu
     private void TrySendEmote(BodyAnimation emote)
     {
         var player = WorldState.GetPlayerEntity();
@@ -835,10 +822,6 @@ public sealed partial class WorldScreen
         Game.Connection.SendEmote(emote);
     }
 
-    /// <summary>
-    ///     Movement key handler. When <paramref name="turnOnly" /> (the turn-in-place modifier is held) the player only
-    ///     pivots to face the direction; otherwise it turns-then-walks at rest, or queues the next step mid-walk.
-    /// </summary>
     private void MoveOrTurn(Direction direction, bool turnOnly)
     {
         //post-warp grace: a movement key still held from before the warp is ignored briefly so the player doesn't step
@@ -854,7 +837,7 @@ public sealed partial class WorldScreen
         if (player is null)
             return;
 
-        //dead players don't move at all - not even a turn in place
+        //dead players don't move at all, not even a turn in place
         if (IsPlayerDead)
             return;
 
@@ -874,11 +857,11 @@ public sealed partial class WorldScreen
 
         if (player.IsAtRest)
         {
-            //fresh input at idle invalidates any direction queued from a prior walk -
-            //the queue must not override what the user just pressed.
+            //fresh input at idle invalidates any direction queued from a prior walk;
+            //the queue must not override what the user just pressed
             QueuedWalkDirection = null;
 
-            //Modern controls: walk immediately - UNLESS the next tile is a wall and the player isn't already
+            //Modern controls: walk immediately, unless the next tile is a wall and the player isn't already
             //facing that way, in which case turn first (retail "lean into a wall" feel without the two-press delay).
             //Classic controls: a press to a new direction only turns; a second press (now facing it) walks.
             if (ClientSettings.ModernControls)
@@ -919,11 +902,7 @@ public sealed partial class WorldScreen
         }
     }
 
-    /// <summary>
-    ///     True when world keyboard gameplay (movement, hotbar) should respond: not capturing a key for rebinding, not
-    ///     typing in a text field, and no modal popup owning the control stack. Used by the held-key movement poll, which
-    ///     runs outside the dispatcher's focus routing and so must check these itself.
-    /// </summary>
+    //the held-key movement poll runs outside the dispatcher's focus routing and must check these itself
     private bool GameplayInputAllowed()
         => !IsPlayerDead
            && !Keybindings.IsCapturing
@@ -1102,10 +1081,6 @@ public sealed partial class WorldScreen
             Game.Connection.RequestWorldList();
     }
 
-    /// <summary>
-    ///     Handles mouse scroll that bubbles up to the root panel (no child handled it). Forwards to whichever chat-style
-    ///     HUD panel is currently visible so the player can scroll chat/system messages from anywhere on screen.
-    /// </summary>
     private void OnRootMouseScroll(MouseScrollEvent e)
     {
         if (WorldHud.ChatDisplay.Visible)
@@ -1119,11 +1094,7 @@ public sealed partial class WorldScreen
             WorldHud.MessageHistory.OnMouseScroll(e);
     }
 
-    /// <summary>
-    ///     Handles right-mouse-button presses that bubble up to the root panel. Right-click pathfinding
-    ///     fires on press (not release) for snappier response - a held right-click begins moving the
-    ///     player immediately instead of waiting for the button to come back up.
-    /// </summary>
+    //right-click pathfinding fires on press rather than release for snappier response
     private void OnRootMouseDown(MouseDownEvent e)
     {
         //dead players can't walk or interact
@@ -1134,10 +1105,9 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //an NPC dialog / sign is open: clicking the world must not move or path the player, so a click that lands outside
-        //the (centered) dialog is inert instead of walking the player off. The dialog's own controls still get their
-        //clicks. Keyed on the control's visibility (cleared by HideAll on close) - NOT NpcInteraction.IsActive, which
-        //stays set after a LOCAL close until the server round-trips, which would leave the player frozen.
+        //an NPC dialog or sign is open: clicks that land outside the dialog must not move or path the player.
+        //keyed on the control's visibility (cleared by HideAll on close) rather than NpcInteraction.IsActive,
+        //which lingers after a local close until the server replies and would leave the player frozen.
         if (NpcSession.Visible)
         {
             e.Handled = true;
@@ -1145,8 +1115,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //a sign/board text popup is open: the press is inert (the dismiss runs on the CLICK event, in OnRootClick,
-        //so the handled click can never re-click the sign in the world and instantly reopen it)
+        //a sign/board text popup is open: the press is inert; dismiss runs on the click event so the handled
+        //click can never re-click the sign's tile and instantly reopen the popup
         if (TextPopup.Visible)
         {
             e.Handled = true;
@@ -1178,9 +1148,9 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //cache the hovered entity for the upcoming doubleclick - pathfinding triggered by this press will start
-        //moving the player on the next update, which shifts the camera and makes the second click's ScreenToTile
-        //resolve to a different world tile than the entity actually occupies
+        //cache the hovered entity for the upcoming doubleclick; pathfinding from this press will start
+        //moving the player on the next update, shifting the camera so the second click's ScreenToTile
+        //would resolve to a different world tile than the entity actually occupies
         var currentTick = Environment.TickCount;
 
         if ((currentTick - PendingDoubleClickTick) > DOUBLE_CLICK_CACHE_WINDOW_MS)
@@ -1189,7 +1159,7 @@ public sealed partial class WorldScreen
         //tile-first: cache the occupant of the clicked tile (else the sprite under the cursor) as the chase target
         var hoverEntity = ResolveCursorTarget(e.ScreenX, e.ScreenY);
 
-        //exclude self - the player's own sprite has a hitbox, and a rapid right-click on the tile the
+        //exclude self: the player's own sprite has a hitbox, and a rapid right-click on the tile the
         //player is walking off of overlaps that hitbox, which would cache the player as a double-click
         //target and kick off a self-follow loop in OnRootDoubleClick
         if (hoverEntity?.Type is ClientEntityType.Aisling or ClientEntityType.Creature
@@ -1199,8 +1169,8 @@ public sealed partial class WorldScreen
             PendingDoubleClickTick = currentTick;
         }
 
-        //ctrl is a UI modifier (ctrl+left-click opens the aisling context menu) - suppress single-press
-        //pathfinding, but prime the same-tile tracker so a right-doubleclick still resolves to follow.
+        //ctrl is a UI modifier (ctrl+left-click opens the aisling context menu); suppress single-press
+        //pathfinding but prime the same-tile tracker so a right-doubleclick still resolves to follow
         if (e.Ctrl)
         {
             if (MapFile is not null)
@@ -1216,14 +1186,9 @@ public sealed partial class WorldScreen
         e.Handled = true;
     }
 
-    /// <summary>
-    ///     Handles mouse clicks that bubble up to the root panel (no child element handled them).
-    ///     Contains cast-mode target selection, Ctrl/Alt-click, and left-click world interaction.
-    ///     Right-click pathfinding is handled in OnRootMouseDown for faster response.
-    /// </summary>
     private void OnRootClick(ClickEvent e)
     {
-        //dead players can't interact with the world (same gate as OnRootMouseDown - clicks are synthesized separately)
+        //dead players can't interact with the world (same gate as OnRootMouseDown; clicks are synthesized separately)
         if (IsPlayerDead)
         {
             e.Handled = true;
@@ -1236,9 +1201,9 @@ public sealed partial class WorldScreen
         if (e.Button != interactButton)
             return;
 
-        //while an NPC dialog / town map is open, a world click must not move the player (they are modal); swallow
-        //it. Keyed on the control's visibility (HideAll clears it on close), not NpcInteraction.IsActive (which
-        //lingers after a local close until the server replies, leaving the player unable to move).
+        //while an NPC dialog or town map is open, a world click must not move the player; keyed on the control's
+        //visibility (HideAll clears it on close) rather than NpcInteraction.IsActive, which lingers after a local
+        //close until the server replies and would leave the player unable to move
         if (NpcSession.Visible || TownMapControl.Visible)
         {
             e.Handled = true;
@@ -1246,9 +1211,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //a sign/board popup: ANY click (on or off the board) dismisses it once the open delay has passed, and is
-        //handled either way - the same click must never ALSO act on the world (re-clicking the sign's tile closed
-        //and instantly reopened it)
+        //a sign/board popup: any click dismisses it once the open delay has passed, handled either way so the
+        //same click cannot also act on the world and instantly reopen the sign's popup
         if (TextPopup.Visible)
         {
             if (TextPopup.ReadyToDismiss)
@@ -1259,8 +1223,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //exchange gold-click coordination - clicking the money label opens the gold amount popup. The exchange is hosted
-        //in a magnifying ScaleHost now, so map the raw cursor back into its un-scaled space before the money hit-test.
+        //clicking the money label in the exchange opens the gold amount popup; the exchange sits in a magnifying
+        //ScaleHost so the raw cursor must be mapped back into un-scaled space before the hit-test
         var (exMoneyX, exMoneyY) = MapToExchange(e.ScreenX, e.ScreenY);
 
         if (Exchange.Visible && Exchange.IsMyMoneyClicked(exMoneyX, exMoneyY))
@@ -1272,10 +1236,9 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //cast mode - target selection or cancel. tile-first: the spell locks onto whatever is on the clicked tile,
-        //a readied spell ALWAYS casts on the auto-snapped CLOSEST target, no matter where the cursor is - a click just
-        //confirms the cast (the side mouse buttons force closest-enemy / closest-friendly instead). With no valid target
-        //at all the cast cancels.
+        //cast mode: target selection or cancel. A readied spell always casts on the auto-snapped closest target
+        //regardless of cursor position; a click confirms the cast. Side mouse buttons force closest-enemy or
+        //closest-friendly. Cancels when no valid target is in range.
         if (CastingSystem.IsTargeting)
         {
             if (FindClosestTarget() is { } target)
@@ -1288,7 +1251,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //ctrl+click - context menu on aisling entities
+        //ctrl+click opens the context menu on aisling entities
         if (e.Ctrl)
         {
             HandleCtrlClick(e.ScreenX, e.ScreenY);
@@ -1297,7 +1260,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //alt+click on self - open self profile
+        //alt+click on self opens the self profile
         if (e.Alt)
         {
             var hoverEntity = ResolveCursorTarget(e.ScreenX, e.ScreenY);
@@ -1318,13 +1281,6 @@ public sealed partial class WorldScreen
         e.Handled = true;
     }
 
-    /// <summary>
-    ///     Handles double-click events that bubble up to the root panel.
-    ///     Left double-click: interact with entities (pickup ground items, click NPC/aisling).
-    ///     Right double-click: follow and assail entity.
-    ///     Uses TileClickTracker same-tile guard since the dispatcher only checks same-element (Root),
-    ///     not same-tile.
-    /// </summary>
     private void OnRootDoubleClick(DoubleClickEvent e)
     {
         if (MapFile is null)
@@ -1338,8 +1294,7 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //modern controls do everything on a single click (left = pick up / attack / talk, right = move), so there
-        //are no double-click actions: right double-click no longer follows+assails, left double-click is a no-op
+        //modern controls do everything on a single click, so double-click has no actions
         if (ClientSettings.ModernControls)
             return;
 
@@ -1405,8 +1360,8 @@ public sealed partial class WorldScreen
             //tracker still updates so anything relying on the last-clicked tile stays accurate
             var sameTile = RightClickTracker.Click(tileX, tileY);
 
-            //prefer the entity captured on the first single right-click - pathfinding started by that click will have
-            //moved the player by now, shifting the camera and making ScreenToTile resolve to a different world tile
+            //prefer the entity captured on the first single right-click; pathfinding from that click will have
+            //moved the player by now, shifting the camera so ScreenToTile would land on a different world tile
             WorldEntity? entity = null;
 
             if (PendingDoubleClickEntityId.HasValue
@@ -1426,8 +1381,8 @@ public sealed partial class WorldScreen
                 entity = WorldState.GetEntityAt(tileX, tileY);
             }
 
-            //reject self - following yourself produces a re-pathfinding loop that walks into walls or oscillates
-            //reject hidden aislings - they have a hitbox for spell targeting but should not be followable
+            //reject self since following yourself produces a re-pathfinding loop that walks into walls or oscillates;
+            //reject hidden aislings since they have a hitbox for spell targeting but should not be followable
             if (entity?.Type is ClientEntityType.Aisling or ClientEntityType.Creature
                 && (entity.Id != Game.Connection.AislingId)
                 && !entity.IsHidden)
@@ -1441,10 +1396,6 @@ public sealed partial class WorldScreen
         }
     }
 
-    /// <summary>
-    ///     Initiates a drag from the world viewport. If the drag started over a ground item, sets a
-    ///     GroundItemDragPayload so the drop handler can relocate it.
-    /// </summary>
     private void OnRootDragStart(DragStartEvent e)
     {
         if (!GameplayInputAllowed() || !ClientSettings.ModernControls)
@@ -1475,10 +1426,6 @@ public sealed partial class WorldScreen
         return WorldState.GetGroundItemAt(tileX, tileY);
     }
 
-    /// <summary>
-    ///     Tracks the cursor position during a drag so the ghost icon follows the mouse.
-    ///     Fires on every DragMove that bubbles to root (i.e. any DragMove not handled by a child).
-    /// </summary>
     private void OnRootDragMove(DragMoveEvent e)
     {
         var dragging = GetDraggingPanel();
@@ -1488,11 +1435,6 @@ public sealed partial class WorldScreen
             EquipmentDragIcon = equipPayload.Icon;
     }
 
-    /// <summary>
-    ///     Handles drag-drop events that bubble up to the root panel.
-    ///     If the drop was not handled by a PanelSlot (slot swap), it means the user dropped
-    ///     into the world viewport or onto a non-slot UI element - fire OnSlotDroppedOutside.
-    /// </summary>
     private void OnRootDragDrop(DragDropEvent e)
     {
         //equipment drag released anywhere → unequip (item goes to first free inventory slot)
@@ -1514,7 +1456,7 @@ public sealed partial class WorldScreen
 
             if (firstEmpty == 0)
             {
-                //inventory full - cancel silently; item stays on the ground
+                //inventory full, cancel silently; item stays on the ground
                 e.Handled = true;
 
                 return;
@@ -1541,24 +1483,19 @@ public sealed partial class WorldScreen
     #endregion
 
     #region Click Handling
-    /// <summary>
-    ///     Converts screen mouse coordinates to tile coordinates, accounting for the HUD viewport offset. The world is
-    ///     rendered with a translation matrix for the viewport origin, so mouse coords must be adjusted to match.
-    /// </summary>
     //the world target (WorldRenderWidth x WorldRenderHeight) is drawn into ChaosGame.WorldDrawRect, so a native
-    //mouse coordinate maps back to world-render space by removing that rect's offset and inverting its scale.
+    //mouse coordinate maps back to world-render space by removing that rect's offset and inverting its scale
     private int ToWorldX(int nativeX)
         => (nativeX - ChaosGame.WorldDrawRect.X) * ChaosGame.WorldRenderWidth / Math.Max(1, ChaosGame.WorldDrawRect.Width);
 
     private int ToWorldY(int nativeY)
         => (nativeY - ChaosGame.WorldDrawRect.Y) * ChaosGame.WorldRenderHeight / Math.Max(1, ChaosGame.WorldDrawRect.Height);
 
-    //The single rule for "what is the cursor targeting" - used by hover (hand cursor / name tag / highlight), spell
-    //targeting, the right-click chase, and world drops. The GROUND-CURSOR TILE wins: whatever occupies the tile under
-    //the cursor (a creature/aisling, else a ground item) is the target, no matter what. ONLY when that tile is empty do
-    //we fall back to the SPRITE under the cursor - sprites are tall, so a creature a tile or two away can hang "under"
-    //the cursor; that must never beat what is actually on the tile being pointed at. This mirrors HandleModernLeftClick's
-    //own tile-first resolution, so clicking, hovering and casting all agree on the target.
+    //single rule for what the cursor is targeting, used by hover, spell targeting, the right-click chase, and world drops.
+    //the ground-cursor tile wins: whatever is on the tile under the cursor (creature/aisling, else ground item) is the
+    //target no matter what. Only when that tile is empty does it fall back to the sprite under the cursor; sprites are
+    //tall so a creature a tile or two away can hang "under" the cursor and must not beat the actual pointed-at tile.
+    //This mirrors HandleModernLeftClick's tile-first resolution so clicking, hovering, and casting all agree.
     private WorldEntity? ResolveCursorTarget(int mouseX, int mouseY)
     {
         if (MapFile is null)
@@ -1579,7 +1516,7 @@ public sealed partial class WorldScreen
         var viewportMouseX = ToWorldX(mouseX);
         var viewportMouseY = ToWorldY(mouseY);
 
-        //iterate hitboxes back-to-front (last drawn = closest to camera = highest priority)
+        //scan hitboxes back-to-front (last drawn = closest to camera = highest priority)
         for (var i = EntityHitBoxes.Count - 1; i >= 0; i--)
         {
             var hitbox = EntityHitBoxes[i];
@@ -1602,9 +1539,9 @@ public sealed partial class WorldScreen
         return (tile.X, tile.Y);
     }
 
-    //the "Pick Up / Interact" action (default E / F). One key for everything, resolving to exactly ONE packet per press
-    //(rate-limited so holding or mashing it can't spam the server). Priority: pick up a ground item, else talk to an
-    //NPC, else click whatever is in front (door / sign / reactor). Tiles are searched in front, sides, behind order.
+    //the "Pick Up / Interact" action (default E / F). One key for everything, rate-limited so holding or mashing
+    //cannot spam the server. Priority: pick up a ground item, talk to an NPC, click whatever is in front
+    //(door / sign / reactor). Tiles are searched front, sides, behind.
     private void TryInteract()
     {
         var now = Environment.TickCount64;
@@ -1666,7 +1603,7 @@ public sealed partial class WorldScreen
                 return;
             }
 
-        //3) interact with whatever is in front - a door, sign, or other reactor tile
+        //3) interact with whatever is in front: a door, sign, or other reactor tile
         if (TileHasForeground(px + fx, py + fy))
         {
             Game.Connection.ClickTile(px + fx, py + fy);
@@ -1766,8 +1703,8 @@ public sealed partial class WorldScreen
         //remember where we interacted so the alternative camera can pick the right same-named NPC if a dialog opens
         NoteInteractTile(tileX, tileY);
 
-        //check group box text overlays first - they sit above entity hitboxes.
-        //rects are viewport-relative, rebase mouse coords to match.
+        //check group box text overlays first since they sit above entity hitboxes;
+        //rects are viewport-relative, so rebase mouse coords to match
         var groupBoxViewport = WorldInputBounds;
         var groupBoxHit = Overlays.GetGroupBoxAtScreen(mouseX - groupBoxViewport.X, mouseY - groupBoxViewport.Y);
 
@@ -1783,8 +1720,8 @@ public sealed partial class WorldScreen
         //single click: check for entity at hitbox first, then tile interaction
         var entity = GetEntityAtScreen(mouseX, mouseY);
 
-        //clicking YOURSELF never opens your profile and never eats the click - it counts as clicking the ground tile
-        //you stand on. The "click character profile" option only affects clicking OTHER players.
+        //clicking yourself never opens your profile and counts as clicking the ground tile you stand on;
+        //the "click character profile" option only affects clicking other players
         if (entity is not null && (entity.Id == Game.Connection.AislingId))
             entity = null;
 
@@ -1802,14 +1739,14 @@ public sealed partial class WorldScreen
             Game.Connection.ClickTile(tileX, tileY);
     }
 
-    //modern single-left-click interaction: pick up a ground item, attack an enemy (walk adjacent + auto-assail),
-    //talk to an NPC/merchant, open another player's profile, or interact with a door/sign. (Classic does these on
-    //double-click instead.) Self was already nulled by the caller, so this never acts on the player themselves.
+    //modern single-left-click: pick up a ground item, attack an enemy, talk to an NPC/merchant, open another
+    //player's profile, or interact with a door/sign. Classic does these on double-click instead.
+    //Self was already nulled by the caller so this never acts on the player themselves.
     private void HandleModernLeftClick(WorldEntity? spriteEntity, int tileX, int tileY, int mouseX, int mouseY)
     {
-        //TILE FIRST: whatever actually occupies the clicked tile (a ground item, then an enemy/NPC/player on it) wins.
-        //Only when the tile is empty do we fall back to the sprite under the cursor (`spriteEntity`) - sprites are tall,
-        //so a creature a tile or two away can sit "under" the cursor; that should not beat a click on a closer tile.
+        //tile first: whatever occupies the clicked tile wins (ground item, then enemy/NPC/player).
+        //sprites are tall, so a creature a tile or two away can sit "under" the cursor and must not beat a click
+        //on a closer tile; spriteEntity is the fallback only when the tile is empty.
         var entity = WorldState.GetGroundItemAt(tileX, tileY) ?? WorldState.GetEntityAt(tileX, tileY) ?? spriteEntity;
 
         switch (entity?.Type)
@@ -1857,9 +1794,8 @@ public sealed partial class WorldScreen
 
                 return;
 
-            //another player: attack ONLY when the server marked them hostile (NameTagStyle.Hostile, what PvP maps send
-            //via IsHostileTo - the always-shown grey/hostile tag). Outside PvP a click opens the player context menu
-            //(Profile / Group Request / Whisper) at the cursor - the same menu the classic Ctrl+click path uses.
+            //another player: attack only when the server marked them hostile (NameTagStyle.Hostile, set via IsHostileTo
+            //on PvP maps). Outside PvP a click opens the player context menu at the cursor.
             case ClientEntityType.Aisling when !entity.IsHidden && (entity.Id != Game.Connection.AislingId):
             {
                 if (entity.NameTagStyle == NameTagStyle.Hostile)
@@ -1876,6 +1812,17 @@ public sealed partial class WorldScreen
 
                 return;
             }
+        }
+
+        //tall sprites (signs, doors) extend above their base tile; check pixel-perfect
+        //first so a click on the sprite always targets the sprite's tile
+        var signDoorTile = FindSignDoorAtCursor(mouseX, mouseY);
+
+        if (signDoorTile.HasValue)
+        {
+            Game.Connection.ClickTile(signDoorTile.Value.X, signDoorTile.Value.Y);
+
+            return;
         }
 
         //empty ground, your own tile, or a door/sign -> tile interaction
@@ -1961,7 +1908,7 @@ public sealed partial class WorldScreen
         if (IsTileWallBlocked(tileX, tileY))
             return;
 
-        //single right-click - pathfind to the ground tile
+        //single right-click: pathfind to the ground tile
         Pathfinding.TargetEntityId = null;
         PathfindToTile(player, tileX, tileY);
 
@@ -1986,13 +1933,9 @@ public sealed partial class WorldScreen
         return (Math.Clamp(tileX, 0, MapFile!.Width - 1), Math.Clamp(tileY, 0, MapFile!.Height - 1));
     }
 
-    /// <summary>
-    ///     Re-paths a held-move-button walk toward the given cursor tile (call only when the player is at rest, so the
-    ///     path is planned from the player's true tile). Records the target so the idle re-aim doesn't retry the same
-    ///     tile, and skips pathing - leaving any in-progress path untouched - when the cursor sits on the player's own
-    ///     tile or a wall, so a momentary invalid hover neither stops the player nor spins A*. The resulting path's step
-    ///     count becomes the hold-to-walk baseline (0 when nothing was re-pathed / found).
-    /// </summary>
+    //re-paths toward the cursor tile; only call when the player is at rest so the path starts from the true tile.
+    //skips pathing when the cursor is on the player's own tile or a wall so a momentary hover neither stops the
+    //player nor runs the pathfinder; records the target so idle re-aim doesn't retry the same tile
     private void HeldWalkRepathToCursor(WorldEntity player, int tileX, int tileY)
     {
         HeldWalkLastTarget = (tileX, tileY);
@@ -2010,9 +1953,6 @@ public sealed partial class WorldScreen
         HeldWalkPathLength = Pathfinding.Path?.Count ?? 0;
     }
 
-    /// <summary>
-    ///     Shift+right-click: cancel pathfinding/auto-assailing, and if idle, turn toward the clicked tile.
-    /// </summary>
     private void HandleShiftRightClick(int mouseX, int mouseY)
     {
         //explicit cancel: drops the chase and any pending after-action re-target
@@ -2057,12 +1997,9 @@ public sealed partial class WorldScreen
         }
     }
 
-    /// <summary>
-    ///     Re-routes a path whose next step became blocked (a monster stepped into it) or whose head desynced from the
-    ///     player (server correction), WITHOUT releasing the chase. An entity chase re-paths to the target - and keeps
-    ///     the target even when no path exists right now (the Update loop's retarget timer retries). A plain tile path
-    ///     re-paths to its original destination and only stops if that is now unreachable.
-    /// </summary>
+    //re-routes a path whose next step became blocked or desynced without releasing the chase.
+    //an entity chase re-paths and keeps the target even with no path right now; a tile path re-paths to the
+    //original destination and only stops if that destination is now unreachable
     private void RecoverPath(WorldEntity player)
     {
         if (Pathfinding.TargetEntityId is { } targetId)
@@ -2095,8 +2032,7 @@ public sealed partial class WorldScreen
         if (!MapPreloaded || MapFile is null)
             return;
 
-        //click-to-walk obeys collision even for GMs (only the arrow keys let a GM clip walls); pass the real
-        //walkability test rather than the GM bypass.
+        //click-to-walk obeys collision even for GMs; only arrow keys let a GM clip walls
         var raw = Pathfinder.FindPathToTile(
             player.TileX,
             player.TileY,
@@ -2115,8 +2051,8 @@ public sealed partial class WorldScreen
             return;
         }
 
-        //scan for the first closed door - truncate the path there so the walker stops at the
-        //tile right before it, facing the door. The door itself is not in the truncated path.
+        //truncate at the first closed door so the walker stops at the tile right before it, facing the door;
+        //the door tile itself is not included in the truncated path
         var points = raw.ToArray();
 
         for (var i = 0; i < points.Length; i++)
@@ -2149,7 +2085,7 @@ public sealed partial class WorldScreen
         if (!MapPreloaded || MapFile is null)
             return;
 
-        //click-to-follow obeys collision even for GMs (arrow keys are the only wall-clip); real walkability.
+        //click-to-follow obeys collision even for GMs; arrow keys are the only wall-clip path
         var path = Pathfinder.FindPathToEntity(
             player.TileX,
             player.TileY,
@@ -2163,7 +2099,7 @@ public sealed partial class WorldScreen
             isTileWarp: (x, y) => WarpData.HasWarpAt(CurrentMapId, x, y));
 
         //already adjacent: no path to walk, but keep TargetEntityId so the Update loop's auto-follow
-        //branch turns and assails next tick. Pathfinding.Clear() here would wipe the target entity
+        //branch turns and assails next tick. Calling Pathfinding.Clear() here would wipe the target entity
         //that OnRootDoubleClick just set, breaking double-right-click follow on neighbors.
         if (alreadyAdjacent)
             Pathfinding.Path = null;
