@@ -76,7 +76,9 @@ public sealed class Checkbox : UIPanel
         if (Checked)
             DrawRectClipped(spriteBatch, new Rectangle(x + 4, y + 4, BOX - 8, BOX - 8), MarkClr);
 
-        if (IsHovered)
+        var capturedElement = InputDispatcher.Instance?.CapturedElement;
+
+        if (capturedElement == this || capturedElement==null && IsHovered)
         {
             DrawRect(spriteBatch, new Rectangle(ScreenX-2, ScreenY, Width+2, Height), ImageUtil.ButtonHoverTint);
         }

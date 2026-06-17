@@ -1,6 +1,7 @@
 #region
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Definitions;
+using Chaos.Client.Rendering.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
@@ -27,6 +28,8 @@ public sealed class Slider : UIPanel
     private readonly float Step; //0 = continuous
 
     private bool Dragging;
+
+    public bool IsHovered { get; private set; }
 
     public float Value { get; private set; }
 
@@ -67,6 +70,23 @@ public sealed class Slider : UIPanel
         DrawRectClipped(spriteBatch, new Rectangle(tx, ty + THUMB_H - 1, THUMB_W, 1), BorderClr);
         DrawRectClipped(spriteBatch, new Rectangle(tx, ty, 1, THUMB_H), BorderClr);
         DrawRectClipped(spriteBatch, new Rectangle(tx + THUMB_W - 1, ty, 1, THUMB_H), BorderClr);
+
+        var capturedElement = InputDispatcher.Instance?.CapturedElement;
+
+        if (capturedElement == this || capturedElement==null && IsHovered)
+        {
+            DrawRect(spriteBatch, new Rectangle(ScreenX, ScreenY, Width, Height), ImageUtil.ButtonHoverTint);
+        }
+    }
+
+    public override void OnMouseEnter()
+    {
+        IsHovered = true;
+    }
+
+    public override void OnMouseLeave()
+    {
+        IsHovered = false;
     }
 
     public override void OnMouseDown(MouseDownEvent e)
