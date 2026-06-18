@@ -21,7 +21,7 @@ public sealed class MinimapControl : UIElement
 {
     private const int BASE_DIAMETER = 176;
     private const int BASE_BORDER = 3;
-    private const int BASE_NAME_FONT = 12;
+    private const int BASE_NAME_FONT = 14;
     private const float FADE_SECONDS = 0.4f;
     private const int DRAG_THRESHOLD = 16;
 
@@ -167,7 +167,7 @@ public sealed class MinimapControl : UIElement
     //apply the "Minimap size" option: a bigger circle, same tile coverage. Reallocates the texture/buffer on change.
     private void ApplyScale()
     {
-        var scale = Math.Clamp(ClientSettings.EffectiveMinimapScale, 0.1f, 4f);
+        var scale = ClientSettings.EffectiveMinimapScale;
         var diam = Math.Max(32, (int)MathF.Round(BASE_DIAMETER * scale));
 
         if (diam == Diam)
@@ -176,7 +176,7 @@ public sealed class MinimapControl : UIElement
         Diam = diam;
         Mag = diam / (float)BASE_DIAMETER;
         Border = Math.Max(1, (int)MathF.Round(BASE_BORDER * Mag));
-        NameFont = Math.Max(7, (int)MathF.Round(BASE_NAME_FONT * Mag));
+        NameFont = Math.Max(7, (int)MathF.Round(BASE_NAME_FONT * ClientSettings.EffectiveInterfaceTextScale));
         Width = diam;
         Height = diam;
         Buffer = new Color[diam * diam];
@@ -644,7 +644,7 @@ public sealed class MinimapControl : UIElement
         var src = new Color[gw * gh];
         glyphTex.GetData(src);
 
-        var o = Math.Max(1, (int)MathF.Round(Mag)); //outline thickness
+        var o = Math.Max(1, (int)MathF.Round(ClientSettings.EffectiveInterfaceTextScale)); //outline thickness
         var w = gw + (2 * o);
         var h = gh + (2 * o);
         var buf = new Color[w * h]; //starts transparent
