@@ -1,4 +1,5 @@
 #region
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 #endregion
 
@@ -12,6 +13,8 @@ namespace Chaos.Client.Utilities;
 public static class OsCursor
 {
     private static bool HandActive;
+    private static MouseCursor ArrowCursor = MouseCursor.Arrow;
+    private static MouseCursor HandCursor = MouseCursor.Hand;
 
     /// <summary>Show the hand pointer (true) or the normal arrow (false). Only calls into MonoGame on a state change.</summary>
     public static void SetHand(bool hand)
@@ -20,6 +23,25 @@ public static class OsCursor
             return;
 
         HandActive = hand;
-        Mouse.SetCursor(hand ? MouseCursor.Hand : MouseCursor.Arrow);
+        RefreshCursor();
+    }
+
+    private static void RefreshCursor()
+    {
+        Mouse.SetCursor(HandActive ? HandCursor : ArrowCursor);
+    }
+
+    public static void SetArrowCursorTexture(Texture2D texture, int offsetX, int offsetY)
+    {
+        ArrowCursor = MouseCursor.FromTexture2D(texture, offsetX, offsetY);
+        if (!HandActive)
+            RefreshCursor();
+    }
+
+    public static void SetHandCursorTexture(Texture2D texture, int offsetX, int offsetY)
+    {
+        HandCursor = MouseCursor.FromTexture2D(texture, offsetX, offsetY);
+        if (HandActive)
+            RefreshCursor();
     }
 }

@@ -10,6 +10,7 @@ using Chaos.Client.Networking;
 using Chaos.Client.Networking.Definitions;
 using Chaos.Client.Screens;
 using Chaos.Client.Systems;
+using Chaos.Client.Utilities;
 using Chaos.Cryptography;
 using Chaos.DarkAges.Definitions;
 using Chaos.Networking.Entities.Server;
@@ -310,9 +311,7 @@ public sealed class ChaosGame : Game
                 RenderTargetUsage.PreserveContents);
         }
 
-        //native screens: show the OS cursor normally, and only switch to the in-game cursor when hovering something
-        //interactable (UseHandCursor). Legacy screens (lobby / char create) always use the OS cursor.
-        IsMouseVisible = native ? !UseHandCursor : true;
+        OsCursor.SetHand(UseHandCursor);
 
         //advance the map-change fade and, if a fade-out just began, snapshot the world frame BEFORE we clear the target
         //for this frame. RenderTarget still holds the last rendered (old) map here; the map-change handler has already
@@ -436,11 +435,6 @@ public sealed class ChaosGame : Game
 
         //pass 2: the UI at native window resolution, on top of the world (no-op for legacy screens)
         screen?.DrawNativeUi(SpriteBatch, gameTime);
-
-        //native screens draw the in-game cursor (native 1:1) ONLY when hovering something interactable; otherwise the
-        //OS cursor is shown (IsMouseVisible above), so there is never a doubled cursor
-        if (native && UseHandCursor && (HandCursorTexture is not null))
-            DrawCursor(InputBuffer.MouseX, InputBuffer.MouseY, 1f);
 
         //global screen fade-to-black, over EVERYTHING (world/lobby + UI + cursor): lobby transitions + login->world handoff.
         //The drawn alpha is smoothstep-eased (the timing logic in UpdateScreenFade stays linear - 0 and 1 map to themselves,
@@ -886,12 +880,18 @@ public sealed class ChaosGame : Game
 
         //cursor visibility is decided per-frame in Draw (OS cursor by default, in-game cursor only on hover)
         if (CursorTexture is not null)
+        {
             (CursorOffsetX, CursorOffsetY) = FindCursorHotspot(CursorTexture);
+            OsCursor.SetArrowCursorTexture(CursorTexture, CursorOffsetX, CursorOffsetY);
+        }
 
         HandCursorTexture = UiRenderer.Instance.GetEpfTexture("mouse.epf", 1);
 
         if (HandCursorTexture is not null)
+        {
             (HandCursorOffsetX, HandCursorOffsetY) = FindCursorHotspot(HandCursorTexture);
+            OsCursor.SetHandCursorTexture(HandCursorTexture, HandCursorOffsetX, HandCursorOffsetY);
+        }
     }
 
     #region Window Sizing
