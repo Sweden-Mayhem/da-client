@@ -311,6 +311,11 @@ public sealed class ChaosGame : Game
                 RenderTargetUsage.PreserveContents);
         }
 
+        var pixelScale = (float)bb.Width / (float)WorldRenderWidth;
+
+        //scale the mouse cursor so it also matches the pixel scale (but bias down by .4 as larger resolutions expect
+        //slightly smaller scale cursors)
+        OsCursor.SetTexturedCursorScale((int)Math.Round(pixelScale - 0.4f));
         OsCursor.SetHand(UseHandCursor);
 
         //advance the map-change fade and, if a fade-out just began, snapshot the world frame BEFORE we clear the target

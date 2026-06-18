@@ -272,6 +272,26 @@ public static class ImageUtil
         return result;
     }
 
+    public static Texture2D BuildScaledTexture(GraphicsDevice device, Texture2D source, int scale)
+    {
+        using var sourceScope = new PixelBufferScope(source);
+        using var scope = new PixelBufferScope(source.Width * scale, source.Height * scale);
+
+        for (var y = 0; y < sourceScope.Height; y++)
+            for (var x = 0; x < sourceScope.Width; x++)
+            {
+                var pixel = sourceScope.Pixels[y * sourceScope.Width + x];
+                for (var y2 = 0; y2 < scale; y2++)
+                    for (var x2 = 0; x2 < scale; x2++)
+                        scope.Pixels[(y * scale + y2) * scope.Width + x * scale + x2] = pixel;
+            }
+        
+        var result = new Texture2D(device, scope.Width, scope.Height);
+        scope.CommitTo(result);
+
+        return result;
+    }
+
     /// <summary>
     ///     Fills <paramref name="pixels" /> in-place with a 2-color checker pattern of <paramref name="cellSize" />-pixel
     ///     cells. <paramref name="pixels" /> must contain at least <c>totalSize * totalSize</c> entries.
