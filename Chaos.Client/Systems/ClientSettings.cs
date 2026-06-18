@@ -123,6 +123,7 @@ public static class ClientSettings
     //effective scale is what is actually in effect (taking into account automatic window scale, and size clamping etc.)
     public static float InterfaceScale { get; set; } = 0f;
     public static float EffectiveInterfaceScale { get; set; } = 1f; //this is managed by ChaosGame window management
+    public static float EffectiveInterfaceTextScale { get => MathF.Max(1f, EffectiveInterfaceScale * 0.7f); } //text slightly smaller. There is a delay before this starts upscaling
 
     //magnification of the on-screen hotbars (skills/spells/inventory). The collapsed 1-row art is already a good
     //size at 1.0, so that is the default. A future options slider will drive this (intended range ~1.0 to 4.0).
@@ -141,17 +142,17 @@ public static class ClientSettings
     //scale of the chat log + chat input text (multiplies the base 14px Cinzel size). Driven by the Options "Chat font
     //size" slider (range 1.0 to 4.0, 0.05 step); 1.0 = the current size. ChatWindow re-lays out live when it changes.
     public static float ChatFontScale { get; set; } = 1f;
-    public static float EffectiveChatFontScale { get => Math.Clamp(EffectiveInterfaceScale * ChatFontScale, 1f, 4f); }
+    public static float EffectiveChatFontScale { get => Math.Clamp(EffectiveInterfaceTextScale * ChatFontScale, 1f, 4f); }
 
     //scale of the over-head chat bubble text (multiplies the bubble's base 13px Cinzel size). Options "Bubble font size"
     //slider (1.0 to 4.0, 0.05 step); 1.0 = the current size. Read when a bubble is created.
     public static float BubbleFontScale { get; set; } = 1f;
-    public static float EffectiveBubbleFontScale { get => Math.Clamp(EffectiveInterfaceScale * BubbleFontScale, 1f, 4f); }
+    public static float EffectiveBubbleFontScale { get => Math.Clamp(EffectiveInterfaceTextScale * BubbleFontScale, 1f, 4f); }
 
     //scale of the over-head entity NAME tags (multiplies the base 13px Cinzel size). Options "Names font size" slider
     //(1.0 to 4.0, 0.05 step); 1.0 = the current size. Read live each frame when name tags are drawn.
     public static float NameFontScale { get; set; } = 1f;
-    public static float EffectiveNameFontScale { get => Math.Clamp(EffectiveInterfaceScale * NameFontScale, 1f, 4f); }
+    public static float EffectiveNameFontScale { get => Math.Clamp(EffectiveInterfaceTextScale * NameFontScale, 1f, 4f); }
 
     //seconds an over-head chat bubble stays before fading out. Options "Bubble fade after" slider (0 to 30s, 1s step);
     //0 disables bubbles entirely. Default 4s.
@@ -179,7 +180,7 @@ public static class ClientSettings
 
     //magnification of the tooltip font + layout (Options "Tooltip size" slider, 1.0 to 4.0). Read live in ItemTooltipControl.
     public static float TooltipScale { get; set; } = 1f;
-    public static float EffectiveTooltipScale { get => Math.Clamp(EffectiveInterfaceScale * TooltipScale, 1f, 4f); }
+    public static float EffectiveTooltipScale { get => Math.Clamp(EffectiveInterfaceTextScale * TooltipScale, 1f, 4f); }
 
     //how visible blocked entities (player/enemies/items/NPCs) are through walls (Options "Behind-walls opacity"
     //slider, 0 to 0.85; 0 = fully off). Pushed into SilhouetteRenderer.SilhouetteAlpha at boot and whenever the slider changes.
