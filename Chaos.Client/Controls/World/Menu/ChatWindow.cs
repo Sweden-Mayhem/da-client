@@ -81,7 +81,7 @@ public sealed class ChatWindow : DraggableWindow
 
     public ChatWindow(int width, int height)
         //wood frame like the rest of the windows, no close box (chat is always present and fades on its own)
-        : base("Chat", width, height, showClose: false, useWoodFrame: true)
+        : base("Chat", width, height, showClose: true, useWoodFrame: true)
     {
         AutoFade = true;
         IdleOpacity = 0f; //fully fade out when idle (chrome, text, and scrollbar)
@@ -260,6 +260,8 @@ public sealed class ChatWindow : DraggableWindow
                 BringToFront();
             else
                 ShowTimer = ClientSettings.ChatWindowFadeSeconds;
+
+            Visible = true;
         };
 
         //chat is non-modal: while typing, clicks inside this window are allowed (and stop typing); world clicks stay
@@ -539,7 +541,7 @@ public sealed class ChatWindow : DraggableWindow
 
     //event-driven (no hover-to-show): shown while typing, while pinned, during the linger, or always when the timer is 0
     protected override float ComputeFadeTarget()
-        => Pinned || ChatInput.IsFocused || (ClientSettings.ChatWindowFadeSeconds <= 0) || (ShowTimer > 0f) ? 1f : 0f;
+        => Pinned || ChatInput.IsFocused || (ClientSettings.ChatWindowFadeSeconds <= 0 && Visible) || (ShowTimer > 0f) ? 1f : 0f;
 
     //clicking the chat while typing (anywhere but the input line) stops typing so the click lands on what was clicked.
     //EXCEPT the tab strip: clicking a tab keeps you typing and just switches the input to that tab's channel (above).
@@ -556,6 +558,15 @@ public sealed class ChatWindow : DraggableWindow
     public string? NameAt(int screenX, int screenY) => Chat.NameAt(screenX, screenY);
 
     public void RefreshChatTimestamps() => Chat.RefreshTimestamps();
+
+    protected override void OnCloseClicked()
+    {
+        Pinned = false;
+        ChatInput.Unfocus();
+        Visible = false;
+        ShowTimer = 0;
+    }
+
 
     protected override void OnResized()
     {

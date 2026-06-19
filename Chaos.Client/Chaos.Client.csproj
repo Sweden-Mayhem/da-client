@@ -44,6 +44,21 @@
         <EmbeddedResource Include="Assets\generic_small_button_01.png">
             <LogicalName>generic_small_button_01.png</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Assets\window_widget_close.png">
+            <LogicalName>window_widget_close.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\window_widget_close_pressed.png">
+            <LogicalName>window_widget_close_pressed.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\window_widget_pin.png">
+            <LogicalName>window_widget_pin.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\window_widget_pin_pressed.png">
+            <LogicalName>window_widget_pin_pressed.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\window_widget_pin_active.png">
+            <LogicalName>window_widget_pin_active.png</LogicalName>
+        </EmbeddedResource>
         <!-- Custom audio is not embedded, it ships as plain files in the Data/sound/ folder (source in
              client-data/sound/), so it loads by path like the rest of the game's assets and can be swapped without a
              rebuild. Sound effects are item/money/ui/dialog/window_open/window_close/level_up.mp3 and the login theme

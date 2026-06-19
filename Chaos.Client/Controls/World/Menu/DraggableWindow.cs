@@ -22,18 +22,24 @@ public class DraggableWindow : UIPanel
     private const int CLOSE_W = 18;
     private const int PIN_W = 18;
     private const int TITLE_FONT = 16;
-    private const int GRIP = 14;
+    private const int GRIP_SIZE = 14;
     private const int MIN_W = 140;
     private const int MIN_H = TITLE_H + 48;
 
-    //dlgframe wood-border geometry. The 16x16 tile only has WOOD_NATIVE(=4)px of opaque wood on its outer edge
+    //dlgframe wood-border geometry. The 16x16 tile only has WOOD_PIXELS_* of opaque wood on its outer edge
     //(the rest is transparent), so the border is drawn at FRAME_SCALE and content sits flush at FRAME px, not the
     //whole tile (that transparent inner is what caused the fat black padding). Only windows that opt in (useWoodFrame)
     //get the wood look; everything else keeps the original flat 1px-border layout untouched.
-    private const int TILE = 16;
-    private const int WOOD_NATIVE = 4;
-    private const int FRAME_SCALE = 2;
-    public const int FRAME = WOOD_NATIVE * FRAME_SCALE; //=8: drawn wood thickness AND the content inset on each side
+    private const int TILE_PIXELS = 16;
+    private const int WOOD_PIXELS_TOP = 4;
+    private const int WOOD_PIXELS_BOTTOM = 5;
+    private const int WOOD_PIXELS_LEFT = 4;
+    private const int WOOD_PIXELS_RIGHT = 5;
+    public const int FRAME_SCALE = 2;
+    public const int FRAME_TOP    = FRAME_SCALE * WOOD_PIXELS_TOP;
+    public const int FRAME_BOTTOM = FRAME_SCALE * WOOD_PIXELS_BOTTOM;
+    public const int FRAME_LEFT   = FRAME_SCALE * WOOD_PIXELS_LEFT;
+    public const int FRAME_RIGHT  = FRAME_SCALE * WOOD_PIXELS_RIGHT;
 
     private readonly bool UseWoodFrame;
 
@@ -74,8 +80,8 @@ public class DraggableWindow : UIPanel
     //total non-content chrome for the current frame mode, so a subclass can size itself from its content:
     //outer width = ContentWidth + ChromeWidth, outer height = ContentHeight + ChromeHeight. Matches the ctor's insets
     //(flat: 1px sides + bottom, TITLE_H top; wood: FRAME sides + bottom, FRAME+TITLE_H top).
-    public int ChromeWidth => FlushContent ? 0 : 2 * (UseWoodFrame ? FRAME : 1);
-    public int ChromeHeight => (UseWoodFrame ? FRAME : 0) + TITLE_H + (FlushContent ? 0 : (UseWoodFrame ? FRAME : 1));
+    public int ChromeWidth => FlushContent ? 0 : (UseWoodFrame ? FRAME_LEFT + FRAME_RIGHT : 2);
+    public int ChromeHeight => (UseWoodFrame ? FRAME_TOP : 0) + TITLE_H + (FlushContent ? 0 : (UseWoodFrame ? FRAME_BOTTOM : 1));
 
     private bool Dragging;
     private int DragOffsetX;
@@ -97,20 +103,17 @@ public class DraggableWindow : UIPanel
     private readonly Texture2D? ClosePressedTex;
     private readonly Texture2D? PinNormalTex;
     private readonly Texture2D? PinPressedTex;
+    private readonly Texture2D? PinActiveTex;
 
     private readonly UIPanel TitleBar;
     private readonly UIPanel CloseBox;
     private readonly UIPanel PinBox;
-    private readonly UILabel PinLabel;
-    private readonly UILabel PinShadow;
     private readonly ResizeHandle ResizeGrip;
     private readonly UILabel TitleLabel;
 
     //each titlebar-button glyph (X, *) is two stacked labels for a 1px emboss: a Shadow (drawn first/behind) and a Front
     //(drawn second/on top). When NOT pressed/on: dark shadow offset +1,+1, bright front centered. When pressed/on the
     //colours invert AND the whole pair shifts +1,+1 (a "pushed in" look): bright shadow, dark front. See ApplyGlyph.
-    private readonly UILabel CloseLabel;
-    private readonly UILabel CloseShadow;
     private readonly Color BaseBg;
     private readonly Color BaseBorder;
     private readonly Color BaseTitleBar;
@@ -133,9 +136,6 @@ public class DraggableWindow : UIPanel
     private bool SuppressVis; //guards the re-entrant Visible writes used to keep drawing during the fade-out
     private const float OpenFadeSeconds = 0.08f;
     private static RenderTarget2D? SharedFadeTarget;
-
-    private static readonly Color GlyphDark = new(38, 28, 18);
-    private static readonly Color GlyphBright = new(236, 222, 198);
 
     /// <summary>When true, the window dims toward <see cref="IdleOpacity" /> while the cursor is off it.</summary>
     public bool AutoFade { get; set; }
@@ -160,14 +160,24 @@ public class DraggableWindow : UIPanel
         UseWoodFrame = useWoodFrame;
         FlushContent = flushContent;
 
-        //frame = the wood thickness drawn at the edges + the titlebar/button inset (0 in flat mode).
-        //b = the content side/bottom inset: the wood thickness in wood mode, the old 1px border otherwise.
-        //With frame=0,b=1 every position below reduces to the original flat-window layout exactly.
-        var frame = useWoodFrame ? FRAME : 0;
-        var b = useWoodFrame ? FRAME : 1;
+        //the wood thickness drawn at the edges + the titlebar/button inset (0 in flat mode).
+        var titleInsetTop = useWoodFrame ? FRAME_TOP : 0;
+        var titleInsetLeft = useWoodFrame ? FRAME_LEFT : 0;
+        var titleInsetRight = useWoodFrame ? FRAME_RIGHT : 0;
+
+        //the content side/bottom inset: the wood thickness in wood mode, the old 1px border otherwise.
+        var frameLeft = useWoodFrame ? FRAME_LEFT : 1;
+        var frameRight = useWoodFrame ? FRAME_RIGHT : 1;
+        var frameBottom = useWoodFrame ? FRAME_BOTTOM : 1;
+
+        //FlushContent: the content fills edge-to-edge (X=0, full width, down to the bottom) under the wood frame, which
+        //draws over its outer border. Otherwise it is inset by b (the wood thickness / flat 1px border) like before.
+        var bodyInsetLeft = flushContent ? 0 : frameLeft;
+        var bodyInsetRight = flushContent ? 0 : frameRight;
+        var bodyInsetBottom = flushContent ? 0 : frameBottom;
 
         //when there is no close box, the pin button takes the right-edge slot instead of sitting left of it
-        var pinX = (showClose ? width - CLOSE_W - PIN_W - 2 : width - PIN_W - 1) - frame;
+        var pinX = (showClose ? width - CLOSE_W - PIN_W - 2 : width - PIN_W - 1) - titleInsetRight;
 
         //colors sampled from the hud.png concept: near-black warm fill, subtle bronze border
         BaseBg = new Color(18, 16, 12) * 0.96f;
@@ -180,27 +190,30 @@ public class DraggableWindow : UIPanel
         TitleBar = new UIPanel
         {
             Name = "TitleBar",
-            X = frame,
-            Y = frame,
-            Width = width - 2 * frame,
+            X = titleInsetLeft,
+            Y = titleInsetTop,
+            Width = width - titleInsetLeft - titleInsetRight,
             Height = TITLE_H,
             BackgroundColor = BaseTitleBar,
             IsPassThrough = true
         };
         AddChild(TitleBar);
 
-        //per-box texture instances: _00 = normal, _01 = pressed/toggled. Swapped in Update by press/pin state.
-        CloseNormalTex = LoadButtonArt("generic_small_button_00.png");
-        ClosePressedTex = LoadButtonArt("generic_small_button_01.png");
-        PinNormalTex = LoadButtonArt("generic_small_button_00.png");
-        PinPressedTex = LoadButtonArt("generic_small_button_01.png");
+        var cache = UiRenderer.Instance!;
+
+        CloseNormalTex = LoadButtonArt("window_widget_close.png");
+        ClosePressedTex = LoadButtonArt("window_widget_close_pressed.png");
+
+        PinNormalTex = LoadButtonArt("window_widget_pin.png");
+        PinPressedTex = LoadButtonArt("window_widget_pin_pressed.png");
+        PinActiveTex = LoadButtonArt("window_widget_pin_active.png");
 
         //close button: the generic button art drawn behind the X glyph (hidden when the window has no close)
         CloseBox = new UIPanel
         {
             Name = "CloseBox",
-            X = width - frame - CLOSE_W - 1,
-            Y = frame + 2,
+            X = width - titleInsetRight - CLOSE_W - 1,
+            Y = titleInsetTop + 2,
             Width = CLOSE_W,
             Height = CLOSE_W,
             Background = CloseNormalTex,
@@ -213,9 +226,9 @@ public class DraggableWindow : UIPanel
         {
             Name = "Title",
             Text = title,
-            X = frame + 5,
-            Y = frame,
-            Width = pinX - frame - 7,
+            X = titleInsetLeft + 5,
+            Y = titleInsetTop,
+            Width = pinX - titleInsetRight - 7,
             Height = TITLE_H,
             CustomFontSize = TITLE_FONT, //window titles use the optional UI font (Cinzel); the rest of the UI stays bitmap
             ForegroundColor = new Color(192, 176, 138),
@@ -223,32 +236,13 @@ public class DraggableWindow : UIPanel
         };
         AddChild(TitleLabel);
 
-        //the X glyph: two stacked labels (Shadow behind + Front on top) for a 1px emboss; positioned and coloured each
-        //frame by ApplyGlyph from the press state. Shadow is added first so it draws behind the front.
-        UILabel MakeGlyph(string text, int w, bool vis) => new()
-        {
-            Name = "Glyph",
-            Text = text,
-            Width = w,
-            Height = TITLE_H,
-            CustomFontSize = TITLE_FONT,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            IsHitTestVisible = false,
-            Visible = vis
-        };
-
-        CloseShadow = MakeGlyph("X", CLOSE_W, showClose);
-        AddChild(CloseShadow);
-        CloseLabel = MakeGlyph("X", CLOSE_W, showClose);
-        AddChild(CloseLabel);
-
         //pin / sticky toggle, left of the close button. Only shown on fadeable windows; clicking it keeps the
         //window from fading out. Pass-through so the window's OnMouseDown handles the click (like the titlebar).
         PinBox = new UIPanel
         {
             Name = "PinBox",
             X = pinX,
-            Y = frame + 2,
+            Y = titleInsetTop + 2,
             Width = PIN_W,
             Height = PIN_W,
             Background = PinNormalTex, //_00 when not toggled; Update swaps to _01 (PinPressedTex) when pressed or pinned
@@ -257,23 +251,13 @@ public class DraggableWindow : UIPanel
         };
         AddChild(PinBox);
 
-        //the * glyph: same two-label emboss as the close X
-        PinShadow = MakeGlyph("*", PIN_W, false);
-        AddChild(PinShadow);
-        PinLabel = MakeGlyph("*", PIN_W, false);
-        AddChild(PinLabel);
-
-        //FlushContent: the content fills edge-to-edge (X=0, full width, down to the bottom) under the wood frame, which
-        //draws over its outer border. Otherwise it is inset by b (the wood thickness / flat 1px border) like before.
-        var sideInset = flushContent ? 0 : b;
-        var bottomInset = flushContent ? 0 : b;
         Content = new UIPanel
         {
             Name = "Content",
-            X = sideInset,
-            Y = frame + TITLE_H,
-            Width = width - 2 * sideInset,
-            Height = height - (frame + TITLE_H) - bottomInset
+            X = bodyInsetLeft,
+            Y = titleInsetTop + TITLE_H,
+            Width = width - bodyInsetLeft - bodyInsetRight,
+            Height = height - titleInsetTop - TITLE_H - bodyInsetBottom
         };
         AddChild(Content);
 
@@ -282,10 +266,10 @@ public class DraggableWindow : UIPanel
         ResizeGrip = new ResizeHandle
         {
             Name = "ResizeGrip",
-            X = width - b - GRIP,
-            Y = height - b - GRIP,
-            Width = GRIP,
-            Height = GRIP,
+            X = width - frameRight - GRIP_SIZE,
+            Y = height - frameBottom - GRIP_SIZE,
+            Width = GRIP_SIZE,
+            Height = GRIP_SIZE,
             BorderColor = BaseBorder,
             Visible = false
         };
@@ -447,7 +431,7 @@ public class DraggableWindow : UIPanel
     }
 
     //dlgframe border, edges LOOPED (tiled) not scaled, corners fixed. Each 16x16 piece is drawn at FRAME_SCALE; only its
-    //outer WOOD_NATIVE px is opaque wood, the rest transparent, so it overlays harmlessly over the band/content. Tinted by
+    //outer WOOD_PIXELS px is opaque wood, the rest transparent, so it overlays harmlessly over the band/content. Tinted by
     //Fade so AutoFade still works. Pieces are clipped to the window rect so a tiled edge never bleeds past the window.
     private void DrawWoodFrame(SpriteBatch spriteBatch)
     {
@@ -457,7 +441,7 @@ public class DraggableWindow : UIPanel
             return;
 
         var tint = Color.White * Fade;
-        var t = TILE * FRAME_SCALE; //scaled tile size (the wood occupies the outer WOOD_NATIVE*FRAME_SCALE of it)
+        var t = TILE_PIXELS * FRAME_SCALE; //scaled tile size (the wood occupies the outer WOOD_PIXELS*FRAME_SCALE of it)
         int x0 = ScreenX, y0 = ScreenY, w = Width, h = Height;
 
         for (var x = 0; x < w; x += t)
@@ -531,30 +515,6 @@ public class DraggableWindow : UIPanel
     /// <summary>Subclasses override to react to the current chrome opacity (0 = idle, 1 = active).</summary>
     protected virtual void OnFade(float opacity) { }
 
-    //positions a titlebar glyph's two emboss labels. NOT inverted: dark shadow at base+(1,1), bright front at base.
-    //INVERTED (pressed/on): the colours swap and BOTH layers shift +1,+1 (bright shadow at base+(2,2), dark front at
-    //base+(1,1)), so the glyph looks pushed in.
-    private static void ApplyGlyph(UILabel shadow, UILabel front, int baseX, int baseY, bool inverted)
-    {
-        if (inverted)
-        {
-            shadow.ForegroundColor = GlyphBright;
-            shadow.X = baseX + 2;
-            shadow.Y = baseY + 2;
-            front.ForegroundColor = GlyphDark;
-            front.X = baseX + 1;
-            front.Y = baseY + 1;
-        } else
-        {
-            shadow.ForegroundColor = GlyphDark;
-            shadow.X = baseX + 1;
-            shadow.Y = baseY + 1;
-            front.ForegroundColor = GlyphBright;
-            front.X = baseX;
-            front.Y = baseY;
-        }
-    }
-
     //true when the cursor is within a titlebar button's screen rect (used for the release-over-button click + pressed art)
     private static bool CursorOverBox(UIPanel box)
         => box.Visible
@@ -596,6 +556,7 @@ public class DraggableWindow : UIPanel
         ClosePressedTex?.Dispose();
         PinNormalTex?.Dispose();
         PinPressedTex?.Dispose();
+        PinActiveTex?.Dispose();
 
         base.Dispose();
     }
@@ -612,14 +573,18 @@ public class DraggableWindow : UIPanel
 
         var localX = e.ScreenX - ScreenX;
         var localY = e.ScreenY - ScreenY;
-        var frame = UseWoodFrame ? FRAME : 0; //titlebar band + buttons are inset by the wood thickness
+
+        //titlebar band + buttons are inset by the wood thickness
+        var insetTop = UseWoodFrame ? FRAME_TOP : 0;
+        var insetLeft = UseWoodFrame ? FRAME_LEFT : 0;
+        var insetRight = UseWoodFrame ? FRAME_RIGHT : 0;
 
         //the draggable strip is the top wood + the titlebar band beneath it
-        if ((e.Button == MouseButton.Left) && (localY < frame + TITLE_H))
+        if ((e.Button == MouseButton.Left) && (localY < insetTop + TITLE_H))
         {
             //close button on the right of the titlebar (skipped entirely when this window has no close button). Pressing
             //only ARMS it; the close fires in Update on release if the cursor is still on the button (real-button feel).
-            if (ShowClose && (localX >= Width - frame - CLOSE_W - 1))
+            if (ShowClose && (localX >= Width - insetRight - CLOSE_W - 1))
             {
                 ClosePressed = true;
                 e.Handled = true;
@@ -628,8 +593,8 @@ public class DraggableWindow : UIPanel
             }
 
             //pin / sticky toggle, only on fadeable windows. It sits left of close, or at the right edge when there is none.
-            var pinX = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - frame;
-            var pinEnd = (ShowClose ? Width - CLOSE_W - 1 : Width) - frame;
+            var pinX = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - insetRight;
+            var pinEnd = (ShowClose ? Width - CLOSE_W - 1 : Width) - insetRight;
 
             if (AutoFade && (localX >= pinX) && (localX < pinEnd))
             {
@@ -742,20 +707,15 @@ public class DraggableWindow : UIPanel
             PinPressed = false;
         }
 
-        var frame = UseWoodFrame ? FRAME : 0;
+        var insetTop = UseWoodFrame ? FRAME_TOP : 0;
+        var insetRight = UseWoodFrame ? FRAME_RIGHT : 0;
         var closeInverted = ClosePressed && overClose;
-        var pinInverted = (PinPressed && overPin) || Pinned;
+        var pinInverted = PinPressed && overPin;
 
         CloseBox.Background = closeInverted ? ClosePressedTex : CloseNormalTex;
-        PinBox.Background = pinInverted ? PinPressedTex : PinNormalTex;
+        PinBox.Background = pinInverted ? PinPressedTex : Pinned ? PinActiveTex : PinNormalTex;
 
-        //emboss the glyphs to match: normal = bright glyph + dark drop-shadow (raised); inverted (pressed/on) = dark
-        //glyph + bright shadow, shifted +1,+1 (pushed in). Base pos mirrors the old single-label spots (X 3px left of the
-        //close button; * 2px left + 4px down on the pin).
-        ApplyGlyph(CloseShadow, CloseLabel, Width - frame - CLOSE_W - 4, frame, closeInverted);
-
-        var pinXpos = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - frame;
-        ApplyGlyph(PinShadow, PinLabel, pinXpos - 2, frame + 4, pinInverted);
+        var pinXpos = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - insetRight;
 
         //keep the window reachable every frame: at least half of it on each axis, and (because the only grab handle
         //is the titlebar at the top) never let the titlebar leave the top edge (a titlebar pulled above the top can
@@ -765,8 +725,6 @@ public class DraggableWindow : UIPanel
 
         //the pin/sticky toggle only exists on fadeable windows
         PinBox.Visible = AutoFade;
-        PinLabel.Visible = AutoFade;
-        PinShadow.Visible = AutoFade;
 
         if (!AutoFade)
             return;
@@ -804,10 +762,6 @@ public class DraggableWindow : UIPanel
         TitleBar.BackgroundColor = BaseTitleBar * Fade;
         ResizeGrip.BorderColor = BaseBorder * Fade;
         TitleLabel.Opacity = Fade;
-        CloseLabel.Opacity = Fade;
-        CloseShadow.Opacity = Fade;
-        PinLabel.Opacity = Fade;
-        PinShadow.Opacity = Fade;
         CloseBox.BackgroundOpacity = Fade;
         PinBox.BackgroundOpacity = Fade;
     }
@@ -829,7 +783,10 @@ public class DraggableWindow : UIPanel
     }
 
     /// <summary>Invoked when the titlebar close box is clicked. Default hides the window; subclasses may override.</summary>
-    protected virtual void OnCloseClicked() => Visible = false;
+    protected virtual void OnCloseClicked()
+    {
+        Visible = false;
+    }
 
     /// <summary>Programmatically resize the window (e.g. when the Options window-scale slider changes) and re-flow chrome.</summary>
     public void Resize(int width, int height)
@@ -843,21 +800,29 @@ public class DraggableWindow : UIPanel
     private void Relayout()
     {
         //mirror the ctor's frame/b insets so a resized wood window keeps its wood layout (frame=0,b=1 => original flat).
-        var frame = UseWoodFrame ? FRAME : 0;
-        var b = UseWoodFrame ? FRAME : 1;
-        var pinX = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - frame;
+        var titleInsetTop = UseWoodFrame ? FRAME_TOP : 0;
+        var titleInsetLeft = UseWoodFrame ? FRAME_LEFT : 0;
+        var titleInsetRight = UseWoodFrame ? FRAME_RIGHT : 0;
 
-        TitleBar.Width = Width - 2 * frame;
-        CloseBox.X = Width - frame - CLOSE_W - 1;
-        TitleLabel.Width = pinX - frame - 7;
+        var frameLeft = UseWoodFrame ? FRAME_LEFT : 1;
+        var frameRight = UseWoodFrame ? FRAME_RIGHT : 1;
+        var frameBottom = UseWoodFrame ? FRAME_BOTTOM : 1;
+
+        var bodyInsetLeft = FlushContent ? 0 : frameLeft;
+        var bodyInsetRight = FlushContent ? 0 : frameRight;
+
+        var pinX = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - titleInsetRight;
+
+        TitleBar.Width = Width - titleInsetLeft - titleInsetRight;
+        CloseBox.X = Width - titleInsetRight - CLOSE_W - 1;
+        TitleLabel.Width = pinX - titleInsetLeft - 7;
         PinBox.X = pinX;
         //the close/pin GLYPH positions follow Width via ApplyGlyph in Update every frame, so they need no update here
-        var sideInset = FlushContent ? 0 : b;
-        Content.X = sideInset;
-        Content.Width = Width - 2 * sideInset;
-        Content.Height = Height - (frame + TITLE_H) - (FlushContent ? 0 : b);
-        ResizeGrip.X = Width - b - GRIP;
-        ResizeGrip.Y = Height - b - GRIP;
+        Content.X = bodyInsetLeft;
+        Content.Width = Width - bodyInsetLeft - bodyInsetRight;
+        Content.Height = Height - (titleInsetTop + TITLE_H) - (FlushContent ? 0 : frameBottom);
+        ResizeGrip.X = Width - frameRight - GRIP_SIZE;
+        ResizeGrip.Y = Height - frameBottom - GRIP_SIZE;
         OnResized();
     }
 

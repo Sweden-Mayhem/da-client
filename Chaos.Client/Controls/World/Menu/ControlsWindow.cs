@@ -19,14 +19,17 @@ public sealed class ControlsWindow : DraggableWindow
     //wider than before so the bottom hint and the wider TrueType (Cinzel) text never clip
     private const int W = 548;
     private const int H = 544;
+    private const int OUTER_PAD = 2;
     private const int PAD = 8;
     private const int ROW_H = 22;
-    private const int HEADER_H = 24;
+    private const int HEADER_H = 26;
+    private const int SPACING_H = 8;
     private const int LABEL_W = 210;
     private const int BTN_W = 124;
     private const int BTN_GAP = 6;
     private const int RESET_H = 24;
     private const int FONT = MenuButton.MenuFontSize; //Cinzel, like the rest of the options/menu UI
+    private const int CONTROL_INDENT = 12;
 
     private static readonly Color HeaderColor = new(196, 168, 110);
     private static readonly Color LabelColor = new(202, 198, 188);
@@ -55,15 +58,15 @@ public sealed class ControlsWindow : DraggableWindow
         var contentW = Content.Width;
         var contentH = Content.Height;
 
-        var resetY = contentH - PAD - RESET_H;
-        var viewportH = resetY - PAD - PAD;
-        var viewportW = contentW - 2 * PAD - ScrollBarControl.DEFAULT_WIDTH;
+        var resetY = contentH - 2 * OUTER_PAD - PAD - RESET_H;
+        var viewportH = resetY - PAD - OUTER_PAD;
+        var viewportW = contentW - 2 * OUTER_PAD - ScrollBarControl.DEFAULT_WIDTH - PAD;
 
         Viewport = new UIPanel
         {
             Name = "Viewport",
-            X = PAD,
-            Y = PAD,
+            X = OUTER_PAD,
+            Y = OUTER_PAD,
             Width = viewportW,
             Height = viewportH,
             IsPassThrough = true
@@ -87,8 +90,8 @@ public sealed class ControlsWindow : DraggableWindow
         ScrollBar = new ScrollBarControl
         {
             Name = "ScrollBar",
-            X = PAD + viewportW,
-            Y = PAD,
+            X = OUTER_PAD + viewportW + PAD,
+            Y = OUTER_PAD,
             Height = viewportH
         };
         ScrollBar.OnValueChanged += ApplyScroll;
@@ -99,14 +102,14 @@ public sealed class ControlsWindow : DraggableWindow
         ScrollBar.MaxValue = Math.Max(0, ContentHeight - viewportH);
 
         //reset + hint along the bottom
-        var reset = new MenuButton("Reset to defaults", 160, RESET_H) { X = PAD, Y = resetY };
+        var reset = new MenuButton("Reset to defaults", 160, RESET_H) { X = OUTER_PAD + PAD, Y = resetY };
         reset.Clicked = _ => ResetAll();
         Content.AddChild(reset);
 
         Content.AddChild(
             new UILabel
             {
-                X = PAD + 168,
+                X = OUTER_PAD + 168 + PAD,
                 Y = resetY,
                 Width = contentW - PAD - 176,
                 Height = RESET_H,
@@ -140,6 +143,8 @@ public sealed class ControlsWindow : DraggableWindow
                 if ((category == BindCategory.Movement) && (info.Action == GameAction.MoveRight))
                     AddTurnRow(ref y);
             }
+
+            AddSpacing(ref y);
         }
 
         ContentHeight = y;
@@ -151,10 +156,10 @@ public sealed class ControlsWindow : DraggableWindow
         RowsHost.AddChild(
             new UILabel
             {
-                X = 0,
+                X = PAD - 2,
                 Y = y + 4,
                 Width = viewportW,
-                Height = HEADER_H - 4,
+                Height = 16,
                 Text = text,
                 CustomFontSize = FONT,
                 ForegroundColor = HeaderColor,
@@ -165,12 +170,17 @@ public sealed class ControlsWindow : DraggableWindow
         y += HEADER_H;
     }
 
+    public void AddSpacing(ref int y)
+    {
+        y += SPACING_H;
+    }
+
     private void AddActionRow(ActionInfo info, ref int y)
     {
         RowsHost.AddChild(
             new UILabel
             {
-                X = 4,
+                X = PAD + CONTROL_INDENT - 2,
                 Y = y,
                 Width = LABEL_W - 4,
                 Height = ROW_H - 3,
@@ -207,7 +217,7 @@ public sealed class ControlsWindow : DraggableWindow
         RowsHost.AddChild(
             new UILabel
             {
-                X = 4,
+                X = PAD + CONTROL_INDENT - 2,
                 Y = y,
                 Width = LABEL_W - 4,
                 Height = ROW_H - 3,

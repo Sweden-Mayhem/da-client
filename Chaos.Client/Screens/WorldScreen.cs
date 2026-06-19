@@ -1206,7 +1206,7 @@ public sealed partial class WorldScreen : IScreen
             Y = 0
         };
 
-        InventoryWindow = new DraggableWindow("Inventory", InvHost.Width, InvHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true)
+        InventoryWindow = new DraggableWindow("Inventory", InvHost.Width, InvHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true)
         {
             X = 60,
             Y = 60,
@@ -1241,7 +1241,7 @@ public sealed partial class WorldScreen : IScreen
         statsContainer.AddChild(StatsWinPanel);
 
         StatsHost = new ScaleHost(statsContainer, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        StatsWin = new DraggableWindow("Stats", StatsHost.Width, StatsHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 60, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
+        StatsWin = new DraggableWindow("Stats", StatsHost.Width, StatsHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 60, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
         StatsWin.Content.AddChild(StatsHost);
         StatsWin.ContentHost = StatsHost;
         Root.AddChild(StatsWin);
@@ -1262,7 +1262,7 @@ public sealed partial class WorldScreen : IScreen
         SkillWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SkillWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
         SkillHost = new ScaleHost(SkillWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        SkillWin = new DraggableWindow("Skills", SkillHost.Width, SkillHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 100, Y = 80, CentersOnFirstShow = true, FadeOnOpen = true };
+        SkillWin = new DraggableWindow("Skills", SkillHost.Width, SkillHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 100, Y = 80, CentersOnFirstShow = true, FadeOnOpen = true };
         SkillWin.Content.AddChild(SkillHost);
         SkillWin.ContentHost = SkillHost;
         Root.AddChild(SkillWin);
@@ -1277,7 +1277,7 @@ public sealed partial class WorldScreen : IScreen
         SpellWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SpellBook, s, t);
         SpellWinPanel.OnSlotDroppedOutside += HandleSpellSlotDropped;
         SpellHost = new ScaleHost(SpellWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        SpellWin = new DraggableWindow("Spells", SpellHost.Width, SpellHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 140, Y = 100, CentersOnFirstShow = true, FadeOnOpen = true };
+        SpellWin = new DraggableWindow("Spells", SpellHost.Width, SpellHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 140, Y = 100, CentersOnFirstShow = true, FadeOnOpen = true };
         SpellWin.Content.AddChild(SpellHost);
         SpellWin.ContentHost = SpellHost;
         Root.AddChild(SpellWin);
@@ -1298,7 +1298,7 @@ public sealed partial class WorldScreen : IScreen
         WireAbilityRightClicks(tools.WorldSkills);
         WireAbilityRightClicks(tools.WorldSpells);
         ActionsHost = new ScaleHost(tools, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        ActionsWin = new DraggableWindow("Actions", ActionsHost.Width, ActionsHost.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 180, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
+        ActionsWin = new DraggableWindow("Actions", ActionsHost.Width, ActionsHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 180, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
         ActionsWin.Content.AddChild(ActionsHost);
         ActionsWin.ContentHost = ActionsHost;
         Root.AddChild(ActionsWin);
@@ -1835,9 +1835,9 @@ public sealed partial class WorldScreen : IScreen
         //flush windows: the content fills the whole window (host == content), so no side padding; the bordered content
         //merges with the wood frame. Non-flush windows keep the wood chrome + the small breathing gap (+6).
         if (window.FlushContent)
-            window.Resize(host.Width, host.Height + DraggableWindow.FRAME + DraggableWindow.TITLE_H);
+            window.Resize(host.Width, host.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H);
         else
-            window.Resize(host.Width + 2 * DraggableWindow.FRAME + 6, host.Height + 2 * DraggableWindow.FRAME + DraggableWindow.TITLE_H + 6);
+            window.Resize(host.Width + DraggableWindow.FRAME_LEFT + DraggableWindow.FRAME_RIGHT + 6, host.Height + 2 * DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H + 6);
     }
 
     //maps a screen point into the magnified profile book's native space (for the equip-on-drop hit check)

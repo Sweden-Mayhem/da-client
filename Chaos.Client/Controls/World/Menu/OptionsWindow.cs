@@ -18,11 +18,12 @@ public sealed class OptionsWindow : DraggableWindow
     // ChromeHeight for wood (non-flush) = FRAME + TITLE_H + FRAME = 38
     private const int H_MAX = 544;
 
-    private const int PAD = 12;
-    private const int LABEL_W = 206;
-    private const int CTL_X = 220;
+    private const int OUTER_PAD = 2;
+    private const int PAD = 8;
+    private const int LABEL_W = 200;
+    private const int CTL_X = 210;
     private const int CTL_W = 138;
-    private const int VAL_X = 366;
+    private const int VAL_X = 350;
     private const int TITLE_ROW = 26;
     private const int SLIDER_ROW = 26;
     private const int CHECK_ROW = 26;
@@ -48,14 +49,14 @@ public sealed class OptionsWindow : DraggableWindow
         X = 90;
         Y = 90;
 
-        RowW = Content.Width - ScrollBarControl.DEFAULT_WIDTH;
-        var viewportH = Content.Height - 2 * PAD;
+        RowW = Content.Width - 2 * OUTER_PAD - ScrollBarControl.DEFAULT_WIDTH - PAD;
+        var viewportH = Content.Height - 2 * OUTER_PAD;
 
         Viewport = new UIPanel
         {
             Name = "Viewport",
-            X = 0,
-            Y = PAD,
+            X = OUTER_PAD,
+            Y = OUTER_PAD,
             Width = RowW,
             Height = viewportH,
             IsPassThrough = true
@@ -76,8 +77,8 @@ public sealed class OptionsWindow : DraggableWindow
         ScrollBar = new ScrollBarControl
         {
             Name = "ScrollBar",
-            X = RowW,
-            Y = PAD,
+            X = OUTER_PAD + RowW + PAD,
+            Y = OUTER_PAD,
             Height = viewportH
         };
         ScrollBar.OnValueChanged += ApplyScroll;
@@ -241,15 +242,15 @@ public sealed class OptionsWindow : DraggableWindow
 
     public void FitHeight()
     {
-        var contentH = NextY + PAD;
+        var contentH = NextY;
         RowsHost.Height = contentH;
 
         //shrink window to content if it fits, otherwise cap at H_MAX
-        var neededWindowH = contentH + 2 * PAD + ChromeHeight;
+        var neededWindowH = contentH + 2 * OUTER_PAD + ChromeHeight;
         Height = Math.Min(neededWindowH, H_MAX);
         Content.Height = Height - ChromeHeight;
 
-        var viewportH = Content.Height - 2 * PAD;
+        var viewportH = Content.Height - 2 * OUTER_PAD;
         Viewport.Height = viewportH;
         ScrollBar.Height = viewportH;
 
