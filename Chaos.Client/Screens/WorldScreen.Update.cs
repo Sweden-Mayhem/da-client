@@ -1288,7 +1288,7 @@ public sealed partial class WorldScreen
             return null;
 
         //1. an inventory slot (hovered slot is kept in sync by the panel's hover events)
-        if (HoveredInventorySlot is { } slot)
+        if (HoveredInventorySlot is { } slot && IsElementShown(slot))
         {
             key = slot;
             var name = slot.SlotName ?? string.Empty;
