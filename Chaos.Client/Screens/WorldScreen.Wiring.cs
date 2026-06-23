@@ -1118,7 +1118,7 @@ public sealed partial class WorldScreen
         if (trimmed.StartsWith("/edit", StringComparison.OrdinalIgnoreCase))
         {
             WorldState.Chat.AddOrangeBarMessage($"Opening the editor at map {CurrentMapId}...");
-            Browser.Open($"https://darkages.swedenmayhem.se/#map={CurrentMapId}");
+            Browser.Open($"https://darkages.swedenmayhem.se/editor/#map={CurrentMapId}");
 
             return; //never sent to the server
         }
