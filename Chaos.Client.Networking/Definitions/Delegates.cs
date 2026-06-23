@@ -166,6 +166,11 @@ public delegate void DisplayGroupInviteHandler(DisplayGroupInviteArgs args);
 public delegate void DisplayMenuHandler(DisplayMenuArgs args);
 
 /// <summary>
+///     Fired when the server pushes a market (Temuair Exchange) screen.
+/// </summary>
+public delegate void MarketDataHandler(MarketDataArgs args);
+
+/// <summary>
 ///     Fired when a public chat message is displayed.
 /// </summary>
 public delegate void DisplayPublicMessageHandler(DisplayPublicMessageArgs args);

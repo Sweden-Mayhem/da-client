@@ -28,8 +28,15 @@ internal sealed class SwmDisplayMenuConverter : PacketConverterBase<DisplayMenuA
     {
         var args = Inner.Deserialize(ref reader);
 
-        if ((args.MenuType == MenuType.ShowItems) && (reader.Remaining >= 1) && (reader.ReadByte() == 1))
-            args = args with { MenuType = Definitions.SwmProtocol.CraftMenu };
+        if ((args.MenuType == MenuType.ShowItems) && (reader.Remaining >= 1))
+        {
+            var marker = reader.ReadByte();
+
+            if (marker == 1)
+                args = args with { MenuType = Definitions.SwmProtocol.CraftMenu };
+            else if (marker == 2)
+                args = args with { MenuType = Definitions.SwmProtocol.Market };
+        }
 
         if (args.MenuType == MenuType.ShowPlayerItems && reader.Remaining >= 2)
         {

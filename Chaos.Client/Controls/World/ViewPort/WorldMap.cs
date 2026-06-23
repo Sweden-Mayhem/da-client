@@ -52,12 +52,6 @@ public sealed class WorldMap : UIPanel
     private static readonly Color RowHoverBg = new Color(80, 72, 50) * 0.45f;
     private static readonly Color MarkerColor = new(100, 149, 237);
 
-    private static readonly Dictionary<string, (int W, int H)> OriginalFieldSizes = new()
-    {
-        ["field001"] = (639, 479),
-        ["field002"] = (640, 480),
-        ["field003"] = (640, 480),
-    };
     private static readonly Color MarkerSelectedColor = new(247, 142, 24);
 
     private readonly ConnectionManager Connection;
@@ -126,14 +120,7 @@ public sealed class WorldMap : UIPanel
 
         BackgroundTexture = UiRenderer.Instance!.GetFieldImage(args.FieldName);
 
-        var scaleX = 1f;
-        var scaleY = 1f;
-
-        if (BackgroundTexture is not null && OriginalFieldSizes.TryGetValue(args.FieldName, out var origSize))
-        {
-            scaleX = BackgroundTexture.Width / (float)origSize.W;
-            scaleY = BackgroundTexture.Height / (float)origSize.H;
-        }
+        var scale = UiRenderer.Instance!.GetFieldScale(args.FieldName);
 
         foreach (var node in args.Nodes)
             Nodes.Add(
@@ -143,7 +130,7 @@ public sealed class WorldMap : UIPanel
                     node.DestinationPoint.X,
                     node.DestinationPoint.Y,
                     node.CheckSum,
-                    new Point((int)(node.ScreenPosition.X * scaleX), (int)(node.ScreenPosition.Y * scaleY))));
+                    new Point((int)(node.ScreenPosition.X * scale.X), (int)(node.ScreenPosition.Y * scale.Y))));
 
         //no item is selected by default; the view simply starts centered on the current location
         SelectedIndex = -1;

@@ -304,6 +304,17 @@ public sealed partial class WorldScreen
 
     private void HandleServerMessage(ServerMessageArgs args)
     {
+        //before the first map loads the chat UI is not ready and the world handoff is still in flight. The only message
+        //the server sends in that window is a handoff rejection (most often: this character is already logged in). Keep
+        //it so the disconnect that follows can surface it on the lobby instead of a black screen (see HandleStateChanged).
+        if (!HasEnteredWorld)
+        {
+            if (!string.IsNullOrWhiteSpace(args.Message))
+                PendingHandoffReject = args.Message;
+
+            return;
+        }
+
         //group/guild chat reuses the channel system internally, so forming a group/guild sends a "You have joined channel
         //!group"/"!guild" (and a "left channel ..." on disband) notice using the channel override name. That is pure
         //plumbing - the player already gets "You form a group with X" - and naming an internal "!group" channel only
@@ -1480,6 +1491,19 @@ public sealed partial class WorldScreen
             //reconnect overlay / disconnect prompt until relog
             NpcSession.HideAll();
             NpcSessionHost?.SnapHidden();
+
+            //the initial world handoff never completed (HasEnteredWorld is only set once the first map finalizes). The
+            //usual cause is a duplicate login: the server keeps the existing session alive and rejects this new one. A
+            //silent reconnect would just be rejected again and loop on a black screen, so instead drop back to the lobby
+            //with the reason the server sent (PendingHandoffReject) - the player sees "already logged in" rather than black.
+            if (!HasEnteredWorld)
+            {
+                ReconnectGiveUpMessage = PendingHandoffReject
+                                         ?? "Could not enter the world. This character may already be logged in - please wait a moment and try again.";
+                PendingReconnectGiveUp = true;
+
+                return;
+            }
 
             //try a silent reconnect first (freeze + darken + replay login), but ONLY for a GENUINE unexpected drop -
             //never for the expected disconnect of an in-flight redirect (logout / server move closes the world socket

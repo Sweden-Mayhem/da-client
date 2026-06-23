@@ -10,6 +10,7 @@ using Chaos.Client.Controls.World.Popups;
 using Chaos.Client.Controls.World.Popups.Boards;
 using Chaos.Client.Controls.World.Popups.Dialog;
 using Chaos.Client.Controls.World.Popups.Exchange;
+using Chaos.Client.Controls.World.Popups.Market;
 using Chaos.Client.Controls.World.Popups.Options;
 using Chaos.Client.Controls.World.Popups.Profile;
 using Chaos.Client.Controls.World.Popups.WorldList;
@@ -19,6 +20,7 @@ using Chaos.Client.Data.Models;
 using Chaos.Client.Data.Repositories;
 using Chaos.Client.Extensions;
 using Chaos.Client.Models;
+using Chaos.Client.Networking;
 using Chaos.Client.Rendering.Models;
 using Chaos.Client.Systems;
 using Chaos.Client.ViewModel;
@@ -377,6 +379,10 @@ public sealed partial class WorldScreen : IScreen
     private long LastGold;
     private bool ItemSoundArmed;
     private bool HasEnteredWorld;
+
+    //reason captured from the server during a failed initial world handoff (e.g. "already logged in"), surfaced on the
+    //lobby instead of a black screen / reconnect loop. See HandleServerMessage + HandleStateChanged.
+    private string? PendingHandoffReject;
     private int WorldEntryTick;
 
     //the local player is dead while their HP is 0 - read straight from the authoritative attributes, so there is no
@@ -415,6 +421,14 @@ public sealed partial class WorldScreen : IScreen
     private ScaleHost? ActionsHost;
     private OptionsWindow? OptionsWin;
     private ControlsWindow? ControlsWin;
+    private MarketWindow? MarketWin;
+
+    //open the Temuair Exchange window and ask the server for the catalog (shared by the menu entry + the Market hotkey)
+    private void OpenMarket()
+    {
+        MarketWin?.Open();
+        Game.Connection.SendMarketRequest(new MarketRequestArgs { Action = MarketClientAction.OpenCatalog });
+    }
     private EmoteWindow? EmoteWin;
     private DebugFxWindow? DebugFxWin;
     private TabMapEntity[] TabMapEntities = [];
@@ -508,6 +522,9 @@ public sealed partial class WorldScreen : IScreen
 
         //overlay panels. zindex: -2 sub-panels, -1 slide panels, 0 standard (default), 1 popups, 2 context menu
         NpcSession = new NpcSessionControl();
+        //the standalone market window must exist before WireNpcSession (it subscribes to MarketWin's events); it is added
+        //to Root later with the other windows once Root exists
+        MarketWin = new MarketWindow();
         WireNpcSession();
 
         MainOptions = new MainOptionsControl
@@ -1221,6 +1238,12 @@ public sealed partial class WorldScreen : IScreen
             GameAction.ToggleInventory));
         //starts closed like every other menu window; the player opens it from Menu > Inventory
 
+        //Temuair Exchange: the standalone market window. Opening it asks the server for the catalog (the window also
+        //opens itself when the first screen arrives); every later screen/action flows over the market packet pair.
+        menuBar.AddEntry("Market", OpenMarket, Tip("Market",
+            "Browse and trade at the Temuair Exchange from anywhere: buy and bid from any spot. Selling and collecting winnings must be done in person at a market clerk.",
+            GameAction.ToggleMarket));
+
         //character stats window (level-up arrows show when there are unspent points; next-level EXP in the labels)
         var statusHb = DataContext.UserControls.Get("_nstatus")!;
         StatsWinPanel = new StatsPanel(statusHb) { Visible = true };
@@ -1377,6 +1400,10 @@ public sealed partial class WorldScreen : IScreen
         menuBar.AddEntry("Options", OptionsWin.Toggle, Tip("Options",
             "Game settings: sound and music volume, interface and minimap sizes, camera and movement feel, tooltips, and more. The Controls button inside opens the keybinding editor where every key can be reassigned.",
             GameAction.ToggleOptions));
+
+        //market window: standalone floating market, opened by the server's SwmProtocol.Market menu type
+        //(created earlier so WireNpcSession could subscribe to it)
+        Root.AddChild(MarketWin);
 
         //live render-FX tuning panel, opened by "/debugOptions" (no menu entry - a dev tool, see HandleChatMessage)
         DebugFxWin = new DebugFxWindow { CentersOnFirstShow = true, FadeOnOpen = true, Visible = false };

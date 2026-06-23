@@ -43,6 +43,13 @@ public static class SwmProtocol
     ///     learn-menu list panel (item icons) instead of the shop panel.
     /// </summary>
     public const Chaos.DarkAges.Definitions.MenuType CraftMenu = (Chaos.DarkAges.Definitions.MenuType)250;
+
+    /// <summary>
+    ///     Synthetic MenuType for the bespoke Temuair Exchange market window: a ShowItems payload followed by a trailing
+    ///     marker byte (2). The converter remaps marked ShowItems menus to this value so the UI renders the custom market
+    ///     window (centered, searchable, icon + price) instead of the shop panel.
+    /// </summary>
+    public const Chaos.DarkAges.Definitions.MenuType Market = (Chaos.DarkAges.Definitions.MenuType)251;
 }
 
 [Flags]

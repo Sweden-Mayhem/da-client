@@ -26,6 +26,7 @@ public sealed class UiRenderer : IDisposable
     private const int MAX_ATLAS_ENTRY_SIZE = 512;
 
     private readonly Dictionary<string, CachedTexture2D> Cache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (float X, float Y)> FieldScaleCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly GraphicsDevice Device;
     private readonly Dictionary<string, int> EpfFrameCounts = new(StringComparer.OrdinalIgnoreCase);
     private CachedTexture2D? MissingTextureField;
@@ -96,6 +97,7 @@ public sealed class UiRenderer : IDisposable
 
         Cache.Clear();
         EpfFrameCounts.Clear();
+        FieldScaleCache.Clear();
 
         MissingTextureField?.ForceDispose();
         MissingTextureField = null;
@@ -180,12 +182,26 @@ public sealed class UiRenderer : IDisposable
         }
 
         var texture = Convert(image);
+
+        if ((overrideBmp is not null) && !FieldScaleCache.ContainsKey(fieldName))
+        {
+            using var epfImage = DataContext.UserControls.GetFieldImage(fieldName);
+
+            if (epfImage is not null)
+                FieldScaleCache[fieldName] = (image.Width / (float)epfImage.Width, image.Height / (float)epfImage.Height);
+        }
+
         image.Dispose();
         overrideBmp?.Dispose();
         Cache[key] = texture;
 
         return texture;
     }
+
+    /// <summary>Returns the scale factor from the original EPF dimensions to the currently loaded field image.
+    /// Only valid for field maps with a PNG override; returns (1,1) for EPF fallbacks or before the image is loaded.</summary>
+    public (float X, float Y) GetFieldScale(string fieldName)
+        => FieldScaleCache.GetValueOrDefault(fieldName, (1f, 1f));
 
     /// <summary>
     ///     Renders and caches a half-size (15x15) spell icon for the effect bar.

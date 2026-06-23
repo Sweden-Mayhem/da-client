@@ -25,6 +25,7 @@ public enum GameAction
     ToggleLegend,
     ToggleActions,
     ToggleGroup,
+    ToggleMarket,
     ToggleTownMap,
     ToggleMinimap,
     ToggleTownMinimap,
@@ -435,6 +436,7 @@ public static class Keybindings
             new(GameAction.ToggleLegend, "Legend", BindCategory.Panels),
             new(GameAction.ToggleActions, "Actions", BindCategory.Panels),
             new(GameAction.ToggleGroup, "Group", BindCategory.Panels),
+            new(GameAction.ToggleMarket, "Market", BindCategory.Panels),
             new(GameAction.ToggleTownMap, "Town map", BindCategory.Panels),
             new(GameAction.ToggleMinimap, "Minimap", BindCategory.Panels),
             new(GameAction.ToggleTownMinimap, "Town minimap (corner)", BindCategory.Panels),
@@ -503,6 +505,7 @@ public static class Keybindings
         yield return (GameAction.ToggleLegend, K(Keys.J), KeyBind.None);
         yield return (GameAction.ToggleActions, K(Keys.N), KeyBind.None);
         yield return (GameAction.ToggleGroup, K(Keys.G), KeyBind.None);
+        yield return (GameAction.ToggleMarket, K(Keys.T), KeyBind.None);
         yield return (GameAction.ToggleTownMap, K(Keys.M), KeyBind.None);
         yield return (GameAction.ToggleMinimap, K(Keys.Tab), KeyBind.None);
         yield return (GameAction.ToggleTownMinimap, Shifted(Keys.M), KeyBind.None);

@@ -511,6 +511,10 @@ public sealed class GameClient : IDisposable
         // Custom client to server FriendList upload (opcode 90), a new type the NuGet auto-discovery cannot see
         converters[typeof(FriendListArgs)] = new FriendListConverter();
 
+        // SWM player market (Temuair Exchange): request (client->server, opcode 91) + data push (server->client, opcode 112)
+        converters[typeof(MarketRequestArgs)] = new MarketRequestConverter();
+        converters[typeof(MarketDataArgs)] = new MarketDataConverter();
+
         //Windows-1252, not the retail Korean code page 949. 949 cannot represent the Nordic letters å/ä/ö (it turns
         //them into '?'), while 1252 round-trips them as single bytes. ASCII is identical in both, so normal traffic is
         //unaffected, this only adds Latin-1 support. The server's

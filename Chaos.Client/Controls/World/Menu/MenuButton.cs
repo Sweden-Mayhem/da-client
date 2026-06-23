@@ -79,6 +79,9 @@ public sealed class MenuButton : UIPanel
     public override void OnMouseEnter() => BackgroundColor = HoverBg;
     public override void OnMouseLeave() => BackgroundColor = IdleBg;
 
+    /// <summary>When true, a left click does not play the UI click sound (e.g. clicking an already-active tab).</summary>
+    public bool SuppressClickSound { get; set; }
+
     public override void OnMouseDown(MouseDownEvent e)
     {
         if (e.Button == MouseButton.Right)
@@ -86,7 +89,9 @@ public sealed class MenuButton : UIPanel
             RightClicked?.Invoke(this);
         } else
         {
-            SoundSystem.PlayUiClick();
+            if (!SuppressClickSound)
+                SoundSystem.PlayUiClick();
+
             Clicked?.Invoke(this);
         }
 

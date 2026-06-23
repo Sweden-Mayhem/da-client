@@ -705,6 +705,15 @@ public sealed partial class WorldScreen
                 ToggleGroupWindow();
 
                 break;
+            case GameAction.ToggleMarket:
+                if (MarketWin is { Visible: true })
+                {
+                    MarketWin.ClearSearch(); //closing clears the Browse filter
+                    MarketWin.Visible = false;
+                } else
+                    OpenMarket();
+
+                break;
             case GameAction.ToggleTownMap:
                 ToggleTownMap();
 

@@ -36,6 +36,7 @@ public sealed class NpcSessionControl : PrefabPanel
     //sub-panels, made available so the input dispatcher can track focus
     public DialogTextEntryPanel DialogTextEntry { get; }
     public MenuListPanel MenuList { get; }
+
     public MenuTextEntryPanel MenuTextEntry { get; }
     public DialogOptionPanel DialogOption { get; }
     public DialogProtectedTextEntryPanel DialogProtectedTextEntry { get; }
@@ -856,6 +857,9 @@ public sealed class NpcSessionControl : PrefabPanel
                 MenuList.ShowList(args);
 
                 break;
+
+            case SwmProtocol.Market: //the market is its own packet-driven window now; never shown as an NPC dialog
+                return;
 
             default:
                 return;

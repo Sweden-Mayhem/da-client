@@ -1358,6 +1358,29 @@ public class UITextBox : UIElement, INativeTextDrawer
 
                 break;
 
+            //── newline (multi-line only) ──
+            //SDL delivers Enter as a key event, not a TextInput char, so the OnTextInput '\r' path never fires here;
+            //insert the newline from OnKeyDown instead so the in-game mail composer accepts multi-line bodies.
+            case Keys.Enter when IsMultiLine && !IsReadOnly:
+            {
+                if (HasSelection)
+                    DeleteSelection();
+
+                if (Text.Length < MaxLength)
+                {
+                    var nlPos = CursorPosition;
+                    Text = Text.Insert(nlPos, "\n");
+                    CursorPosition = nlPos + 1;
+                    SelectionAnchor = CursorPosition;
+                    ResetCursor();
+                    EnsureCursorVisible();
+                }
+
+                e.Handled = true;
+
+                break;
+            }
+
             //── selection / clipboard ──
             case Keys.A when ctrl && IsSelectable:
                 SelectAll();

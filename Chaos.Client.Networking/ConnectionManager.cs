@@ -508,6 +508,11 @@ public sealed class ConnectionManager : IDisposable
     public event DisplayMenuHandler? OnDisplayMenu;
 
     /// <summary>
+    ///     Fired when the server pushes a market (Temuair Exchange) screen.
+    /// </summary>
+    public event MarketDataHandler? OnMarketData;
+
+    /// <summary>
     ///     Fired when a public chat message is displayed.
     /// </summary>
     public event DisplayPublicMessageHandler? OnDisplayPublicMessage;
@@ -1085,6 +1090,11 @@ public sealed class ConnectionManager : IDisposable
             });
 
     /// <summary>
+    ///     Sends a market (Temuair Exchange) request: a navigation step or a buy/bid/sell/cancel/collect action.
+    /// </summary>
+    public void SendMarketRequest(MarketRequestArgs args) => SendIfWorld(args);
+
+    /// <summary>
     ///     Sends a metadata request to the server (checksums or specific file data).
     /// </summary>
     /// <param name="requestType">The type of metadata request.</param>
@@ -1381,6 +1391,7 @@ public sealed class ConnectionManager : IDisposable
 
         //npc interaction
         PacketHandlers[(byte)ServerOpCode.DisplayMenu] = HandleDisplayMenu;
+        PacketHandlers[MarketDataConverter.MARKET_DATA_OPCODE] = HandleMarketData; //SWM market push (opcode 112, not in the NuGet enum)
         PacketHandlers[(byte)ServerOpCode.DisplayDialog] = HandleDisplayDialog;
         PacketHandlers[(byte)ServerOpCode.DisplayBoard] = HandleDisplayBoard;
         PacketHandlers[(byte)ServerOpCode.DisplayExchange] = HandleDisplayExchange;
@@ -1812,6 +1823,12 @@ public sealed class ConnectionManager : IDisposable
     {
         var args = Client.Deserialize<DisplayMenuArgs>(in pkt);
         OnDisplayMenu?.Invoke(args);
+    }
+
+    private void HandleMarketData(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<MarketDataArgs>(in pkt);
+        OnMarketData?.Invoke(args);
     }
 
     private void HandleDisplayDialog(ServerPacket pkt)

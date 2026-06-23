@@ -15,7 +15,25 @@ namespace Chaos.Client.Controls.World.Popups.Boards;
 internal static class BoardBodyText
 {
     /// <summary>Wraps the body into colored runs per line, at the given pixel width and (scaled) font size.</summary>
-    public static List<List<RichRun>> Wrap(string text, int maxWidth, int font) => RichText.Wrap(text, maxWidth, font);
+    public static List<List<RichRun>> Wrap(string text, int maxWidth, int font)
+    {
+        //honor HARD line breaks (mail/posts composed with newlines, incl. web mail): split on \n first so a real
+        //newline becomes a new line instead of an unprintable box glyph, then word-wrap each paragraph.
+        if (string.IsNullOrEmpty(text) || (!text.Contains('\n') && !text.Contains('\r')))
+            return RichText.Wrap(text, maxWidth, font);
+
+        var lines = new List<List<RichRun>>();
+
+        foreach (var paragraph in text.Replace("\r\n", "\n")
+                                      .Replace('\r', '\n')
+                                      .Split('\n'))
+            if (paragraph.Length == 0)
+                lines.Add([]); //preserve blank lines
+            else
+                lines.AddRange(RichText.Wrap(paragraph, maxWidth, font));
+
+        return lines;
+    }
 
     /// <summary>
     ///     Draws one wrapped line at (<paramref name="x" />, <paramref name="y" />): first underlines any https:// links

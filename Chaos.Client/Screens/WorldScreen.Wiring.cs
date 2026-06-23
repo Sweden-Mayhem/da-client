@@ -289,6 +289,12 @@ public sealed partial class WorldScreen
                     args: [name]);
         };
 
+        //the player market (Temuair Exchange): a standalone floating window driven by its own packet pair. The server
+        //pushes a screen (catalog/sellers/listings/bids/storage), the window renders it, and every action goes back as
+        //a MarketRequest. No NPC dialog is involved.
+        Game.Connection.OnMarketData += data => MarketWin!.Apply(data);
+        MarketWin!.OnRequest += req => Game.Connection.SendMarketRequest(req);
+
         NpcSession.OnListItemSelected += selectedIndex =>
         {
             if (NpcSession.SourceId is not { } sourceId)
