@@ -12,11 +12,6 @@ sampler2D SpriteTextureSampler = sampler_state
 {
     Texture = <SpriteTexture>;
 };
-Texture2D WaterMaskTexture;
-sampler2D WaterMaskTextureSampler = sampler_state
-{
-    Texture = <WaterMaskTexture>;
-};
 
 float Saturation;
 
@@ -29,17 +24,18 @@ struct VertexShaderOutput
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
-    float waterMask = tex2D(WaterMaskTextureSampler, input.TextureCoordinates).r;
     float2 uv = input.TextureCoordinates;
-    float2 distortedUv = uv + float2(waterMask * sin(Time * 2.0 + input.TextureCoordinates.y * PI * 2.0 * 16.0) * (1 / 640.0), 0.0);
+    float4 source = tex2D(SpriteTextureSampler, uv);
+    float waterMask = 1.0 - source.a;
+    uv.x += waterMask * sin(Time * 2.0 + uv.y * PI * 2.0 * 16.0) * (1 / 640.0);
 
-    float waterMaskCheck = tex2D(WaterMaskTextureSampler, uv).r;
-    if (waterMaskCheck < 0.8)
-        distortedUv = uv;
+    float4 sample = tex2D(SpriteTextureSampler, uv);
+    if (sample.a > 0.5)
+        sample = source;
 
-    float4 c = tex2D(SpriteTextureSampler, distortedUv) * input.Color;
+    sample.a = 1.0;
 
-    return c;
+    return sample;
 }
 
 technique SpriteDrawing

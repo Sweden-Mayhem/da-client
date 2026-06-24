@@ -145,6 +145,11 @@ public sealed class ChaosGame : Game
 
     public static GraphicsDevice Device => TextureConverter.Device;
 
+    /// <summary>
+    ///     The game time as reported by the last Update().
+    /// </summary>
+    public static GameTime GameTime { get; private set; } = new GameTime();
+
     public ChaosGame()
     {
         //sdl by default is polling all possible input devices
@@ -1173,6 +1178,8 @@ public sealed class ChaosGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        ChaosGame.GameTime = gameTime;
+
         DebugOverlay.BeginFrame();
 
         //mouse coordinate transform. native-UI screens want the raw native pixel position (scale 1). Legacy screens

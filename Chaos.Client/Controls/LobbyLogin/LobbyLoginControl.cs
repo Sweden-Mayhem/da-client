@@ -19,7 +19,6 @@ public sealed class LobbyLoginControl : UIPanel
 	private readonly Effect BackgroundEffect;
 	private readonly EffectParameter BackgroundEffectTime;
 
-	private readonly Texture2D WaterMask;
 	private readonly Texture2D ButtonMaskPress;
 	private readonly Texture2D ButtonMaskHover;
 
@@ -43,17 +42,15 @@ public sealed class LobbyLoginControl : UIPanel
         Height = ChaosGame.VIRTUAL_HEIGHT;
 
         Background = LoadTexture("da_login.png");
-        WaterMask = LoadTexture("da_login_water_mask.png");
-        Campfire = UIAnimatedImage.CreateWithTexture("Campfire", LoadTexture("da_login_campfire.png"), 104);
+        Campfire = UIAnimatedImage.CreateWithTexture("Campfire", LoadTexture("da_login_campfire.png"), 108);
         Campfire.X = 254;
-        Campfire.Y = 357;
+        Campfire.Y = 353;
         Campfire.FrameTime = 1000*5/60;
         Campfire.IsHitTestVisible = false;
         AddChild(Campfire);
 
         BackgroundEffect = LoadEffect("loginBackground.mgfxo");
         BackgroundEffectTime = BackgroundEffect.Parameters["Time"];
-        BackgroundEffect.Parameters["WaterMaskTexture"].SetValue(WaterMask);
 
         var buttonHotspotArea = LoadTexture("da_login_button_mask.png");
         ButtonMaskPress = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, buttonHotspotArea);
@@ -93,7 +90,7 @@ public sealed class LobbyLoginControl : UIPanel
 
         using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
 
-        return Texture2D.FromStream(ChaosGame.Device, stream);
+        return Texture2D.FromStream(ChaosGame.Device, stream, null);
     }
 
     private static Effect LoadEffect(String path)
@@ -115,16 +112,6 @@ public sealed class LobbyLoginControl : UIPanel
             child.Enabled = enabled;
     }
 
-    public override void Update(GameTime gameTime)
-    {
-        if (!Visible || !Enabled)
-            return;
-
-        BackgroundEffectTime.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
-
-        base.Update(gameTime);
-    }
-
     public override void Draw(SpriteBatch spriteBatch)
     {
         if (!Visible)
@@ -132,6 +119,8 @@ public sealed class LobbyLoginControl : UIPanel
 
         spriteBatch.End();
         spriteBatch.Begin(samplerState: GlobalSettings.Sampler, effect: BackgroundEffect);
+
+        BackgroundEffectTime.SetValue((float)ChaosGame.GameTime.TotalGameTime.TotalSeconds);
 
         base.Draw(spriteBatch);
 

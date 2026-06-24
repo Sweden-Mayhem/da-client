@@ -15,9 +15,6 @@
         <EmbeddedResource Include="Assets\da_login.png">
             <LogicalName>da_login.png</LogicalName>
         </EmbeddedResource>
-        <EmbeddedResource Include="Assets\da_login_water_mask.png">
-            <LogicalName>da_login_water_mask.png</LogicalName>
-        </EmbeddedResource>
         <EmbeddedResource Include="Assets\da_login_campfire.png">
             <LogicalName>da_login_campfire.png</LogicalName>
         </EmbeddedResource>
