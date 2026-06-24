@@ -15,6 +15,12 @@
         <EmbeddedResource Include="Assets\da_login.png">
             <LogicalName>da_login.png</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Assets\da_login_water_mask.png">
+            <LogicalName>da_login_water_mask.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\da_login_campfire.png">
+            <LogicalName>da_login_campfire.png</LogicalName>
+        </EmbeddedResource>
 
         <EmbeddedResource Include="Assets\da_login_button_mask.png">
             <LogicalName>da_login_button_mask.png</LogicalName>
@@ -103,6 +109,11 @@
              draws through it while the player is dead. Recompile the .fx into the .mgfxo with the mgfxc tool. -->
         <EmbeddedResource Include="Assets\Desaturate.mgfxo">
             <LogicalName>desaturate.mgfxo</LogicalName>
+        </EmbeddedResource>
+        <!-- login background, a pre-compiled desaturation sprite effect (source Assets\LoginBackground.fx). Renders
+            the world with waving water. -->
+        <EmbeddedResource Include="Assets\LoginBackground.mgfxo">
+            <LogicalName>loginBackground.mgfxo</LogicalName>
         </EmbeddedResource>
         <!-- Deferred light and 2D shadow occlusion shader (source Assets\Light.fx).
              Recompile the .fx into the .mgfxo with the mgfxc tool. -->
