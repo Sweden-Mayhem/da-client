@@ -410,15 +410,10 @@ public sealed partial class WorldScreen : IScreen
 
     //the always-built magnified menu windows + their hosts, kept as fields so the Options "Window size" slider can
     //rescale and resize them live (ApplyWindowScale). The book/group above re-read WindowScale when they open.
-    private ScaleHost? InvHost;
     private DraggableWindow? StatsWin;
-    private ScaleHost? StatsHost;
     private DraggableWindow? SkillWin;
-    private ScaleHost? SkillHost;
     private DraggableWindow? SpellWin;
-    private ScaleHost? SpellHost;
     private DraggableWindow? ActionsWin;
-    private ScaleHost? ActionsHost;
     private OptionsWindow? OptionsWin;
     private ControlsWindow? ControlsWin;
     private MarketWindow? MarketWin;
@@ -1215,23 +1210,7 @@ public sealed partial class WorldScreen : IScreen
             inv.Height = invBg.Height;
         }
 
-        //magnify the small pixel-art inventory grid so it reads well at native resolution (Options "Window size" slider).
-        //flush: the host fills the window so the inventory art's border merges with the wood frame (no double border).
-        InvHost = new ScaleHost(inv, ClientSettings.EffectiveWindowScale)
-        {
-            X = 0,
-            Y = 0
-        };
-
-        InventoryWindow = new DraggableWindow("Inventory", InvHost.Width, InvHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true)
-        {
-            X = 60,
-            Y = 60,
-            CentersOnFirstShow = true,
-            FadeOnOpen = true
-        };
-        InventoryWindow.Content.AddChild(InvHost);
-        InventoryWindow.ContentHost = InvHost;
+        InventoryWindow = DraggableWindow.CreateScaledPopup("Inventory", inv);
         Root.AddChild(InventoryWindow);
         menuBar.AddEntry("Inventory", InventoryWindow.Toggle, Tip("Inventory",
             "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
@@ -1263,10 +1242,7 @@ public sealed partial class WorldScreen : IScreen
         statsContainer.AddChild(ExtStatsWinPanel);
         statsContainer.AddChild(StatsWinPanel);
 
-        StatsHost = new ScaleHost(statsContainer, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        StatsWin = new DraggableWindow("Stats", StatsHost.Width, StatsHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 60, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
-        StatsWin.Content.AddChild(StatsHost);
-        StatsWin.ContentHost = StatsHost;
+        StatsWin = DraggableWindow.CreateScaledPopup("Stats", statsContainer);
         Root.AddChild(StatsWin);
         StatsMenuEntry = menuBar.AddEntry("Stats", StatsWin.Toggle, Tip("Stats",
             "Your character's attributes, health and mana, level and experience. When you have unspent stat points, the up-arrows let you raise Strength, Intelligence, Wisdom, Constitution or Dexterity.",
@@ -1284,10 +1260,7 @@ public sealed partial class WorldScreen : IScreen
         SkillWinPanel.OnSlotHoverEnter += HandleAbilityHoverEnter;
         SkillWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SkillWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
-        SkillHost = new ScaleHost(SkillWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        SkillWin = new DraggableWindow("Skills", SkillHost.Width, SkillHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 100, Y = 80, CentersOnFirstShow = true, FadeOnOpen = true };
-        SkillWin.Content.AddChild(SkillHost);
-        SkillWin.ContentHost = SkillHost;
+        SkillWin = DraggableWindow.CreateScaledPopup("Skills", SkillWinPanel);
         Root.AddChild(SkillWin);
         menuBar.AddEntry("Skills", SkillWin.Toggle, Tip("Skills",
             "Your skill book: every skill you have learned. Drag a skill onto the hotbar for quick use, or right-click it to edit its chant line. Hover a skill to read what it does and its requirements.",
@@ -1299,10 +1272,7 @@ public sealed partial class WorldScreen : IScreen
         SpellWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SpellWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SpellBook, s, t);
         SpellWinPanel.OnSlotDroppedOutside += HandleSpellSlotDropped;
-        SpellHost = new ScaleHost(SpellWinPanel, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        SpellWin = new DraggableWindow("Spells", SpellHost.Width, SpellHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 140, Y = 100, CentersOnFirstShow = true, FadeOnOpen = true };
-        SpellWin.Content.AddChild(SpellHost);
-        SpellWin.ContentHost = SpellHost;
+        SpellWin = DraggableWindow.CreateScaledPopup("Spells", SpellWinPanel);
         Root.AddChild(SpellWin);
         menuBar.AddEntry("Spells", SpellWin.Toggle, Tip("Spells",
             "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
@@ -1320,10 +1290,7 @@ public sealed partial class WorldScreen : IScreen
         tools.WorldSpells.OnSlotHoverExit += HandleAbilityHoverExit;
         WireAbilityRightClicks(tools.WorldSkills);
         WireAbilityRightClicks(tools.WorldSpells);
-        ActionsHost = new ScaleHost(tools, ClientSettings.EffectiveWindowScale) { X = 0, Y = 0 };
-        ActionsWin = new DraggableWindow("Actions", ActionsHost.Width, ActionsHost.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H, useWoodFrame: true, flushContent: true) { X = 180, Y = 120, CentersOnFirstShow = true, FadeOnOpen = true };
-        ActionsWin.Content.AddChild(ActionsHost);
-        ActionsWin.ContentHost = ActionsHost;
+        ActionsWin = DraggableWindow.CreateScaledPopup("Actions", tools);
         Root.AddChild(ActionsWin);
         menuBar.AddEntry("Actions", ActionsWin.Toggle, Tip("Actions",
             "Your skills and spells side by side in one window, so you can manage both at once. Drag onto the hotbar, right-click to edit a chant, or hover for details.",
@@ -1713,11 +1680,11 @@ public sealed partial class WorldScreen : IScreen
     {
         var scale = ClientSettings.EffectiveWindowScale;
 
-        RescaleWindow(InventoryWindow, InvHost, scale);
-        RescaleWindow(StatsWin, StatsHost, scale);
-        RescaleWindow(SkillWin, SkillHost, scale);
-        RescaleWindow(SpellWin, SpellHost, scale);
-        RescaleWindow(ActionsWin, ActionsHost, scale);
+        RescaleWindow(InventoryWindow, scale);
+        RescaleWindow(StatsWin, scale);
+        RescaleWindow(SkillWin, scale);
+        RescaleWindow(SpellWin, scale);
+        RescaleWindow(ActionsWin, scale);
 
         //rescale in place - the player's dragged position is kept (no re-centering on a scale change)
         if (StatusBookHost is not null)
@@ -1852,9 +1819,14 @@ public sealed partial class WorldScreen : IScreen
         return host;
     }
 
-    private static void RescaleWindow(DraggableWindow? window, ScaleHost? host, float scale)
+    private static void RescaleWindow(DraggableWindow? window, float scale)
     {
-        if ((window is null) || (host is null))
+        if (window is null)
+            return;
+
+        var host = window.ContentHost;
+
+        if (host is null)
             return;
 
         host.Scale = scale;
@@ -1899,16 +1871,21 @@ public sealed partial class WorldScreen : IScreen
     //maps a screen point into the magnified Stats window's native space (for the stat-label hover tooltip)
     private (int X, int Y) MapToStats(int x, int y)
     {
-        if (StatsHost is null)
+        if (StatsWin is null)
             return (x, y);
 
-        var scale = StatsHost.Scale;
+        var statsHost = StatsWin.ContentHost;
+
+        if (statsHost is null)
+            return (x, y);
+
+        var scale = statsHost.Scale;
 
         if (scale == 1f)
             return (x, y);
 
-        return (StatsHost.ScreenX + (int)((x - StatsHost.ScreenX) / scale),
-            StatsHost.ScreenY + (int)((y - StatsHost.ScreenY) / scale));
+        return (statsHost.ScreenX + (int)((x - statsHost.ScreenX) / scale),
+            statsHost.ScreenY + (int)((y - statsHost.ScreenY) / scale));
     }
 
     //opens the Social status picker at the cursor (clicked from the equipment book's emoticon); toggles closed if open.

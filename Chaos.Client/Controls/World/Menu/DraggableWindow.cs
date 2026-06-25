@@ -300,6 +300,25 @@ public class DraggableWindow : UIPanel
         };
     }
 
+    public static DraggableWindow CreatePanelPopup(string name, UIPanel panel)
+    {
+        var window = new DraggableWindow(name, panel.Width, panel.Height + FRAME_TOP + TITLE_H, useWoodFrame: true, flushContent: true)
+        {
+            CentersOnFirstShow = true,
+            FadeOnOpen = true
+        };
+        window.Content.AddChild(panel);
+        return window;
+    }
+
+    public static DraggableWindow CreateScaledPopup(string name, UIPanel panel)
+    {
+        var scaleHost = new ScaleHost(panel, ClientSettings.EffectiveWindowScale);
+        var window = CreatePanelPopup(name, scaleHost);
+        window.ContentHost = scaleHost;
+        return window;
+    }
+
     private void BeginResize(MouseDownEvent e)
     {
         if (!Resizable)

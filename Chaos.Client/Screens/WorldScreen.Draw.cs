@@ -1672,14 +1672,14 @@ public sealed partial class WorldScreen
         }
 
         //spell book window (fallback if hotbar slot isn't there)
-        if (visualSlot is null && SpellHost?.Visible == true && SpellWinPanel is not null)
+        if (visualSlot is null && SpellWin?.Visible == true && SpellWin.ContentHost is not null && SpellWinPanel is not null)
         {
             var c = SpellWinPanel.GetSlotControl(slotNum);
 
             if (c is not null)
             {
                 visualSlot = c;
-                scaleHost = SpellHost;
+                scaleHost = SpellWin.ContentHost;
             }
         }
 
