@@ -340,6 +340,10 @@ public sealed class MenuBar : UIPanel
     {
         DropOpen = !DropOpen;
         Dropdown.Visible = DropOpen;
+
+        //move the menu on top of other windows
+        if (DropOpen)
+            ZIndex = WindowOrder.Next();
     }
 
     private void CloseDropdown()
