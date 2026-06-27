@@ -4,6 +4,7 @@ using Chaos.Client.Controls.World.Hud.Panel;
 using Chaos.Client.Data;
 using Chaos.Client.Definitions;
 using Chaos.Client.Models;
+using Chaos.Client.Rendering.Utility;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,7 +50,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     private readonly UILabel? EmoticonLabel;
     private readonly UIButton? GroupBtn;
     private readonly Texture2D? GroupClosedTexture;
+    private readonly Texture2D? GroupClosedPressedTexture;
     private readonly Texture2D? GroupOpenTexture;
+    private readonly Texture2D? GroupOpenPressedTexture;
     private readonly UIImage? EmoticonImage;
     private readonly UILabel? IntLabel;
 
@@ -211,16 +214,17 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         if (GroupBtn is not null)
         {
             GroupOpenTexture = GroupBtn.NormalTexture;
-            GroupBtn.PressedTexture = null;
+            GroupOpenPressedTexture = GroupBtn.PressedTexture;
             GroupBtn.Clicked += () => OnGroupToggled?.Invoke();
         }
 
         //extract the closed-state texture from groupbtn_disabled for the closed state icon
-        if (CreateImage("GroupBtn_Disabled") is { } disabledImage)
+        if (CreateButton("GroupBtn_Disabled") is { } disabledButton)
         {
-            GroupClosedTexture = disabledImage.Texture;
-            Children.Remove(disabledImage);
-            disabledImage.Dispose();
+            GroupClosedTexture = disabledButton.NormalTexture;
+            GroupClosedPressedTexture = disabledButton.PressedTexture;
+            Children.Remove(disabledButton);
+            disabledButton.Dispose();
         }
 
         //nation icon and text
@@ -567,7 +571,13 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     /// </summary>
     public void SetGroupOpen(bool groupOpen)
     {
-        GroupBtn?.NormalTexture = groupOpen ? GroupOpenTexture : GroupClosedTexture;
+        if (GroupBtn is null)
+            return;
+
+        GroupBtn.NormalTexture = groupOpen ? GroupOpenTexture : GroupClosedTexture;
+        GroupBtn.PressedTexture = groupOpen ? GroupOpenPressedTexture : GroupClosedPressedTexture;
+        if (GroupBtn.NormalTexture is not null)
+            GroupBtn.HoverTexture = ImageUtil.BuildButtonHoverTint(ChaosGame.Device, GroupBtn.NormalTexture);
     }
 
     /// <summary>
