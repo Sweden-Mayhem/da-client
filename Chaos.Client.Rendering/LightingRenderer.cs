@@ -151,7 +151,7 @@ public sealed class LightingRenderer : IDisposable
     ///     Per light the occluder map is drawn, the glow is ray-marched against it, then the object's silhouette is wiped so it isn't lit
     /// </summary>
     public void Render(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         RenderTarget2D worldTarget,
         Rectangle viewport,
         Color ambient,
@@ -244,7 +244,7 @@ public sealed class LightingRenderer : IDisposable
     ///     Lifts unlit areas toward a cool blue-grey while lit areas stay put
     ///     Call after <see cref="Render" /> and after the bloom so the bloom samples the warm lit world, no-op when off
     /// </summary>
-    public void ApplyNightShadowTint(SpriteBatch spriteBatch, RenderTarget2D worldTarget, Rectangle viewport, Color nightTint, Vector2[] mapQuad)
+    public void ApplyNightShadowTint(SpriteBatchEx spriteBatch, RenderTarget2D worldTarget, Rectangle viewport, Color nightTint, Vector2[] mapQuad)
     {
         if (((nightTint.R | nightTint.G | nightTint.B) == 0) || (LightBuffer is null) || (mapQuad.Length < 4))
             return;
@@ -290,7 +290,7 @@ public sealed class LightingRenderer : IDisposable
     //same-resolution separable box blur of the light buffer
     //full res so the kernel moves with the world content, a downscaled intermediate is screen-locked and shimmers
     //two passes, horizontal then vertical, each a few weighted additive taps that average to a box blur
-    private void BlurLightBuffer(SpriteBatch spriteBatch, Vector2 pos)
+    private void BlurLightBuffer(SpriteBatchEx spriteBatch, Vector2 pos)
     {
         const int R = 4; //blur radius in px per axis, bigger is softer shadows
         var w = Color.White * (1f / ((2 * R) + 1));
@@ -357,7 +357,7 @@ public sealed class LightingRenderer : IDisposable
     }
 
     //draw one light's soft gradient through the ray-march shader into the bound glow buffer
-    private void DrawGlow(SpriteBatch spriteBatch, LightSource s)
+    private void DrawGlow(SpriteBatchEx spriteBatch, LightSource s)
     {
         var tex = GetGradient(in s);
         var w = s.PixelMask.Width;

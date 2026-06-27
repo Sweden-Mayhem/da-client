@@ -376,7 +376,7 @@ public class DraggableWindow : UIPanel
     ///     let the base draw the dark fill + titlebar band + content (all already inset by FRAME), then paint the dlgframe
     ///     wood border ON TOP of the outer ring (content never sits there, so it is not covered).
     /// </summary>
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         //target-fade mode (no single content host to self-fade, e.g. Options/Emotes): render the whole window to a target
         //and blit it tinted by OpenAlpha. Windows WITH a ContentHost fade via the chrome-fade path instead (see Update),
@@ -400,7 +400,7 @@ public class DraggableWindow : UIPanel
     //renders the whole window (fill + children incl. nested ScaleHosts + wood frame) into a shared full-screen target at
     //its NORMAL screen coords (so the nested ScaleHosts' absolute-coord blits land correctly) then blits the window's
     //rect to the backbuffer tinted by alpha. One transient target shared across windows (used only while fading).
-    private void DrawFaded(SpriteBatch spriteBatch, float alpha)
+    private void DrawFaded(SpriteBatchEx spriteBatch, float alpha)
     {
         var gd = spriteBatch.GraphicsDevice;
         var tw = ChaosGame.UiWidth;
@@ -423,11 +423,11 @@ public class DraggableWindow : UIPanel
         }
 
         var prevTargets = gd.GetRenderTargets();
-        spriteBatch.End();
+        spriteBatch.Flush();
 
         gd.SetRenderTarget(SharedFadeTarget);
         gd.Clear(Color.Transparent);
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
         base.Draw(spriteBatch);
 
         if (UseWoodFrame)
@@ -441,18 +441,15 @@ public class DraggableWindow : UIPanel
             gd.SetRenderTargets(prevTargets);
 
         var rect = new Rectangle(ScreenX, ScreenY, Width, Height);
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
         spriteBatch.Draw(SharedFadeTarget, rect, rect, Color.White * alpha);
         spriteBatch.End();
-
-        //restore the plain UI batch the caller keeps drawing the rest of the tree into
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 
     //dlgframe border, edges LOOPED (tiled) not scaled, corners fixed. Each 16x16 piece is drawn at FRAME_SCALE; only its
     //outer WOOD_PIXELS px is opaque wood, the rest transparent, so it overlays harmlessly over the band/content. Tinted by
     //Fade so AutoFade still works. Pieces are clipped to the window rect so a tiled edge never bleeds past the window.
-    private void DrawWoodFrame(SpriteBatch spriteBatch)
+    private void DrawWoodFrame(SpriteBatchEx spriteBatch)
     {
         var pieces = LoadFramePieces();
 
@@ -482,7 +479,7 @@ public class DraggableWindow : UIPanel
     }
 
     //draws one frame piece at FRAME_SCALE, clipped to the window rect (so tiled edges/corners never spill past the window).
-    private void Blit(SpriteBatch spriteBatch, Texture2D tex, int x, int y, Color color)
+    private void Blit(SpriteBatchEx spriteBatch, Texture2D tex, int x, int y, Color color)
     {
         var atlas = tex;
         var src = new Rectangle(0, 0, tex.Width, tex.Height);

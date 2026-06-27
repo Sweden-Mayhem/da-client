@@ -167,7 +167,7 @@ public class UILabel : UIElement
         PaddingBottom = 1;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -286,7 +286,7 @@ public class UILabel : UIElement
         return false;
     }
 
-    private void DrawCustomFontLine(SpriteBatch spriteBatch, int innerX, int innerY, int innerW, int innerH)
+    private void DrawCustomFontLine(SpriteBatchEx spriteBatch, int innerX, int innerY, int innerW, int innerH)
     {
         var texture = TtfTextRenderer.GetLine(TextElement.CustomDrawText, CustomFontSize);
 
@@ -351,7 +351,7 @@ public class UILabel : UIElement
         DrawTexture(spriteBatch, texture, pos, color);
     }
 
-    private void DrawCustomFontWrapped(SpriteBatch spriteBatch, int innerX, int innerY, int innerH)
+    private void DrawCustomFontWrapped(SpriteBatchEx spriteBatch, int innerX, int innerY, int innerH)
     {
         var lineH = TtfTextRenderer.LineHeight(CustomFontSize);
 
@@ -407,7 +407,7 @@ public class UILabel : UIElement
         }
     }
 
-    private void DrawSingleLineWithSelection(SpriteBatch spriteBatch, int innerX, int innerY, int innerW, int innerH)
+    private void DrawSingleLineWithSelection(SpriteBatchEx spriteBatch, int innerX, int innerY, int innerW, int innerH)
     {
         var text = PlainText;
         var selStart = SnapSelectionBoundary(Math.Min(SelectionStart, text.Length));
@@ -442,7 +442,7 @@ public class UILabel : UIElement
         }
     }
 
-    private void DrawWrappedWithSelection(SpriteBatch spriteBatch, int innerX, int innerY, int innerH)
+    private void DrawWrappedWithSelection(SpriteBatchEx spriteBatch, int innerX, int innerY, int innerH)
     {
         var lines = TextElement.WrappedLines!;
         var firstLine = ScrollOffset / TextRenderer.CHAR_HEIGHT;

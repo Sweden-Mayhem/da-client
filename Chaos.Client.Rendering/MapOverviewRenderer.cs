@@ -28,7 +28,7 @@ public sealed class MapOverviewRenderer : IDisposable
     private RenderTarget2D? BackgroundTarget;
     private RenderTarget2D? BackgroundSmoothed;
     private int BackgroundSmoothedGen = -1;
-    private SpriteBatch? Batch;
+    private SpriteBatchEx? Batch;
     private MapFile? GeneratedFor;
     private float MasterScale = 1f; //world pixels -> texture pixels (1 for every real map)
     private int MapHeightTiles;
@@ -74,7 +74,7 @@ public sealed class MapOverviewRenderer : IDisposable
         if (!smooth || (displayWidth <= 0) || (displayHeight <= 0))
             return Target;
 
-        Batch ??= new SpriteBatch(device);
+        Batch ??= new SpriteBatchEx(device);
 
         if ((Smoothed is null) || (Smoothed.Width != displayWidth) || (Smoothed.Height != displayHeight))
         {
@@ -113,7 +113,7 @@ public sealed class MapOverviewRenderer : IDisposable
         if (!smooth || (displayWidth <= 0) || (displayHeight <= 0))
             return BackgroundTarget;
 
-        Batch ??= new SpriteBatch(device);
+        Batch ??= new SpriteBatchEx(device);
 
         if ((BackgroundSmoothed is null) || (BackgroundSmoothed.Width != displayWidth) || (BackgroundSmoothed.Height != displayHeight))
         {
@@ -247,7 +247,7 @@ public sealed class MapOverviewRenderer : IDisposable
             Zoom = 1f
         };
 
-        Batch ??= new SpriteBatch(device);
+        Batch ??= new SpriteBatchEx(device);
 
         //MasterScale is 1 for real maps, so this is the identity (tiles land on integer pixels -> no seams)
         var transform = Matrix.CreateScale(MasterScale);

@@ -49,7 +49,7 @@ public sealed class Slider : UIPanel
     private int TrackWidth => Width - THUMB_W;
     private float Ratio => Max > Min ? (Value - Min) / (Max - Min) : 0f;
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

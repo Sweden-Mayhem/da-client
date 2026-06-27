@@ -16,7 +16,7 @@ internal static class NativeText
 {
     private const int DEFAULT_FONT = 12;
 
-    public static void DrawLabel(SpriteBatch spriteBatch, UILabel label, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public static void DrawLabel(SpriteBatchEx spriteBatch, UILabel label, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
     {
         if (!label.Visible || string.IsNullOrEmpty(label.Text) || !TtfTextRenderer.Available || (scale <= 0f) || (alpha <= 0f))
             return;
@@ -173,7 +173,7 @@ internal static class NativeText
 
     //draws one wrapped line LEFT-aligned at (x, y), clipped (source-rect) to the label's mapped box so scrolled/overflow
     //lines never spill past the notice - the in-place path is clipped by ClipRect; this reproduces that here.
-    private static void DrawWrappedLine(SpriteBatch spriteBatch, string text, int x, int y, int font, Color col, Vector2 shadow, Color shadowCol, Rectangle clip)
+    private static void DrawWrappedLine(SpriteBatchEx spriteBatch, string text, int x, int y, int font, Color col, Vector2 shadow, Color shadowCol, Rectangle clip)
     {
         if (text.Length == 0)
             return;
@@ -189,7 +189,7 @@ internal static class NativeText
 
     //draws a glyph-line texture at (x,y) source-rect clipped to the screen-space clip rect (so it never spills past a
     //gadget/scroll-viewport edge). Shared by the menu native-text drawers.
-    internal static void DrawClipped(SpriteBatch spriteBatch, Texture2D tex, int x, int y, Color color, Rectangle clip)
+    internal static void DrawClipped(SpriteBatchEx spriteBatch, Texture2D tex, int x, int y, Color color, Rectangle clip)
     {
         int srcX = 0, srcY = 0, w = tex.Width, h = tex.Height;
 

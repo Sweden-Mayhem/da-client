@@ -67,7 +67,7 @@ public static class TextLinks
     /// <summary>Draws an underline under each collected link rect (just below the glyph baseline), optionally clipped.
     ///     Draw this BEFORE the glyphs so the line sits ON TOP of its underline. <paramref name="startIndex" /> lets a
     ///     caller underline only the rects it just appended for the current line.</summary>
-    public static void DrawUnderlines(SpriteBatch spriteBatch, List<(Rectangle Rect, string Url)> rects, Color color, int thickness, Rectangle? clip = null, int startIndex = 0)
+    public static void DrawUnderlines(SpriteBatchEx spriteBatch, List<(Rectangle Rect, string Url)> rects, Color color, int thickness, Rectangle? clip = null, int startIndex = 0)
     {
         var pixel = UIElement.GetPixel();
 

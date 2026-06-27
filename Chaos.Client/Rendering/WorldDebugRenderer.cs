@@ -37,7 +37,7 @@ public sealed class WorldDebugRenderer
     ///     Draws all debug overlays. Call within a SpriteBatch Begin/End block with camera transform applied.
     /// </summary>
     public void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Camera camera,
         MapFile mapFile,
         int foregroundExtraMargin,
@@ -86,7 +86,7 @@ public sealed class WorldDebugRenderer
             text.Draw(spriteBatch, pos);
     }
 
-    private static void DrawEntityClickHitboxes(SpriteBatch spriteBatch, Texture2D pixel, IReadOnlyList<EntityHitBox> entityHitBoxes)
+    private static void DrawEntityClickHitboxes(SpriteBatchEx spriteBatch, Texture2D pixel, IReadOnlyList<EntityHitBox> entityHitBoxes)
     {
         for (var i = 0; i < entityHitBoxes.Count; i++)
             DrawRectOutline(
@@ -97,7 +97,7 @@ public sealed class WorldDebugRenderer
     }
 
     private void DrawEntityTileRects(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D pixel,
         Camera camera,
         MapFile mapFile,
@@ -159,7 +159,7 @@ public sealed class WorldDebugRenderer
     }
 
     private void DrawForegroundTileOutlines(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D pixel,
         Camera camera,
         MapFile mapFile,
@@ -196,7 +196,7 @@ public sealed class WorldDebugRenderer
     }
 
     private static void DrawMouseHoverTile(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D pixel,
         Camera camera,
         MapFile mapFile,
@@ -221,7 +221,7 @@ public sealed class WorldDebugRenderer
     }
 
     private static void DrawPlayerCrosshair(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D pixel,
         Camera camera,
         MapFile mapFile,
@@ -257,7 +257,7 @@ public sealed class WorldDebugRenderer
     }
 
     private static void DrawRectOutline(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D pixel,
         Rectangle rect,
         Color color)

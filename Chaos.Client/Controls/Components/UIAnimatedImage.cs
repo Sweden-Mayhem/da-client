@@ -35,7 +35,7 @@ public class UIAnimatedImage : UIElement
         base.Dispose();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -49,9 +49,7 @@ public class UIAnimatedImage : UIElement
         if (Texture is null)
             return;
 
-        spriteBatch.End();
-
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler, blendState: BlendState.NonPremultiplied);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState, blendState: BlendState.NonPremultiplied);
 
         DrawTexture(
             spriteBatch,
@@ -61,7 +59,5 @@ public class UIAnimatedImage : UIElement
             Color.White);
 
         spriteBatch.End();
-
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 }

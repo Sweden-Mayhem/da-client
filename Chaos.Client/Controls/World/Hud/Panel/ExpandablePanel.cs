@@ -44,7 +44,7 @@ public abstract class ExpandablePanel : UIPanel
         ExpandYOffset = expandedHeight - normalHeight;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

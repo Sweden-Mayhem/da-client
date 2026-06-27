@@ -39,7 +39,7 @@ public sealed class DialogDimmer : UIElement
     //so the world pass can render the dim (then a bright spotlighted speaker over it) using the same look, optionally
     //darker (the spotlight passes higher alphas, since the lit speaker on top can carry a deeper darken)
     public static void DrawBaseAndVignette(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Rectangle rect,
         float fraction,
         float baseAlpha = BASE_ALPHA,
@@ -52,7 +52,7 @@ public sealed class DialogDimmer : UIElement
         spriteBatch.Draw(EnsureVignette(spriteBatch.GraphicsDevice), rect, Color.White * (vignetteAlpha * fraction));
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

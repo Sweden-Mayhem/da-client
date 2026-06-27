@@ -355,7 +355,7 @@ public sealed class WorldMap : UIPanel
         return (src, dest.Width / (float)src.Width, dest.Height / (float)src.Height);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -380,7 +380,7 @@ public sealed class WorldMap : UIPanel
         base.Draw(spriteBatch); //buttons
     }
 
-    private void DrawList(SpriteBatch spriteBatch)
+    private void DrawList(SpriteBatchEx spriteBatch)
     {
         Fill(spriteBatch, ListRect, SubPanelBg);
         Border(spriteBatch, ListRect, PanelBorder);
@@ -410,7 +410,7 @@ public sealed class WorldMap : UIPanel
             DrawTtf(spriteBatch, "▼", ListRect.Right - 20, ListRect.Bottom - rowH, LIST_FONT, PanelBorder);
     }
 
-    private void DrawMap(SpriteBatch spriteBatch)
+    private void DrawMap(SpriteBatchEx spriteBatch)
     {
         Fill(spriteBatch, MapRect, Color.Black);
 
@@ -471,7 +471,7 @@ public sealed class WorldMap : UIPanel
         }
     }
 
-    private void DrawInfo(SpriteBatch spriteBatch)
+    private void DrawInfo(SpriteBatchEx spriteBatch)
     {
         if ((SelectedIndex < 0) || (SelectedIndex >= Nodes.Count))
             return;
@@ -619,7 +619,7 @@ public sealed class WorldMap : UIPanel
 
     //--- draw helpers ---
 
-    private static void DrawTtf(SpriteBatch spriteBatch, string text, int x, int y, int size, Color color)
+    private static void DrawTtf(SpriteBatchEx spriteBatch, string text, int x, int y, int size, Color color)
     {
         if (string.IsNullOrEmpty(text))
             return;
@@ -632,9 +632,9 @@ public sealed class WorldMap : UIPanel
             TextRenderer.DrawText(spriteBatch, new Vector2(x, y), text, color);
     }
 
-    private static void Fill(SpriteBatch spriteBatch, Rectangle rect, Color color) => spriteBatch.Draw(GetPixel(), rect, color);
+    private static void Fill(SpriteBatchEx spriteBatch, Rectangle rect, Color color) => spriteBatch.Draw(GetPixel(), rect, color);
 
-    private static void Border(SpriteBatch spriteBatch, Rectangle r, Color color)
+    private static void Border(SpriteBatchEx spriteBatch, Rectangle r, Color color)
     {
         Fill(spriteBatch, new Rectangle(r.X, r.Y, r.Width, 1), color);
         Fill(spriteBatch, new Rectangle(r.X, r.Bottom - 1, r.Width, 1), color);

@@ -398,7 +398,7 @@ public sealed class DarknessRenderer : IDisposable
     /// <summary>
     ///     Draws the darkness overlay. Uses per-pixel HEA texture if available, otherwise flat color.
     /// </summary>
-    public void Draw(SpriteBatch spriteBatch, Rectangle viewport)
+    public void Draw(SpriteBatchEx spriteBatch, Rectangle viewport)
     {
         if (Alpha <= 0f)
             return;

@@ -362,7 +362,7 @@ public sealed class TownMapControl : UIPanel
         base.Update(gameTime);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible || (ScrollTexture is null))
             return;
@@ -425,7 +425,7 @@ public sealed class TownMapControl : UIPanel
     ///     scale breathed frame-to-frame = the jitter.) Returns the revealed middle (the writable area).
     /// </summary>
     private static Rectangle DrawCenterUnroll(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D tex,
         Rectangle fullRect,
         float endFrac,
@@ -488,7 +488,7 @@ public sealed class TownMapControl : UIPanel
 
     //the inked map sits at its full-open position; while unrolling, only the part inside the revealed span is drawn
     //(a matching source crop), so the parchment uncovers it
-    private void DrawInkedMap(SpriteBatch spriteBatch, Rectangle reveal, float alpha)
+    private void DrawInkedMap(SpriteBatchEx spriteBatch, Rectangle reveal, float alpha)
     {
         if (InkedMap is null || (ContentRect.Width <= 0))
             return;
@@ -521,7 +521,7 @@ public sealed class TownMapControl : UIPanel
             Color.White * alpha);
     }
 
-    private void DrawMarks(SpriteBatch spriteBatch, Rectangle reveal, float alpha)
+    private void DrawMarks(SpriteBatchEx spriteBatch, Rectangle reveal, float alpha)
     {
         Texture2D? mark = MapMarkers.RedMark;
         var markW = mark is not null ? Math.Clamp(ContentRect.Width / 34, 12, 22) : 0;
@@ -566,7 +566,7 @@ public sealed class TownMapControl : UIPanel
     }
 
     private static void DrawWorldMapArrow(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         int x,
         int y,
         Rectangle contentRect,
@@ -646,7 +646,7 @@ public sealed class TownMapControl : UIPanel
     }
 
     // Draws a rotated 1-pixel-wide rectangle between two points, used to build procedural lines.
-    private static void DrawLine(SpriteBatch sb, Texture2D pixel, Vector2 from, Vector2 to, float width, Color color)
+    private static void DrawLine(SpriteBatchEx sb, Texture2D pixel, Vector2 from, Vector2 to, float width, Color color)
     {
         var dx  = to.X - from.X;
         var dy  = to.Y - from.Y;
@@ -671,7 +671,7 @@ public sealed class TownMapControl : UIPanel
     //roll is actually MOVING (fades out as the unroll completes) - at rest it read as a dark smudge on the parchment.
     //Vertically inset to the parchment band so the strip never overhangs the art's wavy transparent edges.
     private void DrawCurlShadows(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Rectangle reveal,
         float open,
         float alpha)
@@ -706,7 +706,7 @@ public sealed class TownMapControl : UIPanel
             0f);
     }
 
-    private void DrawBanner(SpriteBatch spriteBatch, float bannerT, float fade)
+    private void DrawBanner(SpriteBatchEx spriteBatch, float bannerT, float fade)
     {
         if (BannerTexture is null || string.IsNullOrEmpty(MapName))
             return;
@@ -778,7 +778,7 @@ public sealed class TownMapControl : UIPanel
         spriteBatch.Draw(tex, pos, InkColor * textAlpha);
     }
 
-    private void DrawWarpTooltip(SpriteBatch spriteBatch, string text)
+    private void DrawWarpTooltip(SpriteBatchEx spriteBatch, string text)
     {
         if (string.IsNullOrEmpty(text))
             return;

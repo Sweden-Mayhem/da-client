@@ -41,7 +41,7 @@ internal static class BoardBodyText
     ///     <paramref name="links" /> for the owner's hover/click hit-testing.
     /// </summary>
     public static void DrawLine(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         IReadOnlyList<RichRun> runs,
         int x,
         int y,

@@ -96,7 +96,7 @@ public static class DebugOverlay
     ///     Draws the debug border and label for a single element. Called inline from UIPanel.Draw after each child draws, so
     ///     debug overlays respect the natural z-order of controls.
     /// </summary>
-    public static void DrawElement(SpriteBatch spriteBatch, UIElement element)
+    public static void DrawElement(SpriteBatchEx spriteBatch, UIElement element)
     {
         if (!IsActive || !element.Visible)
             return;
@@ -169,7 +169,7 @@ public static class DebugOverlay
         }
     }
 
-    private static void DrawFrameTimeGraph(SpriteBatch spriteBatch)
+    private static void DrawFrameTimeGraph(SpriteBatchEx spriteBatch)
     {
         var sampleCount = Math.Min(FrameTimeIndex, FRAME_TIME_HISTORY);
 
@@ -236,7 +236,7 @@ public static class DebugOverlay
         }
     }
 
-    private static void DrawPerformanceStatsGeometry(SpriteBatch spriteBatch)
+    private static void DrawPerformanceStatsGeometry(SpriteBatchEx spriteBatch)
     {
         //background for stats area
         var statsHeight = 82;
@@ -269,7 +269,7 @@ public static class DebugOverlay
         }
     }
 
-    private static void DrawPerformanceStatsText(SpriteBatch spriteBatch)
+    private static void DrawPerformanceStatsText(SpriteBatchEx spriteBatch)
     {
         if (StatsTextElement is null)
         {
@@ -368,12 +368,12 @@ public static class DebugOverlay
     /// <summary>
     ///     Draws performance stats (frame time graph, GC, heap). Called as a separate top-level pass.
     /// </summary>
-    public static void DrawStats(SpriteBatch spriteBatch)
+    public static void DrawStats(SpriteBatchEx spriteBatch)
     {
         if (!IsActive)
             return;
 
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
 
         DrawPerformanceStatsGeometry(spriteBatch);
         DrawPerformanceStatsText(spriteBatch);

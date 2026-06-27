@@ -16,7 +16,6 @@ namespace Chaos.Client.Controls.LobbyLogin;
 /// </summary>
 public sealed class LobbyLoginControl : UIPanel
 {
-	private readonly Effect BackgroundEffect;
 	private readonly EffectParameter BackgroundEffectTime;
 
 	private readonly Texture2D ButtonMaskPress;
@@ -112,19 +111,13 @@ public sealed class LobbyLoginControl : UIPanel
             child.Enabled = enabled;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
 
-        spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler, effect: BackgroundEffect);
-
         BackgroundEffectTime.SetValue((float)ChaosGame.GameTime.TotalGameTime.TotalSeconds);
 
         base.Draw(spriteBatch);
-
-        spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 }

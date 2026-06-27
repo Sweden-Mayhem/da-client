@@ -164,7 +164,7 @@ public sealed class MenuListPanel : FramedDialogPanelBase
     ///     Called from <see cref="NpcSessionControl.DrawTextNative" />. The list snaps closed (no fade), so this simply
     ///     stops drawing the instant the panel hides - it is gated on the panel's visibility by the caller.
     /// </summary>
-    public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+    public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
     {
         if ((scale <= 0f) || (alpha <= 0f) || !TtfTextRenderer.Available)
             return;
@@ -581,7 +581,7 @@ public sealed class MenuListPanel : FramedDialogPanelBase
         }
 
         //draws this entry's name crisp at native resolution (only while the entry slot is showing an item)
-        public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+        public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
         {
             if (Visible)
                 MenuShopPanel.DrawLabelNative(spriteBatch, NameLabel, originX, originY, scale, alpha);

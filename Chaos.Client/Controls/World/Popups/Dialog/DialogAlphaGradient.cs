@@ -24,7 +24,7 @@ public sealed class DialogAlphaGradient : UIElement
         IsHitTestVisible = false;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

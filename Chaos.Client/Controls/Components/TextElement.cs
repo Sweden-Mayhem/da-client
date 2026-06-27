@@ -182,7 +182,7 @@ public sealed class TextElement
     ///     applying <see cref="ShadowStyle" /> and clipping each pass to <paramref name="clipRect" />. Pass
     ///     <see cref="Rectangle.Empty" /> (or omit) to skip clipping entirely.
     /// </summary>
-    public void Draw(SpriteBatch spriteBatch, Vector2 position, Rectangle clipRect = default, string? text = null, float opacity = 1f)
+    public void Draw(SpriteBatchEx spriteBatch, Vector2 position, Rectangle clipRect = default, string? text = null, float opacity = 1f)
     {
         text ??= Text;
 
@@ -215,7 +215,7 @@ public sealed class TextElement
     }
 
     private void DrawClipped(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         string text,
         Color color,

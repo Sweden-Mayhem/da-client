@@ -127,7 +127,7 @@ public sealed class MapRenderer : IDisposable
     private readonly Dictionary<int, Texture2D> HoverTintedFgCache = [];
 
     public void DrawForegroundTileHoverTinted(
-        SpriteBatch spriteBatch, Camera camera, MapFile mapFile, int x, int y)
+        SpriteBatchEx spriteBatch, Camera camera, MapFile mapFile, int x, int y)
     {
         var tile = mapFile.Tiles[x, y];
         var worldPos = Camera.TileToWorld(x, y, mapFile.Height);
@@ -140,7 +140,7 @@ public sealed class MapRenderer : IDisposable
             DrawSingleFgTinted(spriteBatch, gd, camera, tile.RightForeground, worldPos.X + 28, worldPos.Y);
     }
 
-    private void DrawSingleFgTinted(SpriteBatch sb, GraphicsDevice gd, Camera camera, short fgId, float worldX, float worldY)
+    private void DrawSingleFgTinted(SpriteBatchEx sb, GraphicsDevice gd, Camera camera, short fgId, float worldX, float worldY)
     {
         if (!HoverTintedFgCache.TryGetValue(fgId, out var tintedTex))
         {
@@ -229,7 +229,7 @@ public sealed class MapRenderer : IDisposable
     }
 
     public void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         GraphicsDevice device,
         MapFile mapFile,
         Camera camera,
@@ -259,7 +259,7 @@ public sealed class MapRenderer : IDisposable
     }
 
     public void DrawBackground(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         MapFile mapFile,
         Camera camera,
         int animationTick)
@@ -330,7 +330,7 @@ public sealed class MapRenderer : IDisposable
     }
 
     public void DrawForegroundTile(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         GraphicsDevice device,
         MapFile mapFile,
         Camera camera,
@@ -371,7 +371,7 @@ public sealed class MapRenderer : IDisposable
     //it as an occluder/mask under its own blend state. footPx > 0 draws ONLY the bottom footPx rows (the in-tile foot)
     //rather than the whole sprite, used as the shadow caster so a tall canopy doesn't cast, only the ground contact.
     private void DrawSingleFgTile(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         GraphicsDevice device,
         Camera camera,
         int tileId,
@@ -451,7 +451,7 @@ public sealed class MapRenderer : IDisposable
     }
 
     //draws only the bottom footPx rows of a foreground sprite (its in-tile ground contact), used as the shadow caster.
-    private static void DrawFootStrip(SpriteBatch spriteBatch, Texture2D atlas, Rectangle rect, Camera camera, float worldX, float worldY, int footPx)
+    private static void DrawFootStrip(SpriteBatchEx spriteBatch, Texture2D atlas, Rectangle rect, Camera camera, float worldX, float worldY, int footPx)
     {
         var stripH = Math.Min(rect.Height, footPx);
         var stripRect = new Rectangle(rect.X, (rect.Y + rect.Height) - stripH, rect.Width, stripH);

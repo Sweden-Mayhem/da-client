@@ -54,7 +54,7 @@ public sealed class MailButton : UIButton
         Phase = !Phase;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         base.Draw(spriteBatch);
 

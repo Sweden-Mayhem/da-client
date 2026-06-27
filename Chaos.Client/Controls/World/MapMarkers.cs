@@ -51,7 +51,7 @@ internal static class MapMarkers
     }
 
     /// <summary>Draws one player-icon frame into <paramref name="dest" /> (handles atlas-backed frames).</summary>
-    public static void DrawPlayerFrame(SpriteBatch spriteBatch, int frame, Rectangle dest, Color tint)
+    public static void DrawPlayerFrame(SpriteBatchEx spriteBatch, int frame, Rectangle dest, Color tint)
     {
         if ((PlayerFrames is null) || (PlayerFrames.Length == 0))
             return;

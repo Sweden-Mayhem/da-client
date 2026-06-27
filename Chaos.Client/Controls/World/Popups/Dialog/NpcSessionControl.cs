@@ -301,7 +301,7 @@ public sealed class NpcSessionControl : PrefabPanel
         OwnsPortraitTexture = false;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -345,7 +345,7 @@ public sealed class NpcSessionControl : PrefabPanel
     ///     Draws the dialog's TTF text at native resolution on top of the scaled frame so it stays crisp
     ///     originX, originY and scale are the host's origin and magnification, alpha fades the text with the host
     /// </summary>
-    public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+    public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
     {
         if ((scale <= 0f) || (alpha <= 0f) || !TtfTextRenderer.Available)
             return;
@@ -420,7 +420,7 @@ public sealed class NpcSessionControl : PrefabPanel
             MenuList.DrawTextNative(spriteBatch, originX, originY, scale, alpha);
     }
 
-    private void DrawPortrait(SpriteBatch spriteBatch)
+    private void DrawPortrait(SpriteBatchEx spriteBatch)
     {
         if (PortraitTexture is null)
             return;

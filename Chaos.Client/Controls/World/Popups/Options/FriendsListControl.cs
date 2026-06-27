@@ -113,7 +113,7 @@ public sealed class FriendsListControl : PrefabPanel
         OnClose?.Invoke();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

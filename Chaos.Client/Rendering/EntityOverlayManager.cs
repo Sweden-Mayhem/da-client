@@ -134,7 +134,7 @@ public sealed class EntityOverlayManager
     ///     at native resolution in the UI pass (see <see cref="DrawChatBubblesNative" /> / <see cref="DrawNameTagsNative" />)
     ///     so their TrueType text stays crisp at any window size.
     /// </summary>
-    public void Draw(SpriteBatch spriteBatch, Camera camera, int mapHeight)
+    public void Draw(SpriteBatchEx spriteBatch, Camera camera, int mapHeight)
     {
         //read the authoritative per-frame snapshot once; sub-methods reuse it
         var sortedEntities = WorldState.CurrentFrame.SortedEntities;
@@ -155,14 +155,14 @@ public sealed class EntityOverlayManager
     ///     Draws the chat bubbles at native resolution. Call from the native UI pass (no camera transform); their X/Y were
     ///     converted from world to backbuffer coordinates in <see cref="UpdateChatBubbles" />.
     /// </summary>
-    public void DrawChatBubblesNative(SpriteBatch spriteBatch)
+    public void DrawChatBubblesNative(SpriteBatchEx spriteBatch)
     {
         foreach (var bubble in ChatBubbles.Values)
             bubble.Draw(spriteBatch);
     }
 
     private void DrawGroupBoxTexts(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Camera camera,
         int mapHeight,
         IReadOnlyList<WorldEntity> sortedEntities)
@@ -235,7 +235,7 @@ public sealed class EntityOverlayManager
         return !isHoverOnly || (!showTintHighlight && (hoveredEntityId == entity.Id) && (entity.Id != playerEntityId));
     }
 
-    public void DrawNameTagsNative(SpriteBatch spriteBatch, Camera camera, int mapHeight, CreatureRenderer creatureRenderer)
+    public void DrawNameTagsNative(SpriteBatchEx spriteBatch, Camera camera, int mapHeight, CreatureRenderer creatureRenderer)
     {
         if (!TtfTextRenderer.Available)
             return;
@@ -293,7 +293,7 @@ public sealed class EntityOverlayManager
     ///     coordinates, and the line block is stacked just above it - so the chant stays crisp instead of being upscaled
     ///     with the low-res world.
     /// </summary>
-    public void DrawChantOverlaysNative(SpriteBatch spriteBatch, Camera camera, int mapHeight, CreatureRenderer creatureRenderer)
+    public void DrawChantOverlaysNative(SpriteBatchEx spriteBatch, Camera camera, int mapHeight, CreatureRenderer creatureRenderer)
     {
         if (!TtfTextRenderer.Available || (ChantOverlays.Count == 0))
             return;

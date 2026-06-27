@@ -15,7 +15,7 @@ public static class RenderHelper
     /// <summary>
     ///     Draws a filled rectangle using a shared 1x1 white pixel texture.
     /// </summary>
-    public static void DrawRect(SpriteBatch spriteBatch, Rectangle bounds, Color color)
+    public static void DrawRect(SpriteBatchEx spriteBatch, Rectangle bounds, Color color)
         => spriteBatch.Draw(GetPixel(spriteBatch.GraphicsDevice), bounds, color);
 
     private static Texture2D GetPixel(GraphicsDevice device)

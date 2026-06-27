@@ -23,7 +23,7 @@ public sealed class SilhouetteRenderer : IDisposable
 
     private readonly GraphicsDevice Device;
     public readonly List<uint> SilhouetteEntityIds = [];
-    private SpriteBatch? Batch;
+    private SpriteBatchEx? Batch;
     private bool SilhouettesReady;
     private RenderTarget2D? SilhouetteTarget;
 
@@ -51,9 +51,9 @@ public sealed class SilhouetteRenderer : IDisposable
     }
 
     /// <summary>
-    ///     Draws the pre-rendered silhouette overlay onto the active SpriteBatch. Call after the world pass.
+    ///     Draws the pre-rendered silhouette overlay onto the active SpriteBatchEx. Call after the world pass.
     /// </summary>
-    public void DrawSilhouettes(SpriteBatch spriteBatch)
+    public void DrawSilhouettes(SpriteBatchEx spriteBatch)
     {
         if (!SilhouettesReady || SilhouetteTarget is null)
             return;
@@ -74,7 +74,7 @@ public sealed class SilhouetteRenderer : IDisposable
     ///     Composites all silhouette entities into a single viewport-sized RT at their world positions. Call from WorldScreen
     ///     after the normal entity draw pass, passing the same camera transform.
     /// </summary>
-    public void PreRenderSilhouettes(Action<SpriteBatch> drawEntities)
+    public void PreRenderSilhouettes(Action<SpriteBatchEx> drawEntities)
     {
         if (SilhouetteEntityIds.Count == 0)
         {
@@ -83,7 +83,7 @@ public sealed class SilhouetteRenderer : IDisposable
             return;
         }
 
-        Batch ??= new SpriteBatch(Device);
+        Batch ??= new SpriteBatchEx(Device);
 
         var screenWidth = Device.PresentationParameters.BackBufferWidth;
         var screenHeight = Device.PresentationParameters.BackBufferHeight;
