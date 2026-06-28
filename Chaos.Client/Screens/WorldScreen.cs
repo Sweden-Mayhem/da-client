@@ -1410,7 +1410,6 @@ public sealed partial class WorldScreen : IScreen
         //for NPCs/world offers). On OK it starts the quest AND closes the journal so the "Quest Started" banner shows.
         QuestJournal.OnStartQuest += ConfirmStartQuest;
         QuestJournal.OnAbandonQuest += questKey => Game.Connection.RequestAbandonQuest(questKey);
-        QuestJournal.OnClaimQuest += questKey => Game.Connection.RequestClaimQuest(questKey);
         menuBar.AddEntry("Quests", OpenQuestJournal, Tip("Quest Journal",
             "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
             GameAction.ToggleQuestJournal));

@@ -26,9 +26,6 @@ public sealed record QuestTrackerArgs : IPacketSerializable
 
     /// <summary>Quest keys the player has completed at least once (moves them to the journal's Completed tab).</summary>
     public List<string> CompletedKeys { get; init; } = [];
-
-    /// <summary>Quest keys whose objectives are done and await the journal's "Claim Reward" button (no NPC turn-in).</summary>
-    public List<string> ClaimableKeys { get; init; } = [];
 }
 
 /// <summary>One quest's journal start status: startable now (CooldownSeconds 0) or its remaining cooldown seconds.</summary>
@@ -138,18 +135,11 @@ public sealed class QuestTrackerConverter : PacketConverterBase<QuestTrackerArgs
         for (var i = 0; i < completedCount; i++)
             completed.Add(reader.ReadString8());
 
-        var claimable = new List<string>();
-        var claimableCount = reader.ReadByte();
-
-        for (var i = 0; i < claimableCount; i++)
-            claimable.Add(reader.ReadString8());
-
         return new QuestTrackerArgs
         {
             Quests = quests,
             StartStatuses = statuses,
-            CompletedKeys = completed,
-            ClaimableKeys = claimable
+            CompletedKeys = completed
         };
     }
 
@@ -189,11 +179,6 @@ public sealed class QuestTrackerConverter : PacketConverterBase<QuestTrackerArgs
         writer.WriteByte((byte)args.CompletedKeys.Count);
 
         foreach (var key in args.CompletedKeys)
-            writer.WriteString8(key);
-
-        writer.WriteByte((byte)args.ClaimableKeys.Count);
-
-        foreach (var key in args.ClaimableKeys)
             writer.WriteString8(key);
     }
 }

@@ -825,9 +825,6 @@ public sealed class ConnectionManager : IDisposable
     /// <summary>SWM: requests the server ABANDON an active quest (drops it so it leaves the tracker and can be redone).</summary>
     public void RequestAbandonQuest(string questKey) => SendIfWorld(new StartQuestArgs { Action = 1, QuestKey = questKey });
 
-    /// <summary>SWM: requests the server CLAIM the reward of a quest whose objectives are done (parked on its complete node).</summary>
-    public void RequestClaimQuest(string questKey) => SendIfWorld(new StartQuestArgs { Action = 2, QuestKey = questKey });
-
     /// <summary>SWM: ACCEPT an NPC quest offer (the Accept/Deny window) - starts the quest from its giver NPC.</summary>
     public void RequestAcceptOffer(string questKey) => SendIfWorld(new StartQuestArgs { Action = 3, QuestKey = questKey });
 

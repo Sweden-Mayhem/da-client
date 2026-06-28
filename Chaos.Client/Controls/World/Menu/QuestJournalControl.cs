@@ -234,24 +234,8 @@ public sealed class QuestJournalControl : DraggableWindow
         Rebuild(); //completion changes which tab a quest lands in
     }
 
-    //quest keys whose objectives are done, awaiting the Active-tab "Claim Reward" button (no NPC turn-in).
-    private HashSet<string> ClaimableKeys = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>Raised when the player clicks "Claim Reward" on a done quest (the quest key).</summary>
-    public Action<string>? OnClaimQuest;
-
-    public void SetClaimableKeys(IReadOnlyList<string> keys)
-    {
-        var set = new HashSet<string>(keys, StringComparer.OrdinalIgnoreCase);
-
-        if (set.SetEquals(ClaimableKeys))
-            return;
-
-        ClaimableKeys = set;
-
-        if (Visible)
-            BuildDetail();
-    }
+    //SWM: "Claim Reward" was removed - an event / no-npc quest finishes on its own, so nothing is ever
+    //left to claim from the journal.
 
     public void SetGuide(IReadOnlyList<QuestMetadataEntry> guide, HashSet<string> completedIds, BaseClass playerClass, bool masterQuests)
     {
@@ -766,19 +750,25 @@ public sealed class QuestJournalControl : DraggableWindow
             var key = entry.QuestKey;
             AddSeparator(innerW, ref y);
 
-            //"Claim Reward" when the objectives are done and the quest awaits a player action (no NPC turn-in)
-            if (ClaimableKeys.Contains(key))
-            {
-                AddActionButton("Claim Reward", ActiveColor, ref y, () => OnClaimQuest?.Invoke(key));
-                y += 8;
-            }
+            //SWM: events / no-npc quests FINISH ON THEIR OWN now - there is never a journal "Claim Reward".
 
             var tracked = !ClientSettings.UntrackedQuests.Contains(key);
             AddActionButton(tracked ? "Hide from tracker" : "Show on tracker", tracked ? DimColor : ActiveColor, ref y, () => ToggleTrack(key));
-            y += 8;
-            AddActionButton("Abandon quest", LockedColor, ref y, () => OnAbandonQuest?.Invoke(key));
+
+            //SWM: mandatory quests (choose-your-class, the tutorial events) carry canabandon=0 in the
+            //SwmQuests metafile - hide the Abandon button for them so the player cannot drop them.
+            if (CanAbandonQuest(key))
+            {
+                y += 8;
+                AddActionButton("Abandon quest", LockedColor, ref y, () => OnAbandonQuest?.Invoke(key));
+            }
         }
     }
+
+    //SWM: may this active quest be abandoned? Looked up from the SwmQuests catalog (Guide) by key; absent/unknown
+    //defaults to TRUE (abandonable), matching the server, which only emits canabandon=0 for mandatory quests.
+    private bool CanAbandonQuest(string key)
+        => Guide.FirstOrDefault(g => string.Equals(g.Key, key, StringComparison.OrdinalIgnoreCase))?.CanAbandon ?? true;
 
     //the detail for a finished quest: what it was + what you earned. For a repeatable on cooldown, the status line
     //IS the live "available again in ..." countdown.

@@ -1390,7 +1390,6 @@ public sealed partial class WorldScreen
         QuestJournal?.SetActiveQuests(args.Quests);
         QuestJournal?.SetStartStatuses(args.StartStatuses);
         QuestJournal?.SetCompletedKeys(args.CompletedKeys);
-        QuestJournal?.SetClaimableKeys(args.ClaimableKeys);
         DetectNewlyStartedQuests(args.Quests);
     }
 

@@ -57,6 +57,10 @@ public sealed record QuestMetadataEntry
     public string QualifyingClasses { get; init; } = string.Empty;
     public string PrerequisiteKey { get; init; } = string.Empty;
 
+    /// <summary>May the player abandon this quest from the journal? Default true; the server emits <c>canabandon=0</c>
+    ///     only for mandatory quests (choose-your-class, the tutorial events), so the journal hides the Abandon button.</summary>
+    public bool CanAbandon { get; init; } = true;
+
     public IReadOnlyList<QuestStepInfo> Steps { get; init; } = [];
     public IReadOnlyList<QuestRewardOutcome> Outcomes { get; init; } = [];
 
@@ -110,6 +114,7 @@ public sealed record QuestMetadataEntry
                         QualifyingCircles = Str(props, "circles"),
                         QualifyingClasses = Str(props, "classes"),
                         PrerequisiteKey = Str(props, "prereq"),
+                        CanAbandon = FlagDefaultTrue(props, "canabandon"),
                         Steps = ParseSteps(Str(props, "steps")),
                         Outcomes = ParseOutcomes(Str(props, "outcomes"))
                     });
@@ -125,6 +130,10 @@ public sealed record QuestMetadataEntry
     //prefer `name`, falling back to `legacy` when the server hasn't emitted the newer prop
     private static bool FlagOr(IReadOnlyDictionary<string, string> props, string name, string legacy)
         => props.TryGetValue(name, out var v) ? v == "1" : Flag(props, legacy);
+
+    //a flag that DEFAULTS TRUE: true unless the server explicitly emitted it as "0" (so an old/absent prop stays true)
+    private static bool FlagDefaultTrue(IReadOnlyDictionary<string, string> props, string name)
+        => !props.TryGetValue(name, out var v) || v != "0";
 
     private static int Int(IReadOnlyDictionary<string, string> props, string name)
         => props.TryGetValue(name, out var v) && int.TryParse(v, out var n) ? n : 0;
