@@ -87,6 +87,10 @@ public sealed class QuestJournalControl : DraggableWindow
         public int StartMaxLevel { get; init; }
 
         public List<StepLine> Steps { get; init; } = [];
+
+        //the catalog's objective OUTLINE (the Suggested/Repeatable preview "Objectives" list). Distinct from Steps
+        //above, which carry per-checkpoint STATE for an ACTIVE quest.
+        public IReadOnlyList<QuestStepInfo> OutlineSteps { get; init; } = [];
     }
 
     //--- tabs ---
@@ -439,7 +443,7 @@ public sealed class QuestJournalControl : DraggableWindow
                     new Entry
                     {
                         Key = "rep:" + Id(ev), Title = title, Tab = Tab.Repeatable, Category = cadence,
-                        Color = AvailableColor, Description = ev.Description, Outcomes = ev.Outcomes,
+                        Color = AvailableColor, Description = ev.Description, Outcomes = ev.Outcomes, OutlineSteps = ev.Steps,
                         StartMinLevel = ev.MinLevel, StartMaxLevel = ev.MaxLevel,
                         Status = $"{cadence} - repeatable ({Cooldown(ev.RepeatMinutes)})", StatusKind = Tab.Repeatable,
                         StartHint = ev.StartHint, ShowStart = true, QuestKey = ev.Key, Startable = ev.Startable
@@ -490,7 +494,7 @@ public sealed class QuestJournalControl : DraggableWindow
                 Key = "sug:" + Id(ev), Title = ev.Title, Tab = Tab.Suggested,
                 Category = prim > 0 ? $"Circle {prim}" : "General", Sort = prim,
                 Color = locked ? LockedColor : AvailableColor,
-                Description = ev.Description, Outcomes = ev.Outcomes,
+                Description = ev.Description, Outcomes = ev.Outcomes, OutlineSteps = ev.Steps,
                 StartMinLevel = ev.MinLevel, StartMaxLevel = ev.MaxLevel,
                 Status = locked ? "Locked - finish an earlier quest first" : "Available",
                 StatusKind = locked ? Tab.Completed /*greyed*/ : Tab.Suggested,
@@ -701,6 +705,7 @@ public sealed class QuestJournalControl : DraggableWindow
             //"How to start" only when the player can't start it here (it must be begun in the world at an NPC)
             ShowHowToStart = !startableNow && !onCooldown,
             StartHint = entry.StartHint,
+            Steps = entry.OutlineSteps,
             Outcomes = QuestDetailView.ToOutcomeViews(entry.Outcomes),
             StatusLine = status
         };

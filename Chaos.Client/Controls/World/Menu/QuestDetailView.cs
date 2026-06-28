@@ -3,6 +3,7 @@ using Chaos.Client.Controls.Components;
 using Chaos.Client.Controls.Generic;
 using Chaos.Client.Data.Models;
 using Chaos.Client.Rendering;
+using Chaos.Client.Rendering.Definitions;
 using Chaos.Client.Systems;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
@@ -27,6 +28,11 @@ public sealed class QuestDetailModel
     public string? Description;
     public bool ShowHowToStart;
     public string? StartHint;
+
+    /// <summary>The quest's objective OUTLINE (its steps), drawn as an "Objectives" list so a player previewing a
+    ///     not-yet-started quest sees what they will do. Only steps flagged <see cref="QuestStepInfo.Show" /> are
+    ///     listed; an empty list draws no section.</summary>
+    public IReadOnlyList<QuestStepInfo> Steps = [];
 
     /// <summary>The reward outcomes to show. One -> a single "Reward" block; several -> a "Rewards" header + a labelled
     ///     sub-block per outcome. When empty, the legacy single <see cref="Exp" />/<see cref="Gold" />/<see cref="Items" />/
@@ -87,12 +93,37 @@ public static class QuestDetailView
             y += 6;
         }
 
+        AddObjectives(target, innerW, model.Steps, ref y);
+
         AddRewards(target, innerW, EffectiveOutcomes(model), onRewardHover, ref y);
 
         AddSeparator(target, innerW, ref y);
 
         if (!string.IsNullOrEmpty(model.StatusLine))
             AddText(target, model.StatusLine, BODY_FONT, DimColor, PAD, innerW, ref y, wrap: false);
+    }
+
+    //the quest's objective OUTLINE (its visible steps) as a short readable list, so PREVIEWING a not-yet-started quest
+    //shows what the player will do. Hidden steps (Show = false) and empty steps are skipped; nothing draws when there
+    //is nothing to list. Used by BOTH the offer window and the journal's Suggested/Repeatable detail.
+    public static void AddObjectives(ScrollRegion target, int innerW, IReadOnlyList<QuestStepInfo> steps, ref int y)
+    {
+        var shown = steps.Where(static s => s.Show && (!string.IsNullOrEmpty(s.Label) || !string.IsNullOrEmpty(s.Description))).ToList();
+
+        if (shown.Count == 0)
+            return;
+
+        AddText(target, "Objectives", HEADER_FONT, HeaderColor, PAD, innerW, ref y, wrap: false);
+        y += 4;
+
+        foreach (var step in shown)
+        {
+            var text = string.IsNullOrEmpty(step.Label) ? step.Description : step.Label;
+            AddText(target, $"-  {text}", BODY_FONT, BodyColor, PAD, innerW, ref y, wrap: true);
+            y += 2;
+        }
+
+        y += 6;
     }
 
     //draws the quest's reward section: a single "Reward" block for one outcome, or a "Rewards" header with a labelled
@@ -291,7 +322,7 @@ public static class QuestDetailView
             var rowH = Math.Max(ih, lineH);
 
             if (icon is not null)
-                target.Add(new RewardIcon { Icon = icon, X = x, Y = y + ((rowH - ih) / 2), Width = iw, Height = ih });
+                target.Add(new RewardIcon { Icon = icon, X = x, Y = y + ((rowH - ih) / 2), Width = iw, Height = ih, Tint = LegendColors.Get(m.Color) });
 
             Lbl(m.Title, x + iw + 8, y + ((rowH - lineH) / 2), HeaderColor);
             y += rowH + 6;
@@ -316,6 +347,10 @@ public static class QuestDetailView
     public sealed class RewardIcon : UIElement
     {
         public Texture2D? Icon { get; init; }
+
+        //draw-time colour multiply: item/gold icons leave this White (already palette-dyed at fetch); legend-mark
+        //icons (which can't be dyed at fetch) pass their mapped mark colour here so they show in their own colour.
+        public Color Tint { get; init; } = Color.White;
         public string? ItemName { get; init; }
         public Action<string?>? Hovered { get; init; }
 
@@ -361,7 +396,7 @@ public static class QuestDetailView
             var sy = src.Y + ((visible.Y - dest.Y) * src.Height / dest.Height);
             var sw = visible.Width * src.Width / dest.Width;
             var sh = visible.Height * src.Height / dest.Height;
-            spriteBatch.Draw(atlas, visible, new Rectangle(sx, sy, sw, sh), Color.White);
+            spriteBatch.Draw(atlas, visible, new Rectangle(sx, sy, sw, sh), Tint);
         }
     }
 }

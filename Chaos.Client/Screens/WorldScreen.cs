@@ -1506,6 +1506,7 @@ public sealed partial class WorldScreen : IScreen
         //SWM quest tracker: corner HUD panel of active tracked quests, fed by HandleQuestTracker. Below the buff
         //bar in z so its book toggle/text never fights the effect icons. Anchored top-left each frame.
         QuestTracker = new QuestTrackerControl { ZIndex = 89_000 };
+        QuestTracker.OpenJournalRequested += OpenQuestJournal;
         Root.AddChild(QuestTracker);
 
         WireHudPanels(SmallHud);

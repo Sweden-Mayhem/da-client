@@ -476,7 +476,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         var nb = oy + (int)Math.Ceiling((screenClip.Bottom - oy) / Scale);
         ClipRect = new Rectangle(nl, nt, nr - nl, nb - nt);
 
-        spriteBatch.Begin(samplerState: spriteBatch.SamplerState, transformMatrix: transform);
+        spriteBatch.Begin(samplerState: GlobalSettings.Sampler, transformMatrix: transform);
         Inner.Draw(spriteBatch);
         spriteBatch.End();
 
@@ -545,7 +545,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
             gd.SetRenderTarget(NativeTarget);
             gd.Clear(Color.Transparent);
             ClipRect = new Rectangle(ox, oy, iw, ih);
-            spriteBatch.Begin(samplerState: spriteBatch.SamplerState, transformMatrix: Matrix.CreateTranslation(-ox, -oy, 0f));
+            spriteBatch.Begin(samplerState: GlobalSettings.Sampler, transformMatrix: Matrix.CreateTranslation(-ox, -oy, 0f));
             Inner.Draw(spriteBatch);
             spriteBatch.End();
             ClipRect = screenClip;

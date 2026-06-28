@@ -22,8 +22,8 @@ public sealed class OptionsWindow : DraggableWindow
     private const int PAD = 8;
     private const int LABEL_W = 200;
     private const int CTL_X = 210;
-    private const int CTL_W = 138;
-    private const int VAL_X = 350;
+    private const int CTL_W = 108;  //slider track width (narrowed so the value column fits "Unlimited")
+    private const int VAL_X = 320;  //value label x (moved left to widen the value column)
     private const int TITLE_ROW = 26;
     private const int SLIDER_ROW = 26;
     private const int CHECK_ROW = 26;
@@ -137,7 +137,7 @@ public sealed class OptionsWindow : DraggableWindow
             Text = format(value),
             X = VAL_X,
             Y = NextY,
-            Width = RowW - VAL_X - PAD - CONTROL_INDENT,
+            Width = RowW - VAL_X - PAD,
             Height = 16,
             CustomFontSize = MenuButton.MenuFontSize,
             ForegroundColor = ValueColor,
@@ -327,6 +327,15 @@ public sealed class OptionsWindow : DraggableWindow
                     ClientSettings.Save();
                 });
 
+            win.AddSlider(
+                "Whisper", 0f, 100f, ClientSettings.WhisperVolume, 5f, v => v <= 0f ? "Off" : $"{v:0}%",
+                v =>
+                {
+                    ClientSettings.WhisperVolume = (int)v;
+                    game.SoundSystem.SetWhisperVolume((int)v);
+                    ClientSettings.Save();
+                });
+
             //(the per-step "Step 1..4" debug toggles were removed from the menu; the FootstepStepsEnabled flags + their
             //persistence stay, so they can be re-exposed later if needed.)
         }
@@ -341,6 +350,15 @@ public sealed class OptionsWindow : DraggableWindow
             {
                 ClientSettings.VSync = v;
                 game.SetVSync(v);
+                ClientSettings.Save();
+            });
+
+        win.AddSlider(
+            "Max framerate", 0f, 240f, ClientSettings.MaxFramerate, 5f, v => v <= 0f ? "Unlimited" : $"{v:0} fps",
+            v =>
+            {
+                ClientSettings.MaxFramerate = (int)v;
+                game.SetMaxFramerate((int)v);
                 ClientSettings.Save();
             });
 
@@ -601,14 +619,6 @@ public sealed class OptionsWindow : DraggableWindow
                 v =>
                 {
                     ClientSettings.CameraEffects = v;
-                    ClientSettings.Save();
-                });
-
-            win.AddCheckbox(
-                "Sound on whisper", ClientSettings.WhisperSound,
-                v =>
-                {
-                    ClientSettings.WhisperSound = v;
                     ClientSettings.Save();
                 });
 

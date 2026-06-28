@@ -333,8 +333,7 @@ public sealed partial class WorldScreen
                 {
                     ActiveChatInput?.SeedWhisperTargetIfEmpty(whisperSender);
 
-                    if (ClientSettings.WhisperSound)
-                        Game.SoundSystem.PlaySound(158);
+                    Game.SoundSystem.PlayWhisperSound();
                 }
 
                 break;
@@ -1404,7 +1403,8 @@ public sealed partial class WorldScreen
             QuestJournal.Visible = false;
 
         //render the offer from the SAME SwmQuests catalog the journal uses, matched by key, so the rewards are identical.
-        //the offer packet only chooses WHICH quest + carries the Accept key; its reward fields are not read for display.
+        //the offer packet only chooses WHICH quest + carries the Accept key; its reward fields are used ONLY by the
+        //fallback below, for the rare case the catalog has not synced yet.
         var quest = GetQuestCatalog()
                        .FirstOrDefault(q => string.Equals(q.Key, args.QuestKey, StringComparison.OrdinalIgnoreCase))
                     ?? FallbackQuest(args);
@@ -1414,14 +1414,24 @@ public sealed partial class WorldScreen
 
     //a minimal catalog entry from the offer packet, used ONLY for the rare case the SwmQuests catalog has not synced
     //to disk yet (e.g. an offer that arrives at login before the metafile sync). Carries title / description / cadence
-    //so the window is not blank - never rewards, which must come from the catalog so the journal + offer never diverge.
+    //AND one reward outcome built from the packet's own exp / gold / items / marks, so an offered quest always shows
+    //its rewards even before the catalog lands (once it lands, the matched catalog entry takes over).
     private static QuestMetadataEntry FallbackQuest(QuestOfferArgs args)
         => new()
         {
             Key = args.QuestKey,
             Title = args.QuestName,
             Description = args.Description,
-            RepeatMinutes = (int)(args.RepeatSeconds / 60)
+            RepeatMinutes = (int)(args.RepeatSeconds / 60),
+            Outcomes =
+            [
+                new QuestRewardOutcome(
+                    string.Empty,
+                    (int)args.Exp,
+                    (int)args.Gold,
+                    args.Items.Select(static i => new RewardItemInfo(i.Sprite, i.Color, i.Count, i.Name)).ToList(),
+                    args.Marks.Select(static m => new RewardMarkInfo(m.Icon, m.Color, m.Title)).ToList())
+            ]
         };
 
     //the parsed SwmQuests catalog, loaded lazily and cached. Reloaded by HandleMetaDataSyncComplete after a fresh

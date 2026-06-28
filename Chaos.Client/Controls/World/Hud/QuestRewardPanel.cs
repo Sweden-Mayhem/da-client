@@ -2,6 +2,7 @@
 using Chaos.Client.Controls.Components;
 using Chaos.Client.Networking;
 using Chaos.Client.Rendering;
+using Chaos.Client.Rendering.Definitions;
 using Chaos.Client.Systems;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
@@ -36,7 +37,9 @@ public sealed class QuestRewardPanel : UIElement
     private static readonly Color ItemColor = new(230, 224, 208);
     private static readonly Color MarkLabelColor = new(224, 192, 108);
 
-    private readonly record struct Cell(Texture2D? Icon, Texture2D? Caption, Color CaptionColor);
+    //IconColor is a draw-time colour multiply: gold/item icons leave it White (already palette-dyed at fetch),
+    //legend-mark icons (which can't be dyed at fetch) pass their mapped mark colour so they show in their own colour.
+    private readonly record struct Cell(Texture2D? Icon, Texture2D? Caption, Color CaptionColor, Color IconColor);
 
     private readonly List<Cell> Cells = [];
     private Texture2D? ExpTex;
@@ -76,16 +79,16 @@ public sealed class QuestRewardPanel : UIElement
             ExpTex = TtfTextRenderer.GetLine($"+{args.Exp:N0} EXP", ExpFontPx);
 
         if (args.Gold > 0)
-            Cells.Add(new Cell(ui.GetItemIcon(GOLD_SPRITE), TtfTextRenderer.GetLine($"{args.Gold:N0}", CapFontPx), GoldColor));
+            Cells.Add(new Cell(ui.GetItemIcon(GOLD_SPRITE), TtfTextRenderer.GetLine($"{args.Gold:N0}", CapFontPx), GoldColor, Color.White));
 
         foreach (var it in args.Items)
         {
             var cap = it.Count > 1 ? $"x{it.Count}" : it.Name;
-            Cells.Add(new Cell(ui.GetItemIcon(it.Sprite, (DisplayColor)it.Color), TtfTextRenderer.GetLine(cap, CapFontPx), ItemColor));
+            Cells.Add(new Cell(ui.GetItemIcon(it.Sprite, (DisplayColor)it.Color), TtfTextRenderer.GetLine(cap, CapFontPx), ItemColor, Color.White));
         }
 
         foreach (var m in args.Marks)
-            Cells.Add(new Cell(SafeMark(ui, m.Icon), TtfTextRenderer.GetLine(m.Title, CapFontPx), MarkLabelColor));
+            Cells.Add(new Cell(SafeMark(ui, m.Icon), TtfTextRenderer.GetLine(m.Title, CapFontPx), MarkLabelColor, LegendColors.Get(m.Color)));
 
         if ((Cells.Count == 0) && (ExpTex is null))
             return;
@@ -204,7 +207,7 @@ public sealed class QuestRewardPanel : UIElement
             {
                 var iw = IconW(icon);
                 var ih = IconH(icon);
-                DrawIconScaled(spriteBatch, icon, cx - (iw / 2), y, iw, ih, Color.White * alpha);
+                DrawIconScaled(spriteBatch, icon, cx - (iw / 2), y, iw, ih, cell.IconColor * alpha);
             }
 
             if (cell.Caption is { } cap)

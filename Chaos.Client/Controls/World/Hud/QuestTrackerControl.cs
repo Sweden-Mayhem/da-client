@@ -70,6 +70,9 @@ public sealed class QuestTrackerControl : UIPanel
     private readonly Texture2D? PinPressedTex;
 
     private readonly UIPanel PinBox;
+
+    private readonly Texture2D? BookTex;     //in-game journal icon (_nbklgd.spf)
+    private readonly UIPanel BookBox;        //journal shortcut button, sits beside the pin
     private readonly List<QuestRow> Rows = [];
 
     //the current quests, kept so a font-scale change or a quadrant flip can rebuild the labels without a new push.
@@ -107,6 +110,7 @@ public sealed class QuestTrackerControl : UIPanel
     private int DragGrabX, DragGrabY;
     private int PressedQuestIndex = -1;
     private bool PressedOnPin;
+    private bool PressedOnBook;
 
     //position persistence: OffsetX is center-relative (X - screenW/2); OffsetY is anchor-relative (>=0 = distance
     //from the top, <0 = distance from the bottom), exactly like the chat window, so it tracks its edge on a rescale.
@@ -121,6 +125,9 @@ public sealed class QuestTrackerControl : UIPanel
     private bool DetailJustOpened;
 
     public bool Pinned { get; private set; }
+
+    //raised when the journal book button (beside the pin) is clicked; WorldScreen opens the quest journal.
+    public event Action? OpenJournalRequested;
 
     public QuestTrackerControl()
     {
@@ -143,6 +150,19 @@ public sealed class QuestTrackerControl : UIPanel
             Visible = false
         };
         AddChild(PinBox);
+
+        //journal shortcut: the in-game book sprite in the same 18x18 footprint as the pin, sitting beside it
+        BookTex = UiRenderer.Instance?.GetSpfTexture("_nbklgd.spf");
+        BookBox = new UIPanel
+        {
+            Name = "QuestTrackerJournal",
+            Width = BookTex?.Width ?? PIN_SIZE,   //panel draws the sprite at native size; size the box (and hit-rect) to it
+            Height = BookTex?.Height ?? PIN_SIZE,
+            Background = BookTex,
+            IsHitTestVisible = false,
+            Visible = false
+        };
+        AddChild(BookBox);
     }
 
     private static int ScaledFont(int baseSize)
@@ -220,7 +240,8 @@ public sealed class QuestTrackerControl : UIPanel
             return;
         }
 
-        BrightSeconds = BRIGHT_SECONDS;
+        //the box (chrome) no longer lights up on a quest change (start / end / progress) - it stays quiet and only
+        //brightens on hover / pin / drag, so starting or finishing a quest does not pop a box; the text just updates
 
         //if the detail popup is open, refresh it (or close it if its quest is gone)
         if (Detail.Visible)
@@ -250,6 +271,10 @@ public sealed class QuestTrackerControl : UIPanel
         AppliedScale = ClientSettings.EffectiveQuestFontScale;
         TitleFont = ScaledFont(TITLE_FONT_BASE);
         RowFont = ScaledFont(ROW_FONT_BASE);
+
+        //width is chosen FIRST so the labels below wrap to it; each label's wrapped ContentHeight then drives the
+        //row heights, so long objective text spills onto extra lines instead of being cropped
+        Width = Math.Max(180, (int)MathF.Round(240 * ClientSettings.EffectiveQuestFontScale));
 
         var rowsHeight = 0;
 
@@ -282,13 +307,15 @@ public sealed class QuestTrackerControl : UIPanel
 
             Rows.Add(new QuestRow(q, title, steps));
 
-            rowsHeight += LineH(TitleFont) + steps.Count * LineH(RowFont);
+            rowsHeight += title.Height;
+
+            foreach (var step in steps)
+                rowsHeight += step.Height;
 
             if (q < Quests.Count - 1)
                 rowsHeight += QUEST_GAP;
         }
 
-        Width = Math.Max(180, (int)MathF.Round(240 * ClientSettings.EffectiveQuestFontScale));
         Height = HEADER_H + PAD + rowsHeight + PAD;
     }
 
@@ -298,14 +325,18 @@ public sealed class QuestTrackerControl : UIPanel
         {
             X = PAD,
             Width = Math.Max(20, Width - PAD * 2),
-            Height = LineH(fontSize),
             CustomFontSize = fontSize,
             ForegroundColor = color,
+            WordWrap = true,          //wrap long objective text onto extra lines instead of cropping it
             Text = text,
-            GlowAlpha = 1f,           //a soft dark backing so the text stays readable once the box has faded away
-            TruncateWithEllipsis = true,
+            //render like the chat text: a full 1px dark outline + drop shadow, so it stays readable on ANY
+            //background (crisper than the old soft GlowAlpha backing, which washed out over bright/busy tiles)
+            ShadowStyle = ShadowStyle.BottomRight,
+            ShadowOffset = new Point(0, 3),
             IsHitTestVisible = false  //decorative; clicks are resolved by the control's own polling
         };
+
+        label.Height = Math.Max(LineH(fontSize), label.ContentHeight) + 3; //+ bottom room for the drop shadow; tall enough for every wrapped line
 
         AddChild(label);
 
@@ -321,6 +352,10 @@ public sealed class QuestTrackerControl : UIPanel
         //pin sits in the docked corner: near horizontal edge, on the docked vertical (header) strip
         PinBox.X = leftHalf ? PAD : Width - PAD - PIN_SIZE;
         PinBox.Y = topHalf ? 2 : Height - HEADER_H + 2;
+
+        //the journal book sits right beside the pin (inward, so it always stays on the header strip), centred on it
+        BookBox.X = leftHalf ? PinBox.X + PIN_SIZE + 2 : PinBox.X - BookBox.Width - 2;
+        BookBox.Y = PinBox.Y + (PIN_SIZE - BookBox.Height) / 2;
 
         //rows fill the space opposite the header strip
         var y = topHalf ? HEADER_H + PAD : PAD;
@@ -354,7 +389,7 @@ public sealed class QuestTrackerControl : UIPanel
             row.Title.Width = innerW;
             row.Title.HorizontalAlignment = align;
             row.Title.Opacity = opacity;
-            y += LineH(TitleFont);
+            y += row.Title.Height;
 
             foreach (var step in row.Steps)
             {
@@ -363,7 +398,7 @@ public sealed class QuestTrackerControl : UIPanel
                 step.Width = innerW;
                 step.HorizontalAlignment = align;
                 step.Opacity = opacity;
-                y += LineH(RowFont);
+                y += step.Height;
             }
 
             row.BlockTop = blockTop;
@@ -482,7 +517,7 @@ public sealed class QuestTrackerControl : UIPanel
         base.Update(gameTime);
     }
 
-    //the box fill + border + pin fade together with ChromeOpacity; the quest text never fades (it has its own glow).
+    //the box fill + border + pin fade together with ChromeOpacity; the quest text never fades (it has its own outline).
     private void ApplyChrome()
     {
         BackgroundColor = new Color(12, 10, 8) * (ChromeOpacity * 0.8f);
@@ -492,6 +527,10 @@ public sealed class QuestTrackerControl : UIPanel
         PinBox.Background = PressedOnPin && PressActive && overPin ? PinPressedTex : Pinned ? PinActiveTex : PinNormalTex;
         PinBox.BackgroundOpacity = ChromeOpacity;
         PinBox.Visible = ChromeOpacity > 0.05f;
+
+        var overBook = PointInBook(InputBuffer.MouseX, InputBuffer.MouseY);
+        BookBox.BackgroundOpacity = ChromeOpacity * (PressedOnBook && PressActive && overBook ? 0.55f : 1f);
+        BookBox.Visible = ChromeOpacity > 0.05f;
     }
 
     //press / drag / click resolution, polled from the global mouse state so a dropped mouse-up can never strand us
@@ -513,7 +552,8 @@ public sealed class QuestTrackerControl : UIPanel
             DragGrabX = mx - X;
             DragGrabY = my - Y;
             PressedOnPin = PointInPin(mx, my);
-            PressedQuestIndex = PressedOnPin ? -1 : QuestIndexAt(mx, my);
+            PressedOnBook = PointInBook(mx, my);
+            PressedQuestIndex = PressedOnPin || PressedOnBook ? -1 : QuestIndexAt(mx, my);
         }
 
         if (PressActive && lmb)
@@ -536,6 +576,11 @@ public sealed class QuestTrackerControl : UIPanel
                 StoreOffset();
             else if (PressedOnPin && PointInPin(mx, my))
                 TogglePinned();
+            else if (PressedOnBook && PointInBook(mx, my))
+            {
+                SoundSystem.PlayUiClick();
+                OpenJournalRequested?.Invoke();
+            }
             else if ((PressedQuestIndex >= 0) && (QuestIndexAt(mx, my) == PressedQuestIndex))
                 ToggleDetail(PressedQuestIndex);
 
@@ -649,6 +694,11 @@ public sealed class QuestTrackerControl : UIPanel
            && (x >= ScreenX + PinBox.X) && (x < ScreenX + PinBox.X + PIN_SIZE)
            && (y >= ScreenY + PinBox.Y) && (y < ScreenY + PinBox.Y + PIN_SIZE);
 
+    private bool PointInBook(int x, int y)
+        => BookBox.Visible
+           && (x >= ScreenX + BookBox.X) && (x < ScreenX + BookBox.X + BookBox.Width)
+           && (y >= ScreenY + BookBox.Y) && (y < ScreenY + BookBox.Y + BookBox.Height);
+
     //which quest block the cursor is over (panel-local Y against the laid-out block extents), or -1
     private int QuestIndexAt(int x, int y)
     {
@@ -693,6 +743,8 @@ public sealed class QuestTrackerControl : UIPanel
         PinNormalTex?.Dispose();
         PinActiveTex?.Dispose();
         PinPressedTex?.Dispose();
+
+        BookBox.Background = null; //BookTex is a cached UiRenderer sprite, not owned here
 
         base.Dispose();
     }

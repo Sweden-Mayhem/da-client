@@ -101,7 +101,7 @@ public class UIPanel : UIElement
             //Color.White * opacity fades a premultiplied texture correctly (used for the titlebar button art on fade windows)
             if (BackgroundEffect is not null)
             {
-                spriteBatch.Begin(samplerState: spriteBatch.SamplerState, effect: BackgroundEffect);
+                spriteBatch.Begin(samplerState: GlobalSettings.Sampler, effect: BackgroundEffect);
                 DrawTexture(spriteBatch, Background, new Vector2(ScreenX, ScreenY), Color.White * BackgroundOpacity);
                 spriteBatch.End();
             } else

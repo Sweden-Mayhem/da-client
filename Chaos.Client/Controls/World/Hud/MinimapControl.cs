@@ -502,7 +502,16 @@ public sealed class MinimapControl : UIElement
         foreach (var kv in NearestPerDest)
             SortedLabels.Add((kv.Key, kv.Value.Name, kv.Value.Local, kv.Value.DistSq));
 
-        SortedLabels.Sort(static (l, r) => l.DistSq.CompareTo(r.DistSq));
+        //deterministic tie-break: two warps at the same distance must keep a stable order, otherwise the
+        //unstable List.Sort can flip them each frame -> the collision placement flips -> a name toggles
+        //shown/hidden. At high FPS the per-frame fade step is tiny so it's invisible; at low FPS the step is
+        //large, so the toggle becomes a hard flicker. Ordering ties by Id makes placement frame-stable.
+        SortedLabels.Sort(static (l, r) =>
+        {
+            var c = l.DistSq.CompareTo(r.DistSq);
+
+            return c != 0 ? c : l.Id.CompareTo(r.Id);
+        });
 
         foreach (var (id, name, p, _) in SortedLabels)
         {
@@ -586,7 +595,15 @@ public sealed class MinimapControl : UIElement
             }
 
             var f = DestFade[id];
-            f = target > f ? Math.Min(1f, f + (Dt / FADE_SECONDS)) : Math.Max(0f, f - (Dt / FADE_SECONDS));
+
+            //ease toward the target and STOP there. The old `target > f ? up : down` had no dead-zone: once f
+            //reached the target (e.g. 1.0) the comparison turned false and it faded the wrong way, so f oscillated
+            //target<->target-step every frame. At high FPS the step is tiny (invisible dither); at low FPS it's
+            //large, so the name visibly pulsates. Clamping to the target removes the overshoot.
+            if (f < target)
+                f = Math.Min(target, f + (Dt / FADE_SECONDS));
+            else if (f > target)
+                f = Math.Max(target, f - (Dt / FADE_SECONDS));
 
             if ((f <= 0.001f) && (target == 0f))
             {

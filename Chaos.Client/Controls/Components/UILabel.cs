@@ -307,9 +307,19 @@ public class UILabel : UIElement
         var color = ForegroundColor * Opacity;
         var pos = new Vector2(textX, textY);
 
-        //soft black glow first (furthest back): a disc of offset black copies of the line, building a dark halo that
-        //gives the text a readable backing when the window chrome behind it has faded away. Off (GlowAlpha 0) for
-        //everything but the faded chat log.
+        //the readable backing (soft glow and/or drop shadow + 1px outline) - shared with the wrapped path below, so a
+        //word-wrapped label gets exactly the same treatment as a single-line one
+        DrawGlyphBacking(spriteBatch, texture, pos);
+
+        DrawTexture(spriteBatch, texture, pos, color);
+    }
+
+    //Draws the readable backing behind a TTF glyph line at <paramref name="pos" />: a soft black glow (when GlowAlpha is
+    //set - e.g. the faded chat log) and/or a 50% drop shadow plus a crisp 1px black outline (when ShadowStyle is set), so
+    //the coloured text drawn on top stays legible over ANY background. The dark passes fade super-linearly (cubed) so the
+    //outline never lingers after a fading line. ONE implementation, called by both the single-line and word-wrapped paths.
+    private void DrawGlyphBacking(SpriteBatchEx spriteBatch, Texture2D texture, Vector2 pos)
+    {
         if (GlowAlpha > 0.003f)
         {
             var glow = Color.Black * (GlowAlpha * GLOW_TAP_ALPHA);
@@ -327,13 +337,6 @@ public class UILabel : UIElement
                 }
         }
 
-        //DrawTexture clips to ClipRect and tints the white glyph texture. When shadowing is on, draw (back to front):
-        //a soft 50% drop shadow further down, then a crisp 1px black outline all around, then the colored text, so the
-        //text stays readable over any background.
-        //The outline is 8 overlapping black copies, so it accumulates to a much higher opacity than the single text pass.
-        //At full opacity that just reads as a solid outline, but while the line FADES a linear outline alpha left the dark
-        //outline lingering after the colored text was basically gone. Fade the dark passes super-linearly (cubed, like the
-        //glow) so they disappear in lockstep with the text instead of dwelling. At Opacity 1 this is a no-op.
         if (ShadowStyle != ShadowStyle.None)
         {
             var darkFade = Opacity * Opacity * Opacity;
@@ -347,8 +350,6 @@ public class UILabel : UIElement
                     if ((ox != 0) || (oy != 0))
                         DrawTexture(spriteBatch, texture, pos + new Vector2(ox, oy), outline);
         }
-
-        DrawTexture(spriteBatch, texture, pos, color);
     }
 
     private void DrawCustomFontWrapped(SpriteBatchEx spriteBatch, int innerX, int innerY, int innerH)
@@ -403,7 +404,11 @@ public class UILabel : UIElement
             var texture = TtfTextRenderer.GetLine(lines[i], CustomFontSize);
 
             if (texture is not null)
-                DrawTexture(spriteBatch, texture, new Vector2(innerX, startY + (i * lineH)), color);
+            {
+                var pos = new Vector2(innerX, startY + (i * lineH));
+                DrawGlyphBacking(spriteBatch, texture, pos); //same readable backing as the single-line path
+                DrawTexture(spriteBatch, texture, pos, color);
+            }
         }
     }
 

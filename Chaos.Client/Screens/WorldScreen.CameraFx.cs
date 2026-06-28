@@ -225,7 +225,9 @@ public sealed partial class WorldScreen
         }
 
         ShakeTimer -= dt;
-        ShakePhase += dt * SHAKE_FREQ;
+        //cap the per-frame phase step below half a cycle so a fast oscillation can't skip past Nyquist and
+        //alias into flicker at low FPS - full speed at high FPS, gracefully slows instead of strobing at low FPS
+        ShakePhase += MathF.Min(dt * SHAKE_FREQ, 2.0f);
         var decay = Math.Clamp(ShakeTimer / SHAKE_DURATION, 0f, 1f);
         ShakeOffsetX = MathF.Sin(ShakePhase) * ShakeMagnitude * decay;
     }

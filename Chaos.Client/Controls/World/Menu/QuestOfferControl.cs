@@ -86,6 +86,7 @@ public sealed class QuestOfferControl : DraggableWindow
         {
             Title = string.IsNullOrEmpty(quest.Title) ? "New Quest" : quest.Title,
             Description = quest.Description,
+            Steps = quest.Steps,
             Outcomes = QuestDetailView.ToOutcomeViews(quest.Outcomes),
             StatusLine = RepeatableLine(quest.RepeatMinutes)
         };

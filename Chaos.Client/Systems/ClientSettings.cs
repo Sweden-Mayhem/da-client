@@ -175,6 +175,9 @@ public static class ClientSettings
     //run at the monitor refresh (no tearing). Driven by the Options "VSync" checkbox, applied via ChaosGame.SetVSync.
     public static bool VSync { get; set; } = true;
 
+    //max frame/update rate; 0 = unlimited. Applied via ChaosGame.SetMaxFramerate (fixed timestep at 1/fps when capped).
+    public static int MaxFramerate { get; set; }
+
     //modern click scheme: right-click always moves, left-click always interacts (pick up / attack / talk to NPC).
     //Off = the classic scheme (right double-click follows+assails, left double-click picks up). Options checkbox.
     public static bool ModernControls { get; set; } = true;
@@ -203,8 +206,9 @@ public static class ClientSettings
     //show friendly NPCs through walls in the behind-walls silhouette (Options checkbox, OFF by default). Read live.
     public static bool ShowNpcsBehindWalls { get; set; }
 
-    //play a sound (158) when a whisper is received. ON by default.
-    public static bool WhisperSound { get; set; } = true;
+    //volume of the whisper-received cue (sound 158) as a 0-100 percentage of the SFX volume. 0 = off. Default 100%
+    //(matches the old on-by-default cue, which played at full SFX). Pushed into SoundSystem.SetWhisperVolume at boot.
+    public static int WhisperVolume { get; set; } = 100;
 
     //draw the bezier targeting line from the hotbar slot to the cursor/target while selecting a spell target. OFF by default.
     public static bool SpellTargetLine { get; set; }
@@ -335,6 +339,11 @@ public static class ClientSettings
                         VSync = value == "1";
 
                         break;
+                    case "SwmMaxFramerate":
+                        if (int.TryParse(value, out var mfps))
+                            MaxFramerate = Math.Clamp(mfps, 0, 1000);
+
+                        break;
 
                     case "SwmModernControls":
                         ModernControls = value == "1";
@@ -379,8 +388,9 @@ public static class ClientSettings
                         ShowNpcsBehindWalls = value == "1";
 
                         break;
-                    case "SwmWhisperSound":
-                        WhisperSound = value == "1";
+                    case "SwmWhisperVolume":
+                        if (int.TryParse(value, out var wv))
+                            WhisperVolume = Math.Clamp(wv, 0, 100);
 
                         break;
                     case "SwmSpellTargetLine":
@@ -672,6 +682,7 @@ public static class ClientSettings
             writer.WriteLine($"SwmNameFontScale : {NameFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmBubbleFade : {BubbleFadeSeconds}");
             writer.WriteLine($"SwmVSync : {(VSync ? 1 : 0)}");
+            writer.WriteLine($"SwmMaxFramerate : {MaxFramerate}");
             writer.WriteLine($"SwmModernControls : {(ModernControls ? 1 : 0)}");
             writer.WriteLine($"SwmFlipWalkInteract : {(FlipWalkInteract ? 1 : 0)}");
             writer.WriteLine($"SwmFlipMouseTargetButtons : {(FlipMouseTargetButtons ? 1 : 0)}");
@@ -680,7 +691,7 @@ public static class ClientSettings
             writer.WriteLine($"SwmTooltipScale : {TooltipScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmSilhouetteAlpha : {SilhouetteAlpha.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmShowNpcsBehindWalls : {(ShowNpcsBehindWalls ? 1 : 0)}");
-            writer.WriteLine($"SwmWhisperSound : {(WhisperSound ? 1 : 0)}");
+            writer.WriteLine($"SwmWhisperVolume : {WhisperVolume}");
             writer.WriteLine($"SwmSpellTargetLine : {(SpellTargetLine ? 1 : 0)}");
             writer.WriteLine($"SwmChatOffX : {ChatWindowOffsetX}");
             writer.WriteLine($"SwmChatOffY : {ChatWindowOffsetY}");

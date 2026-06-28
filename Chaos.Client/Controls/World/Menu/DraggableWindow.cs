@@ -428,7 +428,7 @@ public class DraggableWindow : UIPanel
 
         gd.SetRenderTarget(SharedFadeTarget);
         gd.Clear(Color.Transparent);
-        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
+        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
         base.Draw(spriteBatch);
 
         if (UseWoodFrame)
@@ -442,7 +442,7 @@ public class DraggableWindow : UIPanel
             gd.SetRenderTargets(prevTargets);
 
         var rect = new Rectangle(ScreenX, ScreenY, Width, Height);
-        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
+        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
         spriteBatch.Draw(SharedFadeTarget, rect, rect, Color.White * alpha);
         spriteBatch.End();
     }

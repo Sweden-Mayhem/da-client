@@ -170,6 +170,7 @@ public sealed class ChaosGame : Game
         SoundSystem.SetMusicVolume(ClientSettings.MusicVolume);
         SoundSystem.SetFootstepVolume(ClientSettings.FootstepVolume);
         SoundSystem.SetChatVolume(ClientSettings.ChatBubbleVolume);
+        SoundSystem.SetWhisperVolume(ClientSettings.WhisperVolume);
 
         //push the persisted behind-walls opacity into the renderer (the slider also sets it live)
         Rendering.SilhouetteRenderer.SilhouetteAlpha = ClientSettings.SilhouetteAlpha;
@@ -190,10 +191,10 @@ public sealed class ChaosGame : Game
         Graphics.PreparingDeviceSettings += (_, e) =>
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
 
-        //run at the display refresh (driven by VSync) instead of a hard 60fps lock. Game logic is time-based
-        //(AnimationTick comes from TotalGameTime, controls use ElapsedGameTime deltas), so a higher refresh does
-        //not speed anything up - it just renders smoother.
-        IsFixedTimeStep = false;
+        //run at the display refresh (driven by VSync) by default instead of a hard 60fps lock. Game logic is
+        //time-based (AnimationTick from TotalGameTime, controls use ElapsedGameTime deltas), so the rate only
+        //affects smoothness. The optional Max Framerate cap (Options) applies a fixed timestep; 0 = unlimited.
+        SetMaxFramerate(ClientSettings.MaxFramerate);
         InactiveSleepTime = TimeSpan.Zero;
 
         Connection = new ConnectionManager();
@@ -1005,6 +1006,22 @@ public sealed class ChaosGame : Game
     {
         Graphics.SynchronizeWithVerticalRetrace = on;
         Graphics.ApplyChanges();
+    }
+
+    /// <summary>
+    ///     Caps the frame/update rate. fps &lt;= 0 = unlimited (variable timestep, render as fast as the display/VSync
+    ///     allows - the old behaviour). A positive cap uses a fixed timestep at 1/fps so the game never produces frames
+    ///     faster than that. Logic is time-based, so this only limits how often frames are produced, not game speed.
+    /// </summary>
+    public void SetMaxFramerate(int fps)
+    {
+        if (fps > 0)
+        {
+            IsFixedTimeStep = true;
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0 / fps);
+        }
+        else
+            IsFixedTimeStep = false;
     }
     #endregion Window Sizing
 

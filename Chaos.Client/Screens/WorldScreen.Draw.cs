@@ -343,7 +343,7 @@ public sealed partial class WorldScreen
 
             device.SetRenderTarget(HudRenderTarget);
             device.Clear(Color.Transparent);
-            spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
+            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
             DrawCameraEffects(spriteBatch);
             DrawDeathVignette(spriteBatch);
             //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
@@ -367,7 +367,7 @@ public sealed partial class WorldScreen
 
             //back to the backbuffer: HUD at faded alpha, then dialog system at full alpha
             device.SetRenderTarget(null);
-            spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
+            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
             spriteBatch.Draw(HudRenderTarget, new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight), Color.White * (1f - openFraction));
 
             foreach (var child in Root.Children)
@@ -1170,8 +1170,9 @@ public sealed partial class WorldScreen
 
         if (entity.HitShakeMs > 0 && entity.HitShakeMs <= HIT_SHAKE_ACTIVE)
         {
-            var direction = ((int)(entity.HitShakeMs / 16f) % 2 == 0) ? 1f : -1f;
-            tileCenterX += 2f * direction;
+            //smooth, frame-rate-independent rattle (~2 cycles across the 64ms window) instead of a 16ms
+            //frame-grid %2 toggle, which resolved to an arbitrary left/right jump on a single frame at low FPS
+            tileCenterX += 2f * MathF.Sin(entity.HitShakeMs * 0.2f);
         }
 
         //soft directional ground shadow cast away from the nearest lamp (night only). Disabled for now;

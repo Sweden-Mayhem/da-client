@@ -132,9 +132,10 @@ public sealed class SoundSystem : IDisposable
     //music id queued to start once the current music fade-out completes, 0 means stop music
     private int PendingMusicId;
     private int SfxVolume = SdlMixer.MIX_MAX_VOLUME;
-    //footstep and chat-bubble loudness as a 0 to 100 percentage of the SFX volume, still scaled by the master slider
+    //footstep, chat-bubble and whisper-cue loudness as a 0 to 100 percentage of the SFX volume, still scaled by the master slider
     private int FootstepPercent;
     private int ChatBubblePercent;
+    private int WhisperPercent;
     private long SoundCacheTimestamp;
 
     public SoundSystem()
@@ -324,6 +325,11 @@ public sealed class SoundSystem : IDisposable
     /// </summary>
     public void PlayChatBubbleSound() => PlaySoundInternal(SoundChat, ScaledSfx(ChatBubblePercent));
 
+    /// <summary>
+    ///     Plays the whisper-received cue (sound 158) at the whisper volume scaled by the SFX slider. 0% is silent.
+    /// </summary>
+    public void PlayWhisperSound() => PlaySoundInternal(158, ScaledSfx(WhisperPercent));
+
     //effective channel volume for a sub-slider expressed as a 0 to 100 percentage of the master SFX volume
     private int ScaledSfx(int percent) => SfxVolume * Math.Clamp(percent, 0, 100) / 100;
 
@@ -455,6 +461,11 @@ public sealed class SoundSystem : IDisposable
     ///     Sets the chat-bubble volume as a 0 to 100 percentage of the SFX volume, 0 is silent.
     /// </summary>
     public void SetChatVolume(int percent) => ChatBubblePercent = Math.Clamp(percent, 0, 100);
+
+    /// <summary>
+    ///     Sets the whisper-cue volume as a 0 to 100 percentage of the SFX volume, 0 is silent.
+    /// </summary>
+    public void SetWhisperVolume(int percent) => WhisperPercent = Math.Clamp(percent, 0, 100);
 
     /// <summary>
     ///     Pumps deferred audio-thread work back into the game state. Call once per frame from the game loop.
