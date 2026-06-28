@@ -88,13 +88,22 @@ public sealed class QuestTrackerControl : UIPanel
     private float ChromeOpacity;
     private double BrightSeconds;
 
-    //#9 slide-in: a newly tracked quest's row slides in from the docked screen side + fades in (keyed by quest key
-    //so it survives the per-push rebuild). The first push (login fill) only seeds - it does not animate.
-    private const float SLIDE_SECONDS = 0.45f;
+    //#9 appear: a newly tracked quest's TITLE slides in from the docked screen side + fades (phase 1), then its STEPS
+    //fold out from under the title - sliding down into their slots + fading in, slightly staggered (phase 2). Keyed by
+    //quest key so it survives the per-push rebuild; the first push (login fill) only seeds - it does not animate.
+    private const float SLIDE_SECONDS = 0.32f;                          //phase 1: the title slides in
+    private const float FOLD_SECONDS = 0.5f;                            //phase 2: the steps fold out from under the title
+    private const float APPEAR_SECONDS = SLIDE_SECONDS + FOLD_SECONDS;  //total appear time (timer is set to this)
+    private const float FOLD_STAGGER = 0.4f;                            //fraction of the fold each step's start is offset across
     private const int SLIDE_DIST = 70;
     private readonly Dictionary<string, float> AppearTimers = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> PrevQuestKeys = new(StringComparer.OrdinalIgnoreCase);
     private bool AppearSeeded;
+
+    //first-seen order per quest so the tracker lists oldest-first / NEWEST LAST (a quest started during play drops to
+    //the bottom) instead of the server's alphabetical-by-key order. Pruned when a quest leaves, so a re-start counts as new.
+    private readonly Dictionary<string, long> AppearSeq = new(StringComparer.OrdinalIgnoreCase);
+    private long AppearSeqNext;
 
     //a completed/abandoned/untracked quest fades + slides OUT before its row is removed (complement to the slide-in)
     private const float DEPART_SECONDS = 0.5f;
@@ -199,7 +208,7 @@ public sealed class QuestTrackerControl : UIPanel
             //#9: arm a slide-in for genuinely NEW quests
             foreach (var q in filtered)
                 if (!PrevQuestKeys.Contains(q.QuestKey))
-                    AppearTimers[q.QuestKey] = SLIDE_SECONDS;
+                    AppearTimers[q.QuestKey] = APPEAR_SECONDS;
         }
 
         //a re-added quest cancels its departure
@@ -211,7 +220,17 @@ public sealed class QuestTrackerControl : UIPanel
 
         PrevQuestKeys = newKeys;
         AppearSeeded = true;
-        ActiveQuests = filtered;
+
+        //stamp a first-seen index on any quest we have not ordered yet, forget ones that left, then sort oldest-first
+        //so the newest quest always sits at the bottom
+        foreach (var q in filtered)
+            if (!AppearSeq.ContainsKey(q.QuestKey))
+                AppearSeq[q.QuestKey] = AppearSeqNext++;
+
+        foreach (var key in AppearSeq.Keys.Where(k => !newKeys.Contains(k)).ToList())
+            AppearSeq.Remove(key);
+
+        ActiveQuests = filtered.OrderBy(q => AppearSeq.GetValueOrDefault(q.QuestKey, long.MaxValue)).ToList();
 
         RebuildRender();
     }
@@ -364,40 +383,68 @@ public sealed class QuestTrackerControl : UIPanel
         {
             var row = Rows[ri];
             var blockTop = y;
-
-            //slide-in for a new quest, slide-OUT for a completed/departing one; settled rows are a no-op.
-            var slideX = 0;
-            var opacity = 1f;
             var key = ri < Quests.Count ? Quests[ri].QuestKey : null;
+
+            //APPEAR: title slides in (phase 1), then steps fold out from under it (phase 2). DEPART: the whole block
+            //slides out + fades. A settled row is a no-op (slideX 0, full opacity, fully unfolded).
+            var slideX = 0;
+            var titleOpacity = 1f;
+            var appearing = false;
+            var foldP = 1f;        //phase-2 progress: 1 = steps fully unfolded
+            var departFade = 1f;   //1 = present; multiplies step opacity while a quest fades out
 
             if ((key is not null) && AppearTimers.TryGetValue(key, out var t))
             {
-                var p = 1f - MathHelper.Clamp(t / SLIDE_SECONDS, 0f, 1f); //0..1 progress
-                var eased = 1f - ((1f - p) * (1f - p) * (1f - p));        //easeOutCubic
-                slideX = (int)((leftHalf ? -1 : 1) * SLIDE_DIST * (1f - eased));
-                opacity = eased;
+                appearing = true;
+                var elapsed = APPEAR_SECONDS - t;
+                var titleP = MathHelper.Clamp(elapsed / SLIDE_SECONDS, 0f, 1f);
+                var titleEase = 1f - ((1f - titleP) * (1f - titleP) * (1f - titleP)); //easeOutCubic
+                slideX = (int)((leftHalf ? -1 : 1) * SLIDE_DIST * (1f - titleEase));
+                titleOpacity = titleEase;
+                foldP = MathHelper.Clamp((elapsed - SLIDE_SECONDS) / FOLD_SECONDS, 0f, 1f);
             } else if ((key is not null) && DepartTimers.TryGetValue(key, out var td))
             {
                 var p = MathHelper.Clamp(td / DEPART_SECONDS, 0f, 1f); //1 -> 0 over the fade
                 var eased = p * p;
                 slideX = (int)((leftHalf ? -1 : 1) * SLIDE_DIST * (1f - eased));
-                opacity = eased;
+                titleOpacity = eased;
+                departFade = eased;
             }
 
             row.Title.X = PAD + slideX;
             row.Title.Y = y;
             row.Title.Width = innerW;
             row.Title.HorizontalAlignment = align;
-            row.Title.Opacity = opacity;
+            row.Title.Opacity = titleOpacity;
             y += row.Title.Height;
 
-            foreach (var step in row.Steps)
+            //the steps' collapsed origin is tucked right under the title; each lerps DOWN to its laid-out slot as it
+            //unfolds. The block's height stays reserved (set in Rebuild), so this animates within it - no reflow.
+            var titleBottom = y;
+            var stepCount = row.Steps.Count;
+
+            for (var si = 0; si < stepCount; si++)
             {
+                var step = row.Steps[si];
+                var targetY = y;
+
+                if (appearing)
+                {
+                    //each step starts a little after the one above it, so they cascade out from under the title
+                    var delay = stepCount > 1 ? (float)si / stepCount * FOLD_STAGGER : 0f;
+                    var sp = MathHelper.Clamp((foldP - delay) / (1f - FOLD_STAGGER), 0f, 1f);
+                    var spEased = 1f - ((1f - sp) * (1f - sp) * (1f - sp)); //easeOutCubic
+                    step.Y = (int)MathHelper.Lerp(titleBottom, targetY, spEased);
+                    step.Opacity = spEased;
+                } else
+                {
+                    step.Y = targetY;
+                    step.Opacity = departFade;
+                }
+
                 step.X = PAD + slideX;
-                step.Y = y;
                 step.Width = innerW;
                 step.HorizontalAlignment = align;
-                step.Opacity = opacity;
                 y += step.Height;
             }
 

@@ -1461,7 +1461,7 @@ public sealed partial class WorldScreen
 
         if (QuestKeysSeeded && HasEnteredWorld)
             foreach (var q in quests)
-                if (!KnownQuestKeys.Contains(q.QuestKey))
+                if (!KnownQuestKeys.Contains(q.QuestKey) && q.AnnounceStart)
                 {
                     QuestBanner?.Announce(string.IsNullOrEmpty(q.Title) ? q.QuestKey : q.Title);
                     anyNew = true;

@@ -55,6 +55,10 @@ public sealed record QuestTrackerQuestInfo
 
     /// <summary>0-based index of the current checkpoint; 255 = none active. Earlier render done, later pending.</summary>
     public byte CurrentIndex { get; init; } = 255;
+
+    /// <summary>True if this quest should fire the "Quest Started" banner on first appearance (normal quests, or an
+    ///     event/ambient quest whose author opted in via the editor). The server decides; the client just honours it.</summary>
+    public bool AnnounceStart { get; init; }
     public List<QuestTrackerCheckpointInfo> Checkpoints { get; init; } = [];
 }
 
@@ -94,6 +98,7 @@ public sealed class QuestTrackerConverter : PacketConverterBase<QuestTrackerArgs
             var counter = reader.ReadString8();
             var hint = reader.ReadString8();
             var currentIndex = reader.ReadByte();
+            var announceStart = reader.ReadByte() != 0;
 
             var checkpoints = new List<QuestTrackerCheckpointInfo>();
             var checkpointCount = reader.ReadByte();
@@ -116,6 +121,7 @@ public sealed class QuestTrackerConverter : PacketConverterBase<QuestTrackerArgs
                     Counter = counter,
                     Hint = hint,
                     CurrentIndex = currentIndex,
+                    AnnounceStart = announceStart,
                     Checkpoints = checkpoints
                 });
         }
@@ -161,6 +167,7 @@ public sealed class QuestTrackerConverter : PacketConverterBase<QuestTrackerArgs
             writer.WriteString8(quest.Counter);
             writer.WriteString8(quest.Hint);
             writer.WriteByte(quest.CurrentIndex);
+            writer.WriteByte((byte)(quest.AnnounceStart ? 1 : 0));
             writer.WriteByte((byte)quest.Checkpoints.Count);
 
             foreach (var checkpoint in quest.Checkpoints)
