@@ -27,13 +27,16 @@ public class SpriteBatchEx: SpriteBatch
     public bool IsActive { get => State.Count > 0; }
 
     public int Depth { get => State.Count; }
-    public SpriteSortMode SpriteSortMode { get => State[^1].SortMode; }
-    public BlendState? BlendState { get => State[^1].BlendState; }
-    public SamplerState? SamplerState { get => State[^1].SamplerState; }
-    public DepthStencilState? DepthStencilState { get => State[^1].DepthStencilState; }
-    public RasterizerState? RasterizerState { get => State[^1].RasterizerState; }
-    public Effect? Effect { get => State[^1].Effect; }
-    public Matrix? TransformMatrix { get => State[^1].TransformMatrix; }
+    //when no batch is active there is no stacked state to read, so fall back to the device's current state
+    //(callers that pass these straight back into Begin then simply continue with whatever the GPU already has,
+    //instead of indexing an empty stack)
+    public SpriteSortMode SpriteSortMode { get => State.Count > 0 ? State[^1].SortMode : SpriteSortMode.Deferred; }
+    public BlendState? BlendState { get => State.Count > 0 ? State[^1].BlendState : GraphicsDevice.BlendState; }
+    public SamplerState? SamplerState { get => State.Count > 0 ? State[^1].SamplerState : GraphicsDevice.SamplerStates[0]; }
+    public DepthStencilState? DepthStencilState { get => State.Count > 0 ? State[^1].DepthStencilState : GraphicsDevice.DepthStencilState; }
+    public RasterizerState? RasterizerState { get => State.Count > 0 ? State[^1].RasterizerState : GraphicsDevice.RasterizerState; }
+    public Effect? Effect { get => State.Count > 0 ? State[^1].Effect : null; }
+    public Matrix? TransformMatrix { get => State.Count > 0 ? State[^1].TransformMatrix : null; }
 
     public SpriteBatchEx(GraphicsDevice graphicsDevice, int capacity = 0)
         : base(graphicsDevice, capacity)
