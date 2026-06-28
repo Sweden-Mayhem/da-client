@@ -2,6 +2,7 @@
 using Chaos.Client.Collections;
 using Chaos.Client.Controls.Generic;
 using Chaos.Client.Data;
+using Chaos.Client.Data.Models;
 using Chaos.Client.Data.Repositories;
 using Chaos.Client.Data.Utilities;
 using Chaos.Client.Extensions;
@@ -939,24 +940,28 @@ public sealed partial class WorldScreen
         else
             StatusBook.ClearSkills();
 
-        //event metadata (quests from sevent files)
+        //build a set of completed event ids from legend marks for o(1) lookup (the events book + the journal share it).
+        //kept so the metadata-sync handler can re-feed the journal guide once a fresh SwmQuests lands.
+        var completedEventIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var mark in args.LegendMarks)
+            completedEventIds.Add(mark.Key);
+
+        CompletedEventIds = completedEventIds;
+
+        //the SelfProfile "Events" book still reads the legacy SEvent catalog
         var eventMetadata = DataContext.MetaFiles.GetEventMetadata();
 
         if (eventMetadata.Count > 0)
-        {
-            //build a set of completed event ids from legend marks for o(1) lookup
-            var completedEventIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var mark in args.LegendMarks)
-                completedEventIds.Add(mark.Key);
-
-            StatusBook.SetEvents(
-                eventMetadata,
-                completedEventIds,
-                args.BaseClass,
-                args.EnableMasterQuestMetaData);
-        } else
+            StatusBook.SetEvents(eventMetadata, completedEventIds, args.BaseClass, args.EnableMasterQuestMetaData);
+        else
             StatusBook.ClearEvents();
+
+        //the quest journal reads the dedicated SwmQuests catalog (full reward-outcome scan), cached for the offer lookup
+        var questCatalog = GetQuestCatalog();
+
+        if (questCatalog.Count > 0)
+            QuestJournal?.SetGuide(questCatalog, completedEventIds, args.BaseClass, args.EnableMasterQuestMetaData);
 
         //family info
         StatusBook.SetFamilyInfo(args.SpouseName ?? string.Empty);
@@ -1377,6 +1382,92 @@ public sealed partial class WorldScreen
 
     private void HandleEffect(EffectArgs args) => BuffBar?.SetEffect(args.EffectIcon, args.EffectColor);
 
+    //SWM quest tracker: replace the corner panel's quests with the server's pushed set (empty = hidden), and feed
+    //the same active-quest set to the journal window's Active section.
+    private void HandleQuestTracker(QuestTrackerArgs args)
+    {
+        LastActiveQuests = args.Quests;
+        QuestTracker?.SetQuests(args.Quests);
+        QuestJournal?.SetActiveQuests(args.Quests);
+        QuestJournal?.SetStartStatuses(args.StartStatuses);
+        QuestJournal?.SetCompletedKeys(args.CompletedKeys);
+        QuestJournal?.SetClaimableKeys(args.ClaimableKeys);
+        DetectNewlyStartedQuests(args.Quests);
+    }
+
+    //a quest-giver NPC offered an available quest: pop the WoW-style "Accept this quest?" window (name + short
+    //description + VISUAL reward preview). Accept sends the start request; Decline dismisses. The journal closes so
+    //the "Quest Started" intro shows clearly if accepted.
+    private void HandleQuestOffer(QuestOfferArgs args)
+    {
+        if (QuestJournal is not null)
+            QuestJournal.Visible = false;
+
+        //render the offer from the SAME SwmQuests catalog the journal uses, matched by key, so the rewards are identical.
+        //the offer packet only chooses WHICH quest + carries the Accept key; its reward fields are not read for display.
+        var quest = GetQuestCatalog()
+                       .FirstOrDefault(q => string.Equals(q.Key, args.QuestKey, StringComparison.OrdinalIgnoreCase))
+                    ?? FallbackQuest(args);
+
+        QuestOffer?.ShowOffer(quest);
+    }
+
+    //a minimal catalog entry from the offer packet, used ONLY for the rare case the SwmQuests catalog has not synced
+    //to disk yet (e.g. an offer that arrives at login before the metafile sync). Carries title / description / cadence
+    //so the window is not blank - never rewards, which must come from the catalog so the journal + offer never diverge.
+    private static QuestMetadataEntry FallbackQuest(QuestOfferArgs args)
+        => new()
+        {
+            Key = args.QuestKey,
+            Title = args.QuestName,
+            Description = args.Description,
+            RepeatMinutes = (int)(args.RepeatSeconds / 60)
+        };
+
+    //the parsed SwmQuests catalog, loaded lazily and cached. Reloaded by HandleMetaDataSyncComplete after a fresh
+    //SwmQuests lands on disk; until then this lazily parses whatever is already there.
+    private IReadOnlyList<QuestMetadataEntry> GetQuestCatalog()
+    {
+        if (QuestCatalog.Count == 0)
+            QuestCatalog = DataContext.MetaFiles.GetQuestMetadata();
+
+        return QuestCatalog;
+    }
+
+    //a quest finished + paid its rewards: the "Quest Complete" banner + the visual reward reveal (item slots / gold /
+    //marks). The quest leaves the active set via the next tracker push; this is the celebratory turn-in moment.
+    private void HandleQuestComplete(QuestCompleteArgs args)
+    {
+        QuestBanner?.Announce(string.IsNullOrEmpty(args.QuestName) ? "Quest" : args.QuestName, "Quest Complete");
+        QuestReward?.Show(args);
+        Game.SoundSystem.PlaySound(19);
+    }
+
+    //plays the "Quest Started" banner + sound 19 when a quest becomes active that was not active before. The first
+    //push (login fill) only SEEDS the known set, so quests already in progress at login do not announce.
+    private void DetectNewlyStartedQuests(IReadOnlyList<QuestTrackerQuestInfo> quests)
+    {
+        var anyNew = false;
+
+        if (QuestKeysSeeded && HasEnteredWorld)
+            foreach (var q in quests)
+                if (!KnownQuestKeys.Contains(q.QuestKey))
+                {
+                    QuestBanner?.Announce(string.IsNullOrEmpty(q.Title) ? q.QuestKey : q.Title);
+                    anyNew = true;
+                }
+
+        if (anyNew)
+            Game.SoundSystem.PlaySound(19);
+
+        KnownQuestKeys.Clear();
+
+        foreach (var q in quests)
+            KnownQuestKeys.Add(q.QuestKey);
+
+        QuestKeysSeeded = true;
+    }
+
     //each entity's last-seen health %, so the hit cue fires only on an actual DROP. Heals also show a health bar
     //(server ApplyHealScript calls ShowHealth), so without this a heal would wrongly play the hit sound. Cleared on map change.
     private readonly Dictionary<uint, int> LastHealthPercent = [];
@@ -1419,6 +1510,13 @@ public sealed partial class WorldScreen
 
         //likewise the server collision table (SwmSotp): use it over the ia.dat sotp so client walls match the server
         DataContext.Tiles.ReloadSotpOverride();
+
+        //the SwmQuests catalog may have just been replaced on disk - re-parse it and re-feed the journal so new quests +
+        //reward outcomes are picked up (at login the self-profile often arrives BEFORE this sync parsed the old files)
+        QuestCatalog = DataContext.MetaFiles.GetQuestMetadata();
+
+        if ((QuestCatalog.Count > 0) && (PlayerBaseClass >= 0))
+            QuestJournal?.SetGuide(QuestCatalog, CompletedEventIds, (BaseClass)PlayerBaseClass, WorldState.IsMaster);
 
         //the SClass files may have just been replaced - drop the merged cross-class cache AND re-parse the player's
         //own set. At login the self-profile often arrives BEFORE this sync, so the player's set was parsed from the

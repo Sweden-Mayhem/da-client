@@ -89,6 +89,15 @@ public sealed partial class WorldScreen
         //status effects
         Game.Connection.OnEffect += HandleEffect;
 
+        //SWM quest tracker (corner HUD panel)
+        Game.Connection.OnQuestTracker += HandleQuestTracker;
+
+        //SWM quest completion + rewards (banner + visual reward panel)
+        Game.Connection.OnQuestComplete += HandleQuestComplete;
+
+        //SWM quest offer from a giver NPC (the Yes/No offer window)
+        Game.Connection.OnQuestOffer += HandleQuestOffer;
+
         //light level
         Game.Connection.OnLightLevel += HandleLightLevel;
 

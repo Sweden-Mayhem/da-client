@@ -756,6 +756,10 @@ public sealed partial class WorldScreen
                 EmoteWin?.Toggle();
 
                 break;
+            case GameAction.ToggleQuestJournal:
+                OpenQuestJournal();
+
+                break;
 
             case GameAction.Assail:
                 TryAssail();
@@ -1088,6 +1092,41 @@ public sealed partial class WorldScreen
             WorldList.Hide();
         else
             Game.Connection.RequestWorldList();
+    }
+
+    //JOURNAL "Start quest": a plain OK/Cancel confirm "Start the quest X?". On OK, sends the start request AND closes
+    //the journal so the "Quest Started" banner intro is visible (the offer window is only for NPC/world offers).
+    private void ConfirmStartQuest(string questKey)
+    {
+        var quest = GetQuestCatalog()
+                       .FirstOrDefault(q => string.Equals(q.Key, questKey, StringComparison.OrdinalIgnoreCase));
+        var name = string.IsNullOrEmpty(quest?.Title) ? questKey : quest.Title;
+
+        ConfirmDialog.Confirm(
+            $"Start the quest \"{name}\"?",
+            () =>
+            {
+                Game.Connection.RequestStartQuest(questKey);
+
+                if (QuestJournal is not null)
+                    QuestJournal.Visible = false;
+            });
+    }
+
+    //opens/closes the quest journal. On open, refresh the guide/completion via a self-profile request (SelfProfileRequested
+    //stays false, so HandleSelfProfile only POPULATES the journal + status book, it does not open the equipment book).
+    private void OpenQuestJournal()
+    {
+        if (QuestJournal is null)
+            return;
+
+        QuestJournal.Toggle();
+
+        if (QuestJournal.Visible)
+        {
+            Game.Connection.RequestSelfProfile();
+            QuestJournal.RebuildIfVisible();
+        }
     }
 
     private void OnRootMouseScroll(MouseScrollEvent e)

@@ -402,6 +402,14 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
+                "    Quests", 1f, 2.5f, ClientSettings.QuestFontScale, 0.05f, v => $"{v:0.0#}x",
+                v =>
+                {
+                    ClientSettings.QuestFontScale = v; //the quest journal + corner tracker re-read this each frame
+                    ClientSettings.Save();
+                });
+
+            win.AddSlider(
                 "    Names", 0.25f, 4f, ClientSettings.NameFontScale, 0.05f, v => $"{v:0.0#}x",
                 v =>
                 {

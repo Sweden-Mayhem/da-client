@@ -483,7 +483,7 @@ public sealed class MarketWindow : DraggableWindow
                 continue;
 
             var expanded = Expanded.Contains(cat.Name) || term.Length > 0;
-            var header = new TreeRow(Sidebar.InnerWidth, $"{(expanded ? "-" : "+")}  {TitleCase(cat.Name)}  ({cat.Items.Count})", null, 0, false, TextNormal)
+            var header = new TreeRow(Sidebar.InnerWidth, $"{(expanded ? "-" : "+")}  {TitleCase(cat.Name)}  ({cat.Items.Count})", null, 0, false, TextGold)
             {
                 Y = y
             };
@@ -542,7 +542,7 @@ public sealed class MarketWindow : DraggableWindow
     private int BuildSellGroup(string title, string key, List<MarketSellEntry> items, int y)
     {
         var expanded = !Collapsed.Contains(key); //expanded by default; the player can fold a group
-        var header = new TreeRow(Sidebar.InnerWidth, $"{(expanded ? "-" : "+")}  {title}  ({items.Count})", null, 0, false, NameCol)
+        var header = new TreeRow(Sidebar.InnerWidth, $"{(expanded ? "-" : "+")}  {title}  ({items.Count})", null, 0, false, TextGold)
         {
             Y = y
         };

@@ -162,6 +162,34 @@ public sealed partial class WorldScreen : IScreen
     private EffectBarControl? BuffBar;
     private ScaleHost? BuffBarHost;
 
+    //SWM quest tracker: a corner HUD panel of active tracked quests, fed by HandleQuestTracker (opcode 114)
+    private QuestTrackerControl? QuestTracker;
+
+    //SWM quest journal: the modern quest-log window (Active/Suggested/Locked/Completed), opened from the Menu + V key.
+    //Fed active quests by HandleQuestTracker and the guide/completion by HandleSelfProfile.
+    private QuestJournalControl? QuestJournal;
+
+    //SWM quest-started banner: the big centred "Quest Started" toast. Fed by HandleQuestTracker when a new quest
+    //appears, and by the journal's re-track. KnownQuestKeys/QuestKeysSeeded detect a NEWLY active quest (not the
+    //quests already active at login).
+    private QuestStartedBanner? QuestBanner;
+    private readonly HashSet<string> KnownQuestKeys = new(StringComparer.OrdinalIgnoreCase);
+    private bool QuestKeysSeeded;
+    private IReadOnlyList<QuestTrackerQuestInfo> LastActiveQuests = [];
+
+    //SWM quest offer: the WoW-style "Accept this quest?" window, shown from the journal's Start (and NPC offers later)
+    private QuestOfferControl? QuestOffer;
+
+    //SWM quest catalog: the parsed SwmQuests metafile (one entry per quest, full reward-outcome scan). The single
+    //source the journal AND the offer/turn-in window both read, so they render identical rewards. Cached so the offer
+    //lookup is cheap; reloaded after the metafile checksum sync lands a fresh SwmQuests. CompletedEventIds is the last
+    //self-profile's legend-mark keys, kept so the metadata-sync handler can re-feed the journal guide.
+    private IReadOnlyList<QuestMetadataEntry> QuestCatalog = [];
+    private HashSet<string> CompletedEventIds = new(StringComparer.OrdinalIgnoreCase);
+
+    //SWM quest-complete reward reveal: the visual reward panel (item slots / gold / marks), fed by HandleQuestComplete
+    private QuestRewardPanel? QuestReward;
+
     //the entity a readied spell will hit (closest to the ground cursor), cached once per frame so the blue highlight
     //(entity tint + ground ring + bezier) all reference the same target. Null when not casting.
     private uint? CastTargetId;
@@ -1356,6 +1384,37 @@ public sealed partial class WorldScreen : IScreen
             "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
             GameAction.ToggleEmotes));
 
+        //SWM quest journal window: the modern quest log (Active / Suggested / Locked / Completed)
+        QuestJournal = new QuestJournalControl { CentersOnFirstShow = true, FadeOnOpen = true };
+        Root.AddChild(QuestJournal);
+
+        //SWM quest-started banner overlay
+        QuestBanner = new QuestStartedBanner();
+        Root.AddChild(QuestBanner);
+
+        //SWM quest-complete reward reveal overlay (item slots / gold / marks under the "Quest Complete" banner)
+        QuestReward = new QuestRewardPanel();
+        Root.AddChild(QuestReward);
+
+        //SWM quest offer window ("Accept this quest?"); Accept starts the quest from its giver NPC (action 3)
+        QuestOffer = new QuestOfferControl();
+        QuestOffer.OnAccept += questKey => Game.Connection.RequestAcceptOffer(questKey);
+        Root.AddChild(QuestOffer);
+
+        //track/untrack a quest on the corner HUD. This is only a HUD visibility toggle, so it is silent - the
+        //"Quest Started" banner + sound fire ONLY when a quest genuinely becomes active (see DetectNewlyStartedQuests).
+        QuestJournal.OnTrackToggled += (_, _) => QuestTracker?.ApplyTrackFilter();
+
+        //Start a quest from the journal: pop the "Accept this quest?" offer window first (Accept sends the request)
+        //from the JOURNAL, starting a quest uses the plain OK/Cancel confirm (the WoW-style offer window is reserved
+        //for NPCs/world offers). On OK it starts the quest AND closes the journal so the "Quest Started" banner shows.
+        QuestJournal.OnStartQuest += ConfirmStartQuest;
+        QuestJournal.OnAbandonQuest += questKey => Game.Connection.RequestAbandonQuest(questKey);
+        QuestJournal.OnClaimQuest += questKey => Game.Connection.RequestClaimQuest(questKey);
+        menuBar.AddEntry("Quests", OpenQuestJournal, Tip("Quest Journal",
+            "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
+            GameAction.ToggleQuestJournal));
+
         //custom settings window (shared with the lobby via OptionsWindow.Create): each row applies live and
         //persists to Darkages.cfg.
         ControlsWin = new ControlsWindow { CentersOnFirstShow = true, FadeOnOpen = true };
@@ -1444,6 +1503,10 @@ public sealed partial class WorldScreen : IScreen
         BuffBarHost = new ScaleHost(BuffBar, ClientSettings.EffectiveHotbarScale * 2f) { ZIndex = 90_000 };
         Root.AddChild(BuffBarHost);
 
+        //SWM quest tracker: corner HUD panel of active tracked quests, fed by HandleQuestTracker. Below the buff
+        //bar in z so its book toggle/text never fights the effect icons. Anchored top-left each frame.
+        QuestTracker = new QuestTrackerControl { ZIndex = 89_000 };
+        Root.AddChild(QuestTracker);
 
         WireHudPanels(SmallHud);
         WireHudPanels(LargeHud);

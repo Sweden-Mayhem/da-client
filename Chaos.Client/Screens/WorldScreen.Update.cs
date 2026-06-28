@@ -901,6 +901,8 @@ public sealed partial class WorldScreen
             BuffBarHost.Y = Math.Max(margin, (h - BuffBarHost.Height) / 2);
         }
 
+        //SWM quest tracker: self-positions (draggable, persisted, rescale-relative) - see QuestTrackerControl.Update
+
         //feed the chat window's ClampToScreen with the current rects of every HUD element it must avoid
         ChatWindow.BeginHudRects();
         ChatWindow.AddHudRect(new Rectangle(InvBar.X, InvBar.Y, InvBar.Width, InvBar.Height));
@@ -1286,6 +1288,22 @@ public sealed partial class WorldScreen
         //slot tooltips are suppressed while targeting a spell (the hotbars dim to signal targeting mode)
         if (CastingSystem.IsTargeting)
             return null;
+
+        //a reward item in the open quest journal -> show that item's detail tooltip (looked up by name)
+        if (QuestJournal is { Visible: true, HoveredRewardName: { } rewardName })
+        {
+            key = rewardName;
+
+            return (x, y) => ItemTooltip.Show(rewardName, 0, 0, x, y);
+        }
+
+        //a reward item in the NPC quest-offer window -> the same item tooltip
+        if (QuestOffer is { Visible: true, HoveredRewardName: { } offerReward })
+        {
+            key = offerReward;
+
+            return (x, y) => ItemTooltip.Show(offerReward, 0, 0, x, y);
+        }
 
         //1. an inventory slot (hovered slot is kept in sync by the panel's hover events)
         if (HoveredInventorySlot is { } slot && IsElementShown(slot))

@@ -169,8 +169,14 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
             (var text, var pursuit) = options[i];
             var index = i;
 
+            //SWM quest markers: a trailing " !" = a TURN-IN (amber "!"), " ?" = a GIVE (green "?"). Strip it; the
+            //panel draws the pulsing marker on the far side instead.
+            var marker = text.EndsWith(" !", StringComparison.Ordinal) ? '!' : text.EndsWith(" ?", StringComparison.Ordinal) ? '?' : '\0';
+            var labelText = marker != '\0' ? text[..^2].TrimEnd() : text;
+
             var label = new OptionLabel(
-                text,
+                labelText,
+                marker,
                 pursuit,
                 StripeLeft,
                 StripeMid,
@@ -250,6 +256,25 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
             //emboss: dark drop shadow down-right, then the white text (GetLine renders white glyphs, so a black tint = shadow)
             spriteBatch.Draw(tex, pos + new Vector2(shadowPx, shadowPx), Color.Black * (0.5f * alpha));
             spriteBatch.Draw(tex, pos, Color.White * alpha);
+
+            //SWM rule 5: a quest option gets a PULSING marker offset to the far-right edge - amber "!" for a turn-in
+            //(ready to hand in), green "?" for a give (available to start).
+            if (opt.IsQuest)
+            {
+                var glyph = opt.Marker.ToString();
+                var mark = TtfTextRenderer.GetLine(glyph, font);
+
+                if (mark is not null)
+                {
+                    //pulse the brightness with a sine on wall-clock time (no dt needed at draw time)
+                    var pulse = 0.55f + 0.45f * (0.5f + 0.5f * MathF.Sin(Environment.TickCount64 * 0.006f));
+                    var color = opt.Marker == '?' ? new Color(110, 220, 110) : new Color(255, 190, 60);
+                    var mx = rx + rw - mark.Width - (int)(10 * scale);
+                    var my = ry + (rh - lineH) / 2;
+                    spriteBatch.Draw(mark, new Vector2(mx + shadowPx, my + shadowPx), Color.Black * (0.5f * alpha));
+                    spriteBatch.Draw(mark, new Vector2(mx, my), color * (alpha * pulse));
+                }
+            }
         }
     }
 
@@ -270,8 +295,14 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
         public ushort PursuitId { get; }
         public string Text { get; }
 
+        //SWM: a quest-related option carries a marker char ('!' turn-in / '?' give, '\0' = none). It always shows the
+        //lit "on" stripe and a far-right pulsing marker so quests stand out in an NPC's menu (rule 5).
+        public char Marker { get; }
+        public bool IsQuest => Marker != '\0';
+
         public OptionLabel(
             string text,
+            char marker,
             ushort pursuitId,
             Texture2D? stripeLeft,
             Texture2D? stripeMid,
@@ -281,6 +312,7 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
             Texture2D? stripeRightOn)
         {
             Text = text;
+            Marker = marker;
             PursuitId = pursuitId;
             StripeLeft = stripeLeft;
             StripeMid = stripeMid;
@@ -309,10 +341,11 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
             var sy = ScreenY + (IsPressed ? 1 : 0);
             var drawWidth = Width - (IsPressed ? 2 : 0);
 
-            //draw 3-slice stripe background
-            var left = IsHovered ? StripeLeftOn ?? StripeLeft : StripeLeft;
-            var mid = IsHovered ? StripeMidOn ?? StripeMid : StripeMid;
-            var right = IsHovered ? StripeRightOn ?? StripeRight : StripeRight;
+            //draw 3-slice stripe background - a quest option is always LIT (the "on" stripe), like a permanent hover
+            var on = IsHovered || IsQuest;
+            var left = on ? StripeLeftOn ?? StripeLeft : StripeLeft;
+            var mid = on ? StripeMidOn ?? StripeMid : StripeMid;
+            var right = on ? StripeRightOn ?? StripeRight : StripeRight;
 
             var leftW = left?.Width ?? 0;
             var rightW = right?.Width ?? 0;

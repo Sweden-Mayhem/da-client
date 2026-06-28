@@ -36,6 +36,7 @@ public enum GameAction
     ToggleFriends,
     ToggleSocialStatus,
     ToggleEmotes,
+    ToggleQuestJournal,
 
     //combat / hotbar
     Assail,
@@ -450,6 +451,7 @@ public static class Keybindings
             //social status is opened by clicking the emoticon in the Equipment book, not a key, so it is not rebindable
             new(GameAction.ToggleSocialStatus, "Social status", BindCategory.Panels, Bindable: false),
             new(GameAction.ToggleEmotes, "Emotes", BindCategory.Panels),
+            new(GameAction.ToggleQuestJournal, "Quest Journal", BindCategory.Panels),
 
             new(GameAction.Assail, "Assail", BindCategory.Combat),
             new(GameAction.TargetFriendly, "Cast on closest friendly", BindCategory.Combat),
@@ -517,6 +519,7 @@ public static class Keybindings
         yield return (GameAction.ToggleFriends, K(Keys.L), K(Keys.Y));
         yield return (GameAction.ToggleSocialStatus, KeyBind.None, KeyBind.None);
         yield return (GameAction.ToggleEmotes, K(Keys.Q), KeyBind.None);
+        yield return (GameAction.ToggleQuestJournal, K(Keys.V), KeyBind.None); //V free; rebindable in Options > Controls
 
         //combat / hotbar
         yield return (GameAction.Assail, K(Keys.Space), KeyBind.None);

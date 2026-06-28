@@ -542,6 +542,21 @@ public sealed class ConnectionManager : IDisposable
     /// </summary>
     public event EffectHandler? OnEffect;
 
+    /// <summary>
+    ///     SWM extension: fired when the server pushes the quest-tracker checkpoint state (corner HUD).
+    /// </summary>
+    public event QuestTrackerHandler? OnQuestTracker;
+
+    /// <summary>
+    ///     SWM extension: fired when a quest completes and pays rewards (banner + visual reward panel).
+    /// </summary>
+    public event QuestCompleteHandler? OnQuestComplete;
+
+    /// <summary>
+    ///     SWM extension: fired when a quest-giver NPC offers a quest (show the Yes/No offer window).
+    /// </summary>
+    public event QuestOfferHandler? OnQuestOffer;
+
     //--- equipment ---
 
     /// <summary>
@@ -800,6 +815,21 @@ public sealed class ConnectionManager : IDisposable
     ///     Sends a self profile request.
     /// </summary>
     public void RequestSelfProfile() => SendIfWorld(new SelfProfileRequestArgs());
+
+    /// <summary>
+    ///     SWM: requests the server START a quest directly from the quest journal. The server validates the quest is
+    ///     flagged startable and the player is eligible; ignored otherwise.
+    /// </summary>
+    public void RequestStartQuest(string questKey) => SendIfWorld(new StartQuestArgs { Action = 0, QuestKey = questKey });
+
+    /// <summary>SWM: requests the server ABANDON an active quest (drops it so it leaves the tracker and can be redone).</summary>
+    public void RequestAbandonQuest(string questKey) => SendIfWorld(new StartQuestArgs { Action = 1, QuestKey = questKey });
+
+    /// <summary>SWM: requests the server CLAIM the reward of a quest whose objectives are done (parked on its complete node).</summary>
+    public void RequestClaimQuest(string questKey) => SendIfWorld(new StartQuestArgs { Action = 2, QuestKey = questKey });
+
+    /// <summary>SWM: ACCEPT an NPC quest offer (the Accept/Deny window) - starts the quest from its giver NPC.</summary>
+    public void RequestAcceptOffer(string questKey) => SendIfWorld(new StartQuestArgs { Action = 3, QuestKey = questKey });
 
     /// <summary>
     ///     Requests the server table from the lobby.
@@ -1383,6 +1413,15 @@ public sealed class ConnectionManager : IDisposable
         PacketHandlers[(byte)ServerOpCode.Cooldown] = HandleCooldown;
         PacketHandlers[(byte)ServerOpCode.Effect] = HandleEffect;
 
+        //SWM quest-tracker push (opcode 114 - not in the stock ServerOpCode enum, so via the converter constant)
+        PacketHandlers[QuestTrackerConverter.OPCODE] = HandleQuestTracker;
+
+        //SWM quest-completion + rewards push (opcode 115)
+        PacketHandlers[QuestCompleteConverter.OPCODE] = HandleQuestComplete;
+
+        //SWM quest-offer push (opcode 116) - a quest-giver NPC offering an available quest
+        PacketHandlers[QuestOfferConverter.OPCODE] = HandleQuestOffer;
+
         //world state
         PacketHandlers[(byte)ServerOpCode.LightLevel] = HandleLightLevel;
         PacketHandlers[(byte)ServerOpCode.Door] = HandleDoor;
@@ -1797,6 +1836,24 @@ public sealed class ConnectionManager : IDisposable
     {
         var args = Client.Deserialize<EffectArgs>(in pkt);
         OnEffect?.Invoke(args);
+    }
+
+    private void HandleQuestTracker(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<QuestTrackerArgs>(in pkt);
+        OnQuestTracker?.Invoke(args);
+    }
+
+    private void HandleQuestComplete(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<QuestCompleteArgs>(in pkt);
+        OnQuestComplete?.Invoke(args);
+    }
+
+    private void HandleQuestOffer(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<QuestOfferArgs>(in pkt);
+        OnQuestOffer?.Invoke(args);
     }
 
     //--- world state ---

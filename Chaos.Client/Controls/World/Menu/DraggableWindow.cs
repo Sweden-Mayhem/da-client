@@ -18,7 +18,7 @@ namespace Chaos.Client.Controls.World.Menu;
 /// </summary>
 public class DraggableWindow : UIPanel
 {
-    public const int TITLE_H = 22;
+    public const int TITLE_H = 30;
     private const int CLOSE_W = 18;
     private const int PIN_W = 18;
     private const int TITLE_FONT = 16;
@@ -213,7 +213,7 @@ public class DraggableWindow : UIPanel
         {
             Name = "CloseBox",
             X = width - titleInsetRight - CLOSE_W - 1,
-            Y = titleInsetTop + 2,
+            Y = titleInsetTop + ((TITLE_H - CLOSE_W) / 2),
             Width = CLOSE_W,
             Height = CLOSE_W,
             Background = CloseNormalTex,
@@ -229,9 +229,10 @@ public class DraggableWindow : UIPanel
             X = titleInsetLeft + 5,
             Y = titleInsetTop,
             Width = pinX - titleInsetRight - 7,
-            Height = TITLE_H,
+            Height = TITLE_H - 4, //centre ~2px higher in the taller bar (nudged: up 4 was too high, this is up 2)
             CustomFontSize = TITLE_FONT, //window titles use the optional UI font (Cinzel); the rest of the UI stays bitmap
             ForegroundColor = new Color(192, 176, 138),
+            VerticalAlignment = VerticalAlignment.Center, //centre in the (now taller) titlebar
             IsHitTestVisible = false //let titlebar clicks reach the window for dragging
         };
         AddChild(TitleLabel);
@@ -242,7 +243,7 @@ public class DraggableWindow : UIPanel
         {
             Name = "PinBox",
             X = pinX,
-            Y = titleInsetTop + 2,
+            Y = titleInsetTop + ((TITLE_H - PIN_W) / 2),
             Width = PIN_W,
             Height = PIN_W,
             Background = PinNormalTex, //_00 when not toggled; Update swaps to _01 (PinPressedTex) when pressed or pinned

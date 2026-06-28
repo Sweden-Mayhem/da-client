@@ -1,4 +1,5 @@
 #region
+using Chaos.Client.Networking;
 using Chaos.Geometry.Abstractions.Definitions;
 using Chaos.Networking.Entities.Server;
 #endregion
@@ -204,6 +205,21 @@ public delegate void DoorHandler(DoorArgs args);
 ///     Fired when a status effect is applied or removed.
 /// </summary>
 public delegate void EffectHandler(EffectArgs args);
+
+/// <summary>
+///     SWM extension: fired when the server pushes the quest-tracker checkpoint state (corner HUD).
+/// </summary>
+public delegate void QuestTrackerHandler(QuestTrackerArgs args);
+
+/// <summary>
+///     SWM extension: fired when a quest completes and pays its rewards (banner + visual reward panel).
+/// </summary>
+public delegate void QuestCompleteHandler(QuestCompleteArgs args);
+
+/// <summary>
+///     SWM extension: fired when a quest-giver NPC offers an available quest (show the Yes/No offer window).
+/// </summary>
+public delegate void QuestOfferHandler(QuestOfferArgs args);
 
 /// <summary>
 ///     Fired when an equipment slot is updated.

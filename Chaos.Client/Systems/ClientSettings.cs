@@ -56,9 +56,23 @@ public static class ClientSettings
     public static int ChatWindowWidth { get; set; } = int.MinValue;
     public static int ChatWindowHeight { get; set; } = int.MinValue;
 
+    //quest tracker: center-relative X offset, anchor-relative Y offset (same encoding as the chat window).
+    //int.MinValue = not yet placed (first run defaults to the top-left corner).
+    public static int QuestTrackerOffsetX { get; set; } = int.MinValue;
+    public static int QuestTrackerOffsetY { get; set; } = int.MinValue;
+
     //chat tabs whose "Highlight" was turned off (right-click a tab): they never pulse/flag on a new message. Keyed by tab
     //key (built-in channel name like "Public"/"Group", or a custom "!channel"). Persisted as a comma list (SwmMutedTabs).
     public static readonly HashSet<string> MutedChatTabs = new(StringComparer.OrdinalIgnoreCase);
+
+    //quest journal: questKeys the player has un-tracked (hidden from the corner tracker), and the journal foldout
+    //categories ("tab|category") the player has collapsed. Both persisted as comma lists.
+    public static readonly HashSet<string> UntrackedQuests = new(StringComparer.OrdinalIgnoreCase);
+    public static readonly HashSet<string> JournalCollapsed = new(StringComparer.OrdinalIgnoreCase);
+
+    //quest journal + tracker text size multiplier (1.0-2.5), Options "Quest text size" slider.
+    public static float QuestFontScale { get; set; } = 1f;
+    public static float EffectiveQuestFontScale => Math.Clamp(EffectiveInterfaceTextScale * QuestFontScale, 1f, 3f);
 
     public static bool IsChatTabMuted(string key) => MutedChatTabs.Contains(key);
 
@@ -398,6 +412,18 @@ public static class ClientSettings
 
                         break;
 
+                    case "SwmQuestOffX":
+                        if (int.TryParse(value, out var qtox))
+                            QuestTrackerOffsetX = qtox;
+
+                        break;
+
+                    case "SwmQuestOffY":
+                        if (int.TryParse(value, out var qtoy))
+                            QuestTrackerOffsetY = qtoy;
+
+                        break;
+
                     case "SwmChatFadeDelay":
                         if (int.TryParse(value, out var cfd))
                             ChatFadeDelaySeconds = Math.Clamp(cfd, 0, 60);
@@ -415,6 +441,28 @@ public static class ClientSettings
 
                         foreach (var t in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                             MutedChatTabs.Add(t);
+
+                        break;
+
+                    case "SwmUntracked":
+                        UntrackedQuests.Clear();
+
+                        foreach (var t in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                            UntrackedQuests.Add(t);
+
+                        break;
+
+                    case "SwmJournalCollapsed":
+                        JournalCollapsed.Clear();
+
+                        foreach (var t in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                            JournalCollapsed.Add(t);
+
+                        break;
+
+                    case "SwmQuestFontScale":
+                        if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var qfs))
+                            QuestFontScale = Math.Clamp(qfs, 1f, 2.5f);
 
                         break;
 
@@ -638,9 +686,14 @@ public static class ClientSettings
             writer.WriteLine($"SwmChatOffY : {ChatWindowOffsetY}");
             writer.WriteLine($"SwmChatW : {ChatWindowWidth}");
             writer.WriteLine($"SwmChatH : {ChatWindowHeight}");
+            writer.WriteLine($"SwmQuestOffX : {QuestTrackerOffsetX}");
+            writer.WriteLine($"SwmQuestOffY : {QuestTrackerOffsetY}");
             writer.WriteLine($"SwmChatFadeDelay : {ChatFadeDelaySeconds}");
             writer.WriteLine($"SwmChatWindowFade : {ChatWindowFadeSeconds}");
             writer.WriteLine($"SwmMutedTabs : {string.Join(",", MutedChatTabs)}");
+            writer.WriteLine($"SwmUntracked : {string.Join(",", UntrackedQuests)}");
+            writer.WriteLine($"SwmJournalCollapsed : {string.Join(",", JournalCollapsed)}");
+            writer.WriteLine($"SwmQuestFontScale : {QuestFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmShowNpcChat : {(RecordNpcChat ? 1 : 0)}");
             writer.WriteLine($"SwmChatTimestamp : {(ShowChatTimestamp ? 1 : 0)}");
             writer.WriteLine($"SwmSmoothMapView : {(SmoothMapView ? 1 : 0)}");
