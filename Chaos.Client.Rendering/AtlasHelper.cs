@@ -12,7 +12,7 @@ namespace Chaos.Client.Rendering;
 public static class AtlasHelper
 {
     public static void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D? texture,
         Vector2 position,
         Color color)
@@ -31,7 +31,7 @@ public static class AtlasHelper
     }
 
     public static void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D? texture,
         Vector2 position,
         Rectangle? sourceRect,
@@ -64,7 +64,7 @@ public static class AtlasHelper
     }
 
     public static void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D? texture,
         Vector2 position,
         Rectangle? sourceRect,

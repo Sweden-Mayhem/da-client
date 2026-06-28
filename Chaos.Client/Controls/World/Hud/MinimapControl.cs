@@ -822,7 +822,7 @@ public sealed class MinimapControl : UIElement
         return new Vector4(s.R / 255f, s.G / 255f, s.B / 255f, s.A / 255f);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible || (Texture is null))
             return;
@@ -854,14 +854,12 @@ public sealed class MinimapControl : UIElement
         //surrounding native-UI batch is begun with samplerState: GlobalSettings.Sampler (point), so restore exactly that.
         if (NameDraws.Count > 0)
         {
-            spriteBatch.End();
             spriteBatch.Begin(samplerState: SamplerState.LinearClamp);
 
             foreach (var (tex, local, fade) in NameDraws)
                 spriteBatch.Draw(tex, new Vector2(ScreenX + local.X, ScreenY + local.Y), Color.White * fade);
 
             spriteBatch.End();
-            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
         }
     }
 

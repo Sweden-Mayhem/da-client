@@ -44,7 +44,7 @@ public abstract class FramedDialogPanelBase : PrefabPanel
         : base(prefabName, center)
         => Background = null;
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -155,7 +155,7 @@ public abstract class FramedDialogPanelBase : PrefabPanel
         DrawChildren(spriteBatch);
     }
 
-    private void DrawChildren(SpriteBatch spriteBatch)
+    private void DrawChildren(SpriteBatchEx spriteBatch)
     {
         foreach (var child in Children)
             if (child.Visible)
@@ -189,7 +189,7 @@ public abstract class FramedDialogPanelBase : PrefabPanel
     }
 
     protected static void TileTexture(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D texture,
         int x,
         int y,

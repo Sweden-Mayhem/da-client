@@ -19,7 +19,7 @@ internal static class BoardRowText
     private const int ROW_FONT_BASE = 11;
 
     public static void DrawRows(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         IReadOnlyList<UILabel> rows,
         int rowHeight,
         int originX,
@@ -61,7 +61,7 @@ internal static class BoardRowText
     //at native x-offset columnX[N] (so all rows line up regardless of the proportional font). Each column is
     //ellipsis-truncated to the gap before the next column (the last runs to the row's right edge).
     public static void DrawColumns(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         IReadOnlyList<UILabel> rows,
         IReadOnlyList<int> columnX,
         int rowHeight,

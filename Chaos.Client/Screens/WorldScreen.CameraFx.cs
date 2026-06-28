@@ -340,7 +340,7 @@ public sealed partial class WorldScreen
     ///     Draws the death darkness, a heavy black edge vignette that surges with each heart thump
     ///     Not tied to the camera-effects option since being dead must be unmissable, lingers through the revive fade-out
     /// </summary>
-    private void DrawDeathVignette(SpriteBatch spriteBatch)
+    private void DrawDeathVignette(SpriteBatchEx spriteBatch)
     {
         var alpha = 0f;
 
@@ -456,7 +456,7 @@ public sealed partial class WorldScreen
     //true while the local player's entity carries the dead flag, the claimed spirit walking
     private static bool IsPlayerSpirit => WorldState.GetPlayerEntity() is { IsDead: true };
 
-    private void DrawCameraEffects(SpriteBatch spriteBatch)
+    private void DrawCameraEffects(SpriteBatchEx spriteBatch)
     {
         //no red while dead or in spirit form, the death darkness and greyscale own the screen
         //the 1-HP spirit would otherwise sit in the sustained low-HP pulse for its whole walk

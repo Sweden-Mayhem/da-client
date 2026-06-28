@@ -31,7 +31,7 @@ public sealed class ScreenManager : IDisposable
     /// <summary>
     ///     Runs the Draw call on the active screen.
     /// </summary>
-    public void Draw(SpriteBatch spriteBatch, GameTime gameTime) => ActiveScreen?.Draw(spriteBatch, gameTime);
+    public void Draw(SpriteBatchEx spriteBatch, GameTime gameTime) => ActiveScreen?.Draw(spriteBatch, gameTime);
 
     /// <summary>
     ///     Removes and disposes the topmost screen, returning control to the screen below it. Does nothing if the stack is

@@ -348,7 +348,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         PendingCloseSound = false;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -371,7 +371,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         }
     }
 
-    private void DrawInner(SpriteBatch spriteBatch)
+    private void DrawInner(SpriteBatchEx spriteBatch)
     {
         UpdateClipRect();
 
@@ -413,7 +413,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
     //of the just-blitted magnified content and IN this host's draw position, so a window drawn later (higher z-order)
     //correctly covers an earlier window's text instead of it bleeding over the top. Nested ScaleHosts are skipped here;
     //each draws its own text when it draws.
-    private void DrawNativeTextLayer(SpriteBatch spriteBatch, float alpha)
+    private void DrawNativeTextLayer(SpriteBatchEx spriteBatch, float alpha)
     {
         if ((alpha <= 0.01f) || !TtfTextRenderer.Available)
             return;
@@ -430,7 +430,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
     ///     <c>screenX = screenOrigin + (ScreenX - nativeOrigin) * scale</c>). Shared by the in-world ScaleHosts (equal
     ///     origins) and the lobby's letterbox pass (screenOrigin = the letterbox corner, nativeOrigin = 0).
     /// </summary>
-    public static void WalkNativeText(SpriteBatch spriteBatch, UIElement element, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha, bool ignoreRootVisibility = false)
+    public static void WalkNativeText(SpriteBatchEx spriteBatch, UIElement element, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha, bool ignoreRootVisibility = false)
     {
         //ignoreRootVisibility lets the host paint its text during a close-fade LINGER, where the inner is already hidden
         //(Visible=false) but we still draw its captured frame fading out, otherwise the text would vanish in one frame
@@ -455,7 +455,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
 
     //integer scale: draw the child under a plain scale transform anchored at this host's screen origin. The default UI
     //pass uses a deferred batch with GlobalSettings.Sampler and no transform, so end it, draw scaled, then restore it.
-    private void DrawDirect(SpriteBatch spriteBatch)
+    private void DrawDirect(SpriteBatchEx spriteBatch)
     {
         var ox = ScreenX;
         var oy = ScreenY;
@@ -476,11 +476,9 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         var nb = oy + (int)Math.Ceiling((screenClip.Bottom - oy) / Scale);
         ClipRect = new Rectangle(nl, nt, nr - nl, nb - nt);
 
-        spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler, transformMatrix: transform);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState, transformMatrix: transform);
         Inner.Draw(spriteBatch);
         spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
 
         ClipRect = screenClip;
     }
@@ -490,7 +488,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
     //INTERIORS stay crisp, then bilinear-DOWNscale to the final on-screen size, which softens only the thin pixel seams
     //instead of squishing whole columns. Costs two render-target switches per visible fractional host; the common
     //integer scales (1x/2x/3x/4x) never reach here, so the default UI pays nothing.
-    private void DrawSharpBilinear(SpriteBatch spriteBatch, float alpha = 1f, bool renderInner = true)
+    private void DrawSharpBilinear(SpriteBatchEx spriteBatch, float alpha = 1f, bool renderInner = true)
     {
         var iw = Inner.Width;
         var ih = Inner.Height;
@@ -538,8 +536,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         //whatever the UI pass is rendering into (the backbuffer in practice), so we can put it back after the detour
         var prevTargets = gd.GetRenderTargets();
 
-        spriteBatch.End();
-
+        spriteBatch.Flush();
         //1) child crisp at 1:1, translated so its top-left lands at the target origin. No external clip inside the
         //target (clip to the child's own bounds) so the WHOLE panel is captured; on-screen clipping happens at step 3.
         //A fade-OUT skips this and reuses the last captured frame (the inner is already hidden).
@@ -548,7 +545,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
             gd.SetRenderTarget(NativeTarget);
             gd.Clear(Color.Transparent);
             ClipRect = new Rectangle(ox, oy, iw, ih);
-            spriteBatch.Begin(samplerState: GlobalSettings.Sampler, transformMatrix: Matrix.CreateTranslation(-ox, -oy, 0f));
+            spriteBatch.Begin(samplerState: spriteBatch.SamplerState, transformMatrix: Matrix.CreateTranslation(-ox, -oy, 0f));
             Inner.Draw(spriteBatch);
             spriteBatch.End();
             ClipRect = screenClip;
@@ -594,9 +591,6 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
         }
 
         spriteBatch.End();
-
-        //restore the plain UI batch the caller keeps drawing the rest of the tree into
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 
     //true when the scale is (essentially) a whole number, so plain nearest stretches every source pixel evenly and the

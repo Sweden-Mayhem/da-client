@@ -264,7 +264,7 @@ public sealed class MenuShopPanel : PrefabPanel
     ///     dialog's spoken text is drawn. Called from <see cref="NpcSessionControl.DrawTextNative" />; origin + scale are
     ///     the dialog host's on-screen origin/magnification, alpha fades the text with the host's open/close fade.
     /// </summary>
-    public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+    public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
     {
         if ((scale <= 0f) || (alpha <= 0f) || !TtfTextRenderer.Available)
             return;
@@ -286,7 +286,7 @@ public sealed class MenuShopPanel : PrefabPanel
     //draws one Suppress-draw'd label's text crisp at native resolution: position remapped through the host origin/scale,
     //font = the label's TTF size * scale, with the same down-right emboss as the dialog text. Honors the label's
     //horizontal alignment within its box; word-wraps when the label does. Shared by the rows, tabs and detail labels.
-    internal static void DrawLabelNative(SpriteBatch sb, UILabel? label, int originX, int originY, float scale, float alpha)
+    internal static void DrawLabelNative(SpriteBatchEx sb, UILabel? label, int originX, int originY, float scale, float alpha)
     {
         if ((label is null) || !label.Visible || (label.CustomFontSize <= 0) || string.IsNullOrEmpty(label.Text))
             return;
@@ -1120,7 +1120,7 @@ public sealed class MenuShopPanel : PrefabPanel
         public override void OnMouseLeave() => (Parent as MenuShopPanel)?.NotifyListingLeave(RowIndex);
 
         //draws this row's name + cost crisp at native resolution (only while the row is showing an entry)
-        public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+        public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
         {
             if (!Visible)
                 return;
@@ -1224,7 +1224,7 @@ public sealed class MenuShopPanel : PrefabPanel
         }
 
         //draws this tab's category text crisp at native resolution (only while the tab is showing)
-        public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+        public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
         {
             if (Visible)
                 DrawLabelNative(spriteBatch, NameLabel, originX, originY, scale, alpha);

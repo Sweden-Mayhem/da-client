@@ -68,7 +68,7 @@ public sealed class OrangeBarControl : UIPanel
         base.Dispose();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible || PaneBg is null)
             return;

@@ -142,7 +142,7 @@ public sealed class ChatBubble : UIImage
         return 1f + c3 * p * p * p + c1 * p * p;    //easeOutBack: 0 at t=0, overshoots, 1 at t=1
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible || Texture is null)
             return;
@@ -195,7 +195,7 @@ public sealed class ChatBubble : UIImage
     }
 
     //draws one glyph line scaled by <paramref name="scale" /> with a 1px (scaled) dark outline behind the fill
-    private static void DrawGlyphLine(SpriteBatch spriteBatch, Texture2D glyphs, Vector2 pos, float scale, Color outline, Color fill)
+    private static void DrawGlyphLine(SpriteBatchEx spriteBatch, Texture2D glyphs, Vector2 pos, float scale, Color outline, Color fill)
     {
         foreach (var off in OutlineOffsets)
             spriteBatch.Draw(glyphs, pos + off * scale, null, outline, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);

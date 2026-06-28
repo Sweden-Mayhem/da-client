@@ -126,7 +126,7 @@ public sealed class GroupTab : PrefabPanel
         base.Dispose();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

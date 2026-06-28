@@ -76,7 +76,7 @@ public sealed class LoginGlowControl : UIElement
             Clock += gameTime.ElapsedGameTime.TotalMilliseconds;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (Held || !Playing)
             return;
@@ -101,16 +101,13 @@ public sealed class LoginGlowControl : UIElement
         if (Effects.GetFrame(EffectId, frameIdx) is not { } f)
             return;
 
-        //Screen blend needs its own batch, flush the Root pass, draw the glow, then resume it with the same settings
-        //so the popups after us draw normally
-        spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler, blendState: BlendStates.Screen);
+        //Screen blend needs its own batch, so begin a glow batch, then end it to resume the previous
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState, blendState: BlendStates.Screen);
 
         var origin = new Vector2(f.Texture.Width / 2f, f.Texture.Height / 2f);
         spriteBatch.Draw(f.Texture, Center, null, Color.White, 0f, origin, DrawScale, SpriteEffects.None, 0f);
 
         spriteBatch.End();
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 
     //hotspot radius in virtual pixels, a fraction of the glow's largest drawn half-extent across all frames

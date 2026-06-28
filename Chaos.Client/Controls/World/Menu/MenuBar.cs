@@ -481,7 +481,7 @@ public sealed class MenuItem : UIPanel
             Marker.ForegroundColor = MarkerColor;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         var layers = DebugSettings.GlowLayers;
         var pulsing = PulseMarker;

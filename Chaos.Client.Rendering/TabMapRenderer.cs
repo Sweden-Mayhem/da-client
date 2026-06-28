@@ -232,7 +232,7 @@ public sealed class TabMapRenderer : IDisposable
     ///     stencil: overlapping pixels become transparent.
     /// </summary>
     public void Draw(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         GraphicsDevice device,
         Rectangle viewport,
         int playerTileX,
@@ -369,7 +369,7 @@ public sealed class TabMapRenderer : IDisposable
     }
 
     private void DrawEntityDiamonds(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         TabMapEntity[] entities,
         int entityCount,
         uint playerEntityId,

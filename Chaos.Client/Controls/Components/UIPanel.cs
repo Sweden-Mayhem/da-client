@@ -13,6 +13,7 @@ public class UIPanel : UIElement
     internal bool ChildOrderDirty;
 
     public Texture2D? Background { get; set; }
+    public Effect? BackgroundEffect { get; set; }
 
     /// <summary>Opacity (0..1) applied to the <see cref="Background" /> texture, so a window can fade its icon-button art
     ///     (e.g. the titlebar close/pin buttons) along with the rest of its chrome. 1 = fully opaque (default).</summary>
@@ -66,7 +67,7 @@ public class UIPanel : UIElement
         base.Dispose();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -96,8 +97,16 @@ public class UIPanel : UIElement
         }
 
         if (Background is not null)
+        {
             //Color.White * opacity fades a premultiplied texture correctly (used for the titlebar button art on fade windows)
-            DrawTexture(spriteBatch, Background, new Vector2(ScreenX, ScreenY), Color.White * BackgroundOpacity);
+            if (BackgroundEffect is not null)
+            {
+                spriteBatch.Begin(samplerState: spriteBatch.SamplerState, effect: BackgroundEffect);
+                DrawTexture(spriteBatch, Background, new Vector2(ScreenX, ScreenY), Color.White * BackgroundOpacity);
+                spriteBatch.End();
+            } else
+                DrawTexture(spriteBatch, Background, new Vector2(ScreenX, ScreenY), Color.White * BackgroundOpacity);
+        }
 
         foreach (var child in Children)
             if (child.Visible && !child.SuppressDraw)

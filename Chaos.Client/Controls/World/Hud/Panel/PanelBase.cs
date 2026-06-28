@@ -225,7 +225,7 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
             CooldownStyle = cooldownStyle
         };
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -248,7 +248,7 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
     ///     native resolution. Called by WorldScreen's generic menu-text pass with the wrapping ScaleHost's screen origin +
     ///     scale (or 0/0/1 when un-magnified), so the text stays crisp whether the panel is a 1x hotbar or a 1.5x book.
     /// </summary>
-    public void DrawNativeText(SpriteBatch spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
     {
         if (!TtfTextRenderer.Available || (scale <= 0f) || (alpha <= 0f))
             return;

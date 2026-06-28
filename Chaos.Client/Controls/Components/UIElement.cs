@@ -144,7 +144,7 @@ public abstract class UIElement : IDisposable
     ///     Draws the element's background fill and border if set. Subclasses should call base.Draw() before drawing their own
     ///     content so the background appears behind everything.
     /// </summary>
-    public virtual void Draw(SpriteBatch spriteBatch)
+    public virtual void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -175,7 +175,7 @@ public abstract class UIElement : IDisposable
     /// <summary>
     ///     Draws a 1px border rectangle (no fill). Utility for ad-hoc drawing outside the element tree.
     /// </summary>
-    public static void DrawBorder(SpriteBatch spriteBatch, Rectangle bounds, Color color)
+    public static void DrawBorder(SpriteBatchEx spriteBatch, Rectangle bounds, Color color)
     {
         var pixel = GetPixel();
 
@@ -220,7 +220,7 @@ public abstract class UIElement : IDisposable
     ///     Draws a filled rectangle with a 1px border. Utility for ad-hoc drawing outside the element tree.
     /// </summary>
     public static void DrawBorderedRect(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Rectangle bounds,
         Color fillColor,
         Color borderColor)
@@ -233,7 +233,7 @@ public abstract class UIElement : IDisposable
     /// <summary>
     ///     Draws a filled rectangle with the given color. Utility for ad-hoc drawing outside the element tree.
     /// </summary>
-    public static void DrawRect(SpriteBatch spriteBatch, Rectangle bounds, Color color) => spriteBatch.Draw(GetPixel(), bounds, color);
+    public static void DrawRect(SpriteBatchEx spriteBatch, Rectangle bounds, Color color) => spriteBatch.Draw(GetPixel(), bounds, color);
 
     /// <summary>
     ///     Returns the shared 1x1 white pixel texture, creating it on first use. Shared across all UI elements, do not
@@ -318,7 +318,7 @@ public abstract class UIElement : IDisposable
     /// <summary>
     ///     Draws a texture clipped to this element's ClipRect.
     /// </summary>
-    protected void DrawTexture(SpriteBatch spriteBatch, Texture2D? texture, Vector2 position, Color color)
+    protected void DrawTexture(SpriteBatchEx spriteBatch, Texture2D? texture, Vector2 position, Color color)
     {
         if (texture is null)
             return;
@@ -341,7 +341,7 @@ public abstract class UIElement : IDisposable
     ///     Draws a texture with a source rectangle, clipped to this element's ClipRect.
     /// </summary>
     protected void DrawTexture(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Texture2D? texture,
         Vector2 position,
         Rectangle? sourceRect,
@@ -377,7 +377,7 @@ public abstract class UIElement : IDisposable
     /// <summary>
     ///     Draws a filled rectangle clipped to this element's ClipRect.
     /// </summary>
-    protected void DrawRectClipped(SpriteBatch spriteBatch, Rectangle bounds, Color color)
+    protected void DrawRectClipped(SpriteBatchEx spriteBatch, Rectangle bounds, Color color)
     {
         var clipped = Rectangle.Intersect(bounds, ClipRect);
 
@@ -389,7 +389,7 @@ public abstract class UIElement : IDisposable
     ///     Draws single-line text clipped to this element's ClipRect.
     /// </summary>
     protected void DrawTextClipped(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         string text,
         Color color,

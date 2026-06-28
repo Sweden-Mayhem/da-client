@@ -1469,7 +1469,7 @@ public sealed class MarketWindow : DraggableWindow
     {
         public int FixedScale { get; init; }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatchEx spriteBatch)
         {
             if (!Visible)
                 return;

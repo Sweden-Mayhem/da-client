@@ -167,7 +167,7 @@ public sealed class MailListControl : PrefabPanel, INativeTextDrawer
 
     /// <summary>Draws the row text at native (unscaled) resolution. Call from WorldScreen's native pass with the wrapping
     ///     ScaleHost's ScreenX/Y, Scale and OpenFraction (as alpha).</summary>
-    public void DrawNativeText(SpriteBatch spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
         => BoardRowText.DrawColumns(spriteBatch, RowLabels, ColumnXs, ROW_HEIGHT, originX, originY, scale, alpha);
 
     public void AppendEntries(List<MailEntry> entries)
@@ -179,7 +179,7 @@ public sealed class MailListControl : PrefabPanel, INativeTextDrawer
         UpdateScrollBar();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

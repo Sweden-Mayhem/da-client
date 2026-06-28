@@ -61,7 +61,7 @@ public static class TextRenderer
     ///     character.
     /// </summary>
     public static void DrawText(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         string text,
         Color color,
@@ -143,7 +143,7 @@ public static class TextRenderer
     ///     (MeasureWidth(text) + 2) wide and (CHAR_HEIGHT + 1) tall.
     /// </summary>
     public static void DrawShadowedText(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         string text,
         Color textColor,
@@ -181,7 +181,7 @@ public static class TextRenderer
     ///     partially intersects the clip bounds (the common fully-inside case bypasses this).
     /// </summary>
     public static void DrawTextClipped(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         string text,
         Color color,
@@ -294,7 +294,7 @@ public static class TextRenderer
     ///     Draws a list of text lines top-to-bottom, each on its own row (12px line height).
     /// </summary>
     public static void DrawLines(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         IReadOnlyList<string> lines,
         Color color,
@@ -318,7 +318,7 @@ public static class TextRenderer
     ///     Draws a visible window of text lines, supporting scrollable text areas.
     /// </summary>
     public static void DrawLines(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 position,
         IReadOnlyList<string> lines,
         int startLine,

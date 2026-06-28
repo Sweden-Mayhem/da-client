@@ -224,7 +224,7 @@ public sealed class TextPopupControl : UIPanel, INativeTextDrawer
     ///     Draws the wooden board body text at native resolution
     ///     Only used in WoodenBoard style when the TTF renderer is available
     /// </summary>
-    public void DrawNativeText(SpriteBatch spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
     {
         if (!IsWooden || !TtfTextRenderer.Available || (scale <= 0f) || (alpha <= 0f) || string.IsNullOrEmpty(BodyText))
             return;

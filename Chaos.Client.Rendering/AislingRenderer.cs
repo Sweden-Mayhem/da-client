@@ -269,7 +269,7 @@ public sealed class AislingRenderer : IDisposable
     ///     Draws an aisling at the given position. Handles composite caching, ground tinting, and highlight/group tinting.
     ///     Returns screen-space texture bottom Y for hitbox calculation, or 0 if not drawn.
     /// </summary>
-    public int Draw(SpriteBatch batch, Camera camera, in AislingDrawParams p)
+    public int Draw(SpriteBatchEx batch, Camera camera, in AislingDrawParams p)
     {
         if (!CompositeCache.TryGetValue(p.EntityId, out var cached)
             || (cached.Appearance != p.Appearance)
@@ -1046,7 +1046,7 @@ public sealed class AislingRenderer : IDisposable
     ///     texture is unavailable.
     /// </summary>
     public int DrawSwimming(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         Camera camera,
         bool isFemale,
         int swimFrame,
@@ -1171,7 +1171,7 @@ public sealed class AislingRenderer : IDisposable
     ///     from the front, away-facing always shows the plain rest sprite.
     /// </summary>
     public int DrawResting(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         Camera camera,
         bool isFemale,
         RestPosition restPos,

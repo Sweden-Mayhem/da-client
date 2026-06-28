@@ -55,7 +55,7 @@ public sealed class Checkbox : UIPanel
         AddChild(Label);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

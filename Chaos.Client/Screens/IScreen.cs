@@ -23,7 +23,7 @@ public interface IScreen : IDisposable
     ///     responsible for its own Begin/End calls, allowing each screen to choose its own sampler state, blend mode, and
     ///     transform matrix.
     /// </summary>
-    void Draw(SpriteBatch spriteBatch, GameTime gameTime);
+    void Draw(SpriteBatchEx spriteBatch, GameTime gameTime);
 
     /// <summary>
     ///     True if this screen renders its UI at native window resolution (world to the 640x480 target stretched to the
@@ -36,13 +36,13 @@ public interface IScreen : IDisposable
     ///     Renders the low-resolution world into the 640x480 target. Defaults to the legacy <see cref="Draw" /> so screens
     ///     that don't split (e.g. the lobby) keep working unchanged.
     /// </summary>
-    void DrawWorld(SpriteBatch spriteBatch, GameTime gameTime) => Draw(spriteBatch, gameTime);
+    void DrawWorld(SpriteBatchEx spriteBatch, GameTime gameTime) => Draw(spriteBatch, gameTime);
 
     /// <summary>
     ///     Renders the UI at native window resolution, after the world target has been stretched to fill the window.
     ///     Default does nothing.
     /// </summary>
-    void DrawNativeUi(SpriteBatch spriteBatch, GameTime gameTime) { }
+    void DrawNativeUi(SpriteBatchEx spriteBatch, GameTime gameTime) { }
 
     /// <summary>
     ///     Called once when the screen is first pushed onto the screen stack. Use this to subscribe to events, set up state,

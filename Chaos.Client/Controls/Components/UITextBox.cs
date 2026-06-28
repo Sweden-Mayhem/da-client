@@ -107,7 +107,7 @@ public class UITextBox : UIElement, INativeTextDrawer
     //is plenty there; the TTF font needs a few px scaled to its size.
     private int CaretGap => UsesTtf ? Math.Max(2, (int)MathF.Round(CustomFontSize * 0.2f)) : 1;
 
-    private void DrawText(SpriteBatch spriteBatch, Vector2 position, string text, Color color)
+    private void DrawText(SpriteBatchEx spriteBatch, Vector2 position, string text, Color color)
     {
         if (UsesTtf)
         {
@@ -341,7 +341,7 @@ public class UITextBox : UIElement, INativeTextDrawer
         SelectionAnchor = start;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -373,7 +373,7 @@ public class UITextBox : UIElement, INativeTextDrawer
     //pixel-art frame / login art. Layout (which chars, scroll, selection range, caret index) is computed in the box's own
     //native space by the existing code; here each x is re-measured at the SCALED font so glyphs and the caret/selection
     //stay aligned at the larger size. A box that is not RenderNative no-ops (ScaleHost walks every INativeTextDrawer).
-    public void DrawNativeText(SpriteBatch spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
     {
         if (!RendersNatively || (alpha <= 0.01f) || (scale <= 0f))
             return;
@@ -398,7 +398,7 @@ public class UITextBox : UIElement, INativeTextDrawer
         ClipRect = savedClip;
     }
 
-    private void DrawNativeNativeLine(SpriteBatch spriteBatch, string text, int screenX, int screenY, int font, Color color, float alpha)
+    private void DrawNativeNativeLine(SpriteBatchEx spriteBatch, string text, int screenX, int screenY, int font, Color color, float alpha)
     {
         if (text.Length == 0)
             return;
@@ -409,7 +409,7 @@ public class UITextBox : UIElement, INativeTextDrawer
             DrawTexture(spriteBatch, tex, new Vector2(screenX, screenY), color * alpha);
     }
 
-    private void DrawNativeSingleLine(SpriteBatch spriteBatch, Func<int, int> mapX, Func<int, int> mapY, float scale, int font, float alpha)
+    private void DrawNativeSingleLine(SpriteBatchEx spriteBatch, Func<int, int> mapX, Func<int, int> mapY, float scale, int font, float alpha)
     {
         var displayText = IsMasked ? new string('*', Text.Length) : Text;
         var fontHeight = TtfTextRenderer.LineHeight(font);
@@ -474,7 +474,7 @@ public class UITextBox : UIElement, INativeTextDrawer
         DrawRectClipped(spriteBatch, new Rectangle(caretX, screenTextY, caretW, fontHeight), ForegroundColor * alpha);
     }
 
-    private void DrawNativeMultiLine(SpriteBatch spriteBatch, Func<int, int> mapX, Func<int, int> mapY, float scale, int font, float alpha)
+    private void DrawNativeMultiLine(SpriteBatchEx spriteBatch, Func<int, int> mapX, Func<int, int> mapY, float scale, int font, float alpha)
     {
         var lineH = TtfTextRenderer.LineHeight(font);
         var screenLeft = mapX(ScreenX + PaddingLeft);
@@ -533,7 +533,7 @@ public class UITextBox : UIElement, INativeTextDrawer
         }
     }
 
-    private void DrawMultiLine(SpriteBatch spriteBatch)
+    private void DrawMultiLine(SpriteBatchEx spriteBatch)
     {
         var sx = ScreenX;
         var sy = ScreenY;
@@ -607,7 +607,7 @@ public class UITextBox : UIElement, INativeTextDrawer
         }
     }
 
-    private void DrawSingleLine(SpriteBatch spriteBatch)
+    private void DrawSingleLine(SpriteBatchEx spriteBatch)
     {
         var displayText = IsMasked ? new string('*', Text.Length) : Text;
         var sx = ScreenX;

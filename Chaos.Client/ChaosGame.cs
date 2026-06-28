@@ -99,7 +99,7 @@ public sealed class ChaosGame : Game
 
     private bool ResizingInProgress;
     private int WindowSizeMultiplier = 2; // default to 2x (1280x960); Alt+Enter cycles from here
-    private SpriteBatch SpriteBatch = null!;
+    private SpriteBatchEx SpriteBatch = null!;
 
     /// <summary>
     ///     Input dispatcher that routes mouse and keyboard events to UI elements via hit-testing and focus routing.
@@ -798,7 +798,7 @@ public sealed class ChaosGame : Game
 
     protected override void LoadContent()
     {
-        SpriteBatch = new SpriteBatch(GraphicsDevice);
+        SpriteBatch = new SpriteBatchEx(GraphicsDevice);
 
         RenderTarget = new RenderTarget2D(
             GraphicsDevice,

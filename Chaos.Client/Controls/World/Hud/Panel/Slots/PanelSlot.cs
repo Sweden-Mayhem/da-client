@@ -113,7 +113,7 @@ public class PanelSlot : UIButton
         base.Dispose();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

@@ -15,5 +15,5 @@ namespace Chaos.Client.Controls.Components;
 /// </summary>
 public interface INativeTextDrawer
 {
-    void DrawNativeText(SpriteBatch spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha);
+    void DrawNativeText(SpriteBatchEx spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha);
 }

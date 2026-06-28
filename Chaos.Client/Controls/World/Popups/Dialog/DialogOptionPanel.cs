@@ -79,7 +79,7 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
         OptionLabels.Clear();
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -220,7 +220,7 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
     ///     Called from NpcSessionControl.DrawTextNative. origin + scale are the dialog host's on-screen origin/magnification;
     ///     each option's normal screen rect is remapped through them. alpha fades the text with the host's open fade.
     /// </summary>
-    public void DrawTextNative(SpriteBatch spriteBatch, int originX, int originY, float scale, float alpha)
+    public void DrawTextNative(SpriteBatchEx spriteBatch, int originX, int originY, float scale, float alpha)
     {
         //NOTE: not gated on this.Visible - the caller (NpcSessionControl) decides whether to draw, so the option text can
         //keep drawing (and fading) during the dialog's close fade even though this panel hides itself immediately on close.
@@ -290,7 +290,7 @@ public sealed class DialogOptionPanel : FramedDialogPanelBase
             StripeRightOn = stripeRightOn;
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatchEx spriteBatch)
         {
             if (!Visible)
                 return;

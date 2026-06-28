@@ -58,7 +58,7 @@ public sealed class CreatureRenderer : IDisposable
     ///     texture bottom edge, or 0 if the sprite could not be drawn.
     /// </summary>
     public int Draw(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         Camera camera,
         int spriteId,
         int frameIndex,

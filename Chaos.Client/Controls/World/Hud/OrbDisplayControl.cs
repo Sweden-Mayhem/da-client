@@ -63,7 +63,7 @@ public sealed class OrbDisplayControl : UIElement
             : ((int)attrs.CurrentMp, (int)attrs.MaximumMp);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

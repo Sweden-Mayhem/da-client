@@ -44,7 +44,7 @@ public sealed class EffectRenderer : IDisposable
     ///     AlphaBlend afterward. Requires the SpriteBatch to be in Immediate mode.
     /// </summary>
     public void Draw(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         GraphicsDevice device,
         Camera camera,
         int effectId,
@@ -257,7 +257,7 @@ public sealed class EffectRenderer : IDisposable
     }
 
     public void DrawProjectile(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         Camera camera,
         int mefcId,
         int frameIndex,

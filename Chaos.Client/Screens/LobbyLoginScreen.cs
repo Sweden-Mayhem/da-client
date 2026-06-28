@@ -99,7 +99,7 @@ public sealed class LobbyLoginScreen : IScreen
     //driven each frame via LoginGlow.Held so it is suppressed while the notice is up or input is gated
     private LoginGlowControl LoginGlow = null!;
 
-    public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+    public void Draw(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
         Root!.Draw(spriteBatch);
@@ -109,7 +109,7 @@ public sealed class LobbyLoginScreen : IScreen
     }
 
     /// <inheritdoc />
-    public void DrawNativeUi(SpriteBatch spriteBatch, GameTime gameTime)
+    public void DrawNativeUi(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         if (!TtfTextRenderer.Available)
             return;

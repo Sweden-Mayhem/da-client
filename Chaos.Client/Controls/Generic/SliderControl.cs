@@ -54,7 +54,7 @@ public sealed class SliderControl : UIPanel
 
     public void SetValue(int value) => Value = Math.Clamp(value, VOLUME_MIN, VOLUME_MAX);
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible || ThumbTexture is null)
             return;

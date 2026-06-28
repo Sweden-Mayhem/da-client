@@ -131,7 +131,7 @@ public sealed class WeatherRenderer : IDisposable
     ///     Draws the current weather overlay inside <paramref name="viewport"/>. Returns early when the
     ///     mode is none (nibble 0 or 3).
     /// </summary>
-    public void Draw(SpriteBatch spriteBatch, Rectangle viewport)
+    public void Draw(SpriteBatchEx spriteBatch, Rectangle viewport)
     {
         var nibble = WeatherNibble;
 
@@ -310,7 +310,7 @@ public sealed class WeatherRenderer : IDisposable
         };
     }
 
-    private void DrawSnow(SpriteBatch spriteBatch)
+    private void DrawSnow(SpriteBatchEx spriteBatch)
     {
         if (SnowTypeFrames is null || SnowParticles is null)
             return;
@@ -422,7 +422,7 @@ public sealed class WeatherRenderer : IDisposable
                 RainRows.RemoveAt(i);
     }
 
-    private void DrawRain(SpriteBatch spriteBatch, Rectangle viewport)
+    private void DrawRain(SpriteBatchEx spriteBatch, Rectangle viewport)
     {
         if (RainTexture is null || (viewport.Width <= 0) || (viewport.Height <= 0) || (RainRows.Count == 0))
             return;

@@ -38,7 +38,7 @@ public sealed class ItemRenderer : IDisposable
     ///     Draws a ground item sprite centered on the tile, using visual content bounds to ignore transparent padding.
     /// </summary>
     public void Draw(
-        SpriteBatch batch,
+        SpriteBatchEx batch,
         Camera camera,
         int spriteId,
         byte color,

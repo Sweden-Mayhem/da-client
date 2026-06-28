@@ -23,7 +23,7 @@ public sealed partial class WorldScreen
     public bool UsesNativeUi => true;
 
     //world renders into the 640x480 target here; the UI is drawn separately at native resolution in DrawNativeUi
-    public void DrawWorld(SpriteBatch spriteBatch, GameTime gameTime)
+    public void DrawWorld(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         //keep the camera viewport matched to the (window-filling) render target, so the player stays centered and
         //the expanded margins fill with tiles
@@ -320,7 +320,7 @@ public sealed partial class WorldScreen
     }
 
     //UI overlay at native window resolution (drawn after the world target is stretched to fill the window).
-    public void DrawNativeUi(SpriteBatch spriteBatch, GameTime gameTime)
+    public void DrawNativeUi(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         var openFraction = NpcSessionHost?.OpenFraction ?? 0f;
 
@@ -343,7 +343,7 @@ public sealed partial class WorldScreen
 
             device.SetRenderTarget(HudRenderTarget);
             device.Clear(Color.Transparent);
-            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+            spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
             DrawCameraEffects(spriteBatch);
             DrawDeathVignette(spriteBatch);
             //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
@@ -367,7 +367,7 @@ public sealed partial class WorldScreen
 
             //back to the backbuffer: HUD at faded alpha, then dialog system at full alpha
             device.SetRenderTarget(null);
-            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+            spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
             spriteBatch.Draw(HudRenderTarget, new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight), Color.White * (1f - openFraction));
 
             foreach (var child in Root.Children)
@@ -411,7 +411,7 @@ public sealed partial class WorldScreen
     //a WoW-style cast progress bar while a multi-line spell is being chanted, so the few-second delay reads as
     //"casting" rather than nothing happening. Centered horizontally just above the bottom hotbars, spell name above.
     //Hidden for instant (0-line) casts since they never chant
-    private void DrawCastBar(SpriteBatch spriteBatch)
+    private void DrawCastBar(SpriteBatchEx spriteBatch)
     {
         if (!CastingSystem.IsChanting)
             return;
@@ -482,7 +482,7 @@ public sealed partial class WorldScreen
     }
 
     //unused for this screen (ChaosGame uses DrawWorld + DrawNativeUi directly), but satisfies IScreen
-    public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+    public void Draw(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         DrawWorld(spriteBatch, gameTime);
         DrawNativeUi(spriteBatch, gameTime);
@@ -535,7 +535,7 @@ public sealed partial class WorldScreen
     #region Diagonal Stripe Rendering
     //diagonal stripe order (depth = x+y ascending). Per stripe: ground items, aislings, creatures, ground effects,
     //entity effects, foreground tiles. Within each category entities draw in arrival order, later arrivals on top
-    private void DrawForegroundAndEntities(SpriteBatch spriteBatch, IReadOnlyList<WorldEntity> sortedEntities)
+    private void DrawForegroundAndEntities(SpriteBatchEx spriteBatch, IReadOnlyList<WorldEntity> sortedEntities)
     {
         if (MapFile is null)
             return;
@@ -655,7 +655,7 @@ public sealed partial class WorldScreen
         (0, 0), (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)
     ];
 
-    private void DrawLightOccluderMap(SpriteBatch spriteBatch, LightSource light, int occluderPad)
+    private void DrawLightOccluderMap(SpriteBatchEx spriteBatch, LightSource light, int occluderPad)
     {
         if (MapFile is null || !MapPreloaded || !DebugSettings.LightShadows || (DebugSettings.LightShadowFootPx <= 0))
             return;
@@ -690,7 +690,7 @@ public sealed partial class WorldScreen
 
     //erases the full silhouette of every foreground sprite below the lamp from the bound glow buffer, so the object
     //itself never lights up (its front face stays dark because the lamp is behind it)
-    private void DrawLightSilhouetteErase(SpriteBatch spriteBatch, LightSource light, Matrix transform)
+    private void DrawLightSilhouetteErase(SpriteBatchEx spriteBatch, LightSource light, Matrix transform)
     {
         if (MapFile is null || !MapPreloaded)
             return;
@@ -721,7 +721,7 @@ public sealed partial class WorldScreen
         return ms.ToArray();
     }
 
-    private void DrawDyingEffectsAtDepth(SpriteBatch spriteBatch, int depth)
+    private void DrawDyingEffectsAtDepth(SpriteBatchEx spriteBatch, int depth)
     {
         if (MapFile is null)
             return;
@@ -762,7 +762,7 @@ public sealed partial class WorldScreen
         }
     }
 
-    private void DrawGroundEffectsAtDepth(SpriteBatch spriteBatch, int depth)
+    private void DrawGroundEffectsAtDepth(SpriteBatchEx spriteBatch, int depth)
     {
         foreach (var effect in WorldState.ActiveEffects)
         {
@@ -807,7 +807,7 @@ public sealed partial class WorldScreen
         return EntityTintType.None;
     }
 
-    private void DrawProjectilesAtDepth(SpriteBatch spriteBatch, int depth)
+    private void DrawProjectilesAtDepth(SpriteBatchEx spriteBatch, int depth)
     {
         if (MapFile is null)
             return;
@@ -836,7 +836,7 @@ public sealed partial class WorldScreen
     }
 
     private void DrawSingleEffect(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Animation effect,
         float tileCenterX,
         float tileCenterY,
@@ -885,7 +885,7 @@ public sealed partial class WorldScreen
     private const int BLOOM_TAPS = 7;
     private const int BLOOM_STEP = 2;
 
-    private void DrawDuskBloom(SpriteBatch spriteBatch)
+    private void DrawDuskBloom(SpriteBatchEx spriteBatch)
     {
         var glow = DarknessRenderer.DuskGlow;
 
@@ -953,7 +953,7 @@ public sealed partial class WorldScreen
     private static Texture2D? NightVignetteTexture;
     private static float NightVignetteBuiltInner = -1f; //the VignetteInner the cached texture was built with
 
-    private void DrawNightVignette(SpriteBatch spriteBatch)
+    private void DrawNightVignette(SpriteBatchEx spriteBatch)
     {
         var glow = DarknessRenderer.DuskGlow;
         //any carried lantern fades the night vignette out (eased)
@@ -1019,7 +1019,7 @@ public sealed partial class WorldScreen
     //alpha after the foreground so an animation shows semi-transparently where a wall would hide it. Same trick as
     //entity silhouettes and the tile cursor. No depth gating; it overlays the whole world. On open ground this adds a
     //faint second copy over the full-intensity stripe draw; setting the slider to 0 turns it off entirely
-    private void DrawEffectsThroughWalls(SpriteBatch spriteBatch)
+    private void DrawEffectsThroughWalls(SpriteBatchEx spriteBatch)
     {
         if (MapFile is null)
             return;
@@ -1113,7 +1113,7 @@ public sealed partial class WorldScreen
     //re-draws the focused dialog speaker on top of the dim so the NPC stands out clearly. Draws the dim itself (the
     //native DialogDimmer skips its base and vignette via SuppressBaseDim while this runs to avoid doubling), then
     //the speaker bright over it. In the world pass for the correct world position and scale
-    private void DrawSpeakerSpotlight(SpriteBatch spriteBatch)
+    private void DrawSpeakerSpotlight(SpriteBatchEx spriteBatch)
     {
         if (!SpeakerSpotlightActive || (MapFile is null))
             return;
@@ -1156,7 +1156,7 @@ public sealed partial class WorldScreen
     private const float SPOTLIGHT_BASE_ALPHA = 0.82f;
     private const float SPOTLIGHT_VIGNETTE_ALPHA = 0.4f;
 
-    private void DrawEntity(SpriteBatch spriteBatch, WorldEntity entity)
+    private void DrawEntity(SpriteBatchEx spriteBatch, WorldEntity entity)
     {
         if (MapFile is null)
             return;
@@ -1266,7 +1266,7 @@ public sealed partial class WorldScreen
 
     //soft directional ground shadow for an entity, cast away from the nearest lamp. Night only; strength fades
     //with distance from the lamp so the shadow appears as you enter a pool and fades as you leave it
-    private void DrawGroundShadow(SpriteBatch spriteBatch, WorldEntity entity, float tileCenterX, float tileCenterY)
+    private void DrawGroundShadow(SpriteBatchEx spriteBatch, WorldEntity entity, float tileCenterX, float tileCenterY)
     {
         if (entity.IsHidden || !DarknessRenderer.IsActive)
             return;
@@ -1348,7 +1348,7 @@ public sealed partial class WorldScreen
 
     //returns the screen-space Y of the texture bottom edge, or 0 if not drawn
     private int DrawCreature(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         WorldEntity entity,
         float tileCenterX,
         float tileCenterY)
@@ -1394,7 +1394,7 @@ public sealed partial class WorldScreen
     }
 
     private int DrawAisling(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         WorldEntity entity,
         float tileCenterX,
         float tileCenterY)
@@ -1505,7 +1505,7 @@ public sealed partial class WorldScreen
         return Game.AislingRenderer.Draw(spriteBatch, Camera, in drawParams);
     }
 
-    private void DrawEntityEffects(SpriteBatch spriteBatch, WorldEntity entity)
+    private void DrawEntityEffects(SpriteBatchEx spriteBatch, WorldEntity entity)
     {
         if (MapFile is null)
             return;
@@ -1529,7 +1529,7 @@ public sealed partial class WorldScreen
     }
 
     private void DrawGroundItem(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         WorldEntity entity,
         float tileCenterX,
         float tileCenterY)
@@ -1643,7 +1643,7 @@ public sealed partial class WorldScreen
 
     //draws a size-pulsing icon on the hotbar slot, a cubic bezier line from the slot to the cursor
     //(or snapped to the hovered target entity), and a label near the cursor or target
-    private void DrawTargetingCursor(SpriteBatch spriteBatch, GameTime gameTime)
+    private void DrawTargetingCursor(SpriteBatchEx spriteBatch, GameTime gameTime)
     {
         if (!CastingSystem.IsTargeting || MapFile is null)
             return;
@@ -1770,7 +1770,7 @@ public sealed partial class WorldScreen
 
     //cubic bezier drawn as a polyline of short rotated rectangles using a 1x1 pixel texture
     private static void DrawBezierLine(
-        SpriteBatch spriteBatch,
+        SpriteBatchEx spriteBatch,
         Vector2 p0,
         Vector2 p1,
         Vector2 p2,
@@ -1811,7 +1811,7 @@ public sealed partial class WorldScreen
         }
     }
 
-    private void DrawDragIcon(SpriteBatch spriteBatch)
+    private void DrawDragIcon(SpriteBatchEx spriteBatch)
     {
         var dragging = GetDraggingPanel();
 
@@ -1854,14 +1854,14 @@ public sealed partial class WorldScreen
     }
 
     //ground pass (full alpha): drawn under the foreground so on open ground the cursor is fully visible
-    private void DrawTileCursor(SpriteBatch spriteBatch) => DrawTileCursors(spriteBatch, 1f);
+    private void DrawTileCursor(SpriteBatchEx spriteBatch) => DrawTileCursors(spriteBatch, 1f);
 
     //overlay pass (reduced alpha): drawn after the foreground so the cursor shows through walls the same way
     //silhouetted entities do. On open ground it overlays the full-alpha ground draw (no visible change);
     //behind foreground it reveals the cursor at ~50%
-    private void DrawTileCursorOverlay(SpriteBatch spriteBatch) => DrawTileCursors(spriteBatch, SilhouetteRenderer.SilhouetteAlpha);
+    private void DrawTileCursorOverlay(SpriteBatchEx spriteBatch) => DrawTileCursors(spriteBatch, SilhouetteRenderer.SilhouetteAlpha);
 
-    private void DrawTileCursors(SpriteBatch spriteBatch, float alpha)
+    private void DrawTileCursors(SpriteBatchEx spriteBatch, float alpha)
     {
         //no ground/tile cursor at all while an NPC dialog is open (the world behind the modal is inert)
         if (MapFile is null || TileCursorTexture is null || NpcSession.Visible)
@@ -1903,7 +1903,7 @@ public sealed partial class WorldScreen
         DrawTileCursorAt(spriteBatch, hoverTile.X, hoverTile.Y, (dragging ? TileCursorDragColor : TileCursorHoverColor) * alpha);
     }
 
-    private void DrawTileCursorAt(SpriteBatch spriteBatch, int tileX, int tileY, Color color)
+    private void DrawTileCursorAt(SpriteBatchEx spriteBatch, int tileX, int tileY, Color color)
     {
         var tileWorld = Camera.TileToWorld(tileX, tileY, MapFile!.Height);
         var tileScreen = Camera.WorldToScreen(new Vector2(tileWorld.X, tileWorld.Y));

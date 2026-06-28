@@ -336,7 +336,7 @@ public sealed class ArticleReadControl : PrefabPanel, INativeTextDrawer
     ///     Draws the body text at native (unscaled) resolution. Call from WorldScreen.DrawNativeUi after Root.Draw,
     ///     passing the wrapping ScaleHost's ScreenX/Y, Scale, and OpenFraction as the alpha.
     /// </summary>
-    public void DrawNativeText(SpriteBatch spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int originX, int originY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
     {
         if (!TtfTextRenderer.Available || (scale <= 0f) || (alpha <= 0f))
             return;

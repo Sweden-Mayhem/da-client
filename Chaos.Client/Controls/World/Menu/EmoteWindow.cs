@@ -230,7 +230,7 @@ public sealed class EmoteWindow : DraggableWindow
                 Index = 0;
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatchEx spriteBatch)
         {
             base.Draw(spriteBatch); //cell background + the name label
 

@@ -50,7 +50,7 @@ public sealed class ScrollBarControl : UIElement
 
     public ScrollBarControl() => Width = BUTTON_SIZE;
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -123,7 +123,7 @@ public sealed class ScrollBarControl : UIElement
         }
     }
 
-    private void DrawHorizontal(SpriteBatch spriteBatch)
+    private void DrawHorizontal(SpriteBatchEx spriteBatch)
     {
         var sx = ScreenX;
         var sy = ScreenY;

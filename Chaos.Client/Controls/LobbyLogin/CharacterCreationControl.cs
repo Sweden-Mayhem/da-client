@@ -296,7 +296,7 @@ public sealed class CharacterCreationControl : PrefabPanel
         return Texture2D.FromStream(ChaosGame.Device, stream);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;

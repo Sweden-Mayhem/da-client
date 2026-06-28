@@ -128,7 +128,7 @@ public abstract class SlideFadePanel : PrefabPanel
         return 1f - (u * u * u);
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatchEx spriteBatch)
     {
         if (!Visible)
             return;
@@ -151,7 +151,7 @@ public abstract class SlideFadePanel : PrefabPanel
     //renders the whole panel (background and every child) into a shared 640x480 target at its normal coords
     //then blits its rect tinted by alpha
     //native text is suppressed in place so the target holds only the art, the lobby's native text pass paints it at the matching alpha
-    private void DrawFaded(SpriteBatch spriteBatch, float alpha)
+    private void DrawFaded(SpriteBatchEx spriteBatch, float alpha)
     {
         var gd = spriteBatch.GraphicsDevice;
         var tw = ChaosGame.VIRTUAL_WIDTH;
@@ -164,11 +164,11 @@ public abstract class SlideFadePanel : PrefabPanel
         }
 
         var prevTargets = gd.GetRenderTargets();
-        spriteBatch.End();
+        spriteBatch.Flush();
 
         gd.SetRenderTarget(SharedFadeTarget);
         gd.Clear(Color.Transparent);
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
         base.Draw(spriteBatch);
         spriteBatch.End();
 
@@ -178,11 +178,8 @@ public abstract class SlideFadePanel : PrefabPanel
             gd.SetRenderTargets(prevTargets);
 
         var rect = new Rectangle(ScreenX, ScreenY, Width, Height);
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        spriteBatch.Begin(samplerState: spriteBatch.SamplerState);
         spriteBatch.Draw(SharedFadeTarget, rect, rect, Color.White * alpha);
         spriteBatch.End();
-
-        //restore the plain UI batch the caller keeps drawing the rest of the Root tree into
-        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
     }
 }
