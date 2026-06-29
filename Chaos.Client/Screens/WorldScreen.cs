@@ -1238,7 +1238,7 @@ public sealed partial class WorldScreen : IScreen
             inv.Height = invBg.Height;
         }
 
-        InventoryWindow = DraggableWindow.CreateScaledPopup("Inventory", inv);
+        InventoryWindow = DraggableWindow.CreateScaledPopup("Inventory", TrimPanelBorder(inv));
         Root.AddChild(InventoryWindow);
         menuBar.AddEntry("Inventory", InventoryWindow.Toggle, Tip("Inventory",
             "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
@@ -1270,7 +1270,7 @@ public sealed partial class WorldScreen : IScreen
         statsContainer.AddChild(ExtStatsWinPanel);
         statsContainer.AddChild(StatsWinPanel);
 
-        StatsWin = DraggableWindow.CreateScaledPopup("Stats", statsContainer);
+        StatsWin = DraggableWindow.CreateScaledPopup("Stats", TrimPanelBorder(statsContainer));
         Root.AddChild(StatsWin);
         StatsMenuEntry = menuBar.AddEntry("Stats", StatsWin.Toggle, Tip("Stats",
             "Your character's attributes, health and mana, level and experience. When you have unspent stat points, the up-arrows let you raise Strength, Intelligence, Wisdom, Constitution or Dexterity.",
@@ -1288,7 +1288,7 @@ public sealed partial class WorldScreen : IScreen
         SkillWinPanel.OnSlotHoverEnter += HandleAbilityHoverEnter;
         SkillWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SkillWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
-        SkillWin = DraggableWindow.CreateScaledPopup("Skills", SkillWinPanel);
+        SkillWin = DraggableWindow.CreateScaledPopup("Skills", TrimPanelBorder(SkillWinPanel));
         Root.AddChild(SkillWin);
         menuBar.AddEntry("Skills", SkillWin.Toggle, Tip("Skills",
             "Your skill book: every skill you have learned. Drag a skill onto the hotbar for quick use, or right-click it to edit its chant line. Hover a skill to read what it does and its requirements.",
@@ -1300,7 +1300,7 @@ public sealed partial class WorldScreen : IScreen
         SpellWinPanel.OnSlotHoverExit += HandleAbilityHoverExit;
         SpellWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SpellBook, s, t);
         SpellWinPanel.OnSlotDroppedOutside += HandleSpellSlotDropped;
-        SpellWin = DraggableWindow.CreateScaledPopup("Spells", SpellWinPanel);
+        SpellWin = DraggableWindow.CreateScaledPopup("Spells", TrimPanelBorder(SpellWinPanel));
         Root.AddChild(SpellWin);
         menuBar.AddEntry("Spells", SpellWin.Toggle, Tip("Spells",
             "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
@@ -1318,7 +1318,7 @@ public sealed partial class WorldScreen : IScreen
         tools.WorldSpells.OnSlotHoverExit += HandleAbilityHoverExit;
         WireAbilityRightClicks(tools.WorldSkills);
         WireAbilityRightClicks(tools.WorldSpells);
-        ActionsWin = DraggableWindow.CreateScaledPopup("Actions", tools);
+        ActionsWin = DraggableWindow.CreateScaledPopup("Actions", TrimPanelBorder(tools));
         Root.AddChild(ActionsWin);
         menuBar.AddEntry("Actions", ActionsWin.Toggle, Tip("Actions",
             "Your skills and spells side by side in one window, so you can manage both at once. Drag onto the hotbar, right-click to edit a chant, or hover for details.",
@@ -1798,6 +1798,20 @@ public sealed partial class WorldScreen : IScreen
         };
 
         return host;
+    }
+
+    private UIPanel TrimPanelBorder(UIPanel panel)
+    {
+        var wrapper = new UIPanel
+        {
+            Width = panel.Width - 8,
+            Height = panel.Height - 8,
+        };
+        wrapper.AddChild(panel);
+        panel.X = -4;
+        panel.Y = -4;
+
+        return wrapper;
     }
 
     //window stack and centered the first time it opens, then left where the player dragged it. Collected in

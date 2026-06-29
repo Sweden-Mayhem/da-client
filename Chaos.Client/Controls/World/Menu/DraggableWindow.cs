@@ -43,11 +43,6 @@ public class DraggableWindow : UIPanel
 
     private readonly bool UseWoodFrame;
 
-    //when true, the content fills the window edge-to-edge (sides + bottom) UNDER the wood frame, which draws on top of its
-    //outer border, so a bordered content panel (inventory/skills/spells art) merges into the frame instead of showing a
-    //second border with a dark gap between. Top still sits below the titlebar. Only for windows whose content has a border.
-    public bool FlushContent { get; }
-
     private static Texture2D[]? FramePieces; //dlgframe 0..7 (TL,top,TR,left,right,BL,bottom,BR), loaded once
 
     //generic 18x18 button art for the close (_00) and pin (_01) titlebar buttons. Loaded fresh PER BOX because each
@@ -80,8 +75,8 @@ public class DraggableWindow : UIPanel
     //total non-content chrome for the current frame mode, so a subclass can size itself from its content:
     //outer width = ContentWidth + ChromeWidth, outer height = ContentHeight + ChromeHeight. Matches the ctor's insets
     //(flat: 1px sides + bottom, TITLE_H top; wood: FRAME sides + bottom, FRAME+TITLE_H top).
-    public int ChromeWidth => FlushContent ? 0 : (UseWoodFrame ? FRAME_LEFT + FRAME_RIGHT : 2);
-    public int ChromeHeight => (UseWoodFrame ? FRAME_TOP : 0) + TITLE_H + (FlushContent ? 0 : (UseWoodFrame ? FRAME_BOTTOM : 1));
+    public int ChromeWidth => UseWoodFrame ? FRAME_LEFT + FRAME_RIGHT : 2;
+    public int ChromeHeight => (UseWoodFrame ? FRAME_TOP : 0) + TITLE_H + (UseWoodFrame ? FRAME_BOTTOM : 1);
 
     public int ClientWidth { get => Width - ChromeWidth; set => Width = value + ChromeWidth; }
     public int ClientHeight { get => Height - ChromeHeight; set => Height = value + ChromeHeight; }
@@ -154,14 +149,13 @@ public class DraggableWindow : UIPanel
     /// <summary>Host area for the menu's content, positioned below the titlebar.</summary>
     public UIPanel Content { get; }
 
-    public DraggableWindow(string title, int width, int height, bool showClose = true, bool useWoodFrame = false, bool flushContent = false)
+    public DraggableWindow(string title, int width, int height, bool showClose = true, bool useWoodFrame = false)
     {
         Visible = false;
         Width = width;
         Height = height;
         ShowClose = showClose;
         UseWoodFrame = useWoodFrame;
-        FlushContent = flushContent;
 
         //the wood thickness drawn at the edges + the titlebar/button inset (0 in flat mode).
         var titleInsetTop = useWoodFrame ? FRAME_TOP : 0;
@@ -173,11 +167,9 @@ public class DraggableWindow : UIPanel
         var frameRight = useWoodFrame ? FRAME_RIGHT : 1;
         var frameBottom = useWoodFrame ? FRAME_BOTTOM : 1;
 
-        //FlushContent: the content fills edge-to-edge (X=0, full width, down to the bottom) under the wood frame, which
-        //draws over its outer border. Otherwise it is inset by b (the wood thickness / flat 1px border) like before.
-        var bodyInsetLeft = flushContent ? 0 : frameLeft;
-        var bodyInsetRight = flushContent ? 0 : frameRight;
-        var bodyInsetBottom = flushContent ? 0 : frameBottom;
+        var bodyInsetLeft = frameLeft;
+        var bodyInsetRight = frameRight;
+        var bodyInsetBottom = frameBottom;
 
         //when there is no close box, the pin button takes the right-edge slot instead of sitting left of it
         var pinX = (showClose ? width - CLOSE_W - PIN_W - 2 : width - PIN_W - 1) - titleInsetRight;
@@ -306,7 +298,7 @@ public class DraggableWindow : UIPanel
 
     public static DraggableWindow CreatePanelPopup(string name, UIPanel panel)
     {
-        var window = new DraggableWindow(name, panel.Width, panel.Height + FRAME_TOP + TITLE_H, useWoodFrame: true, flushContent: true)
+        var window = new DraggableWindow(name, panel.Width + FRAME_LEFT + FRAME_RIGHT, panel.Height + FRAME_TOP + TITLE_H + FRAME_BOTTOM, useWoodFrame: true)
         {
             CentersOnFirstShow = true,
             FadeOnOpen = true
@@ -836,8 +828,8 @@ public class DraggableWindow : UIPanel
         var frameRight = UseWoodFrame ? FRAME_RIGHT : 1;
         var frameBottom = UseWoodFrame ? FRAME_BOTTOM : 1;
 
-        var bodyInsetLeft = FlushContent ? 0 : frameLeft;
-        var bodyInsetRight = FlushContent ? 0 : frameRight;
+        var bodyInsetLeft = frameLeft;
+        var bodyInsetRight = frameRight;
 
         var pinX = (ShowClose ? Width - CLOSE_W - PIN_W - 2 : Width - PIN_W - 1) - titleInsetRight;
 
@@ -848,7 +840,7 @@ public class DraggableWindow : UIPanel
         //the close/pin GLYPH positions follow Width via ApplyGlyph in Update every frame, so they need no update here
         Content.X = bodyInsetLeft;
         Content.Width = Width - bodyInsetLeft - bodyInsetRight;
-        Content.Height = Height - (titleInsetTop + TITLE_H) - (FlushContent ? 0 : frameBottom);
+        Content.Height = Height - (titleInsetTop + TITLE_H) - frameBottom;
         ResizeGrip.X = Width - frameRight - GRIP_SIZE;
         ResizeGrip.Y = Height - frameBottom - GRIP_SIZE;
         OnResized();
