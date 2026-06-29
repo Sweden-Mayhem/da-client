@@ -1893,13 +1893,7 @@ public sealed partial class WorldScreen : IScreen
             return;
 
         host.Scale = scale;
-
-        //flush windows: the content fills the whole window (host == content), so no side padding; the bordered content
-        //merges with the wood frame. Non-flush windows keep the wood chrome + the small breathing gap (+6).
-        if (window.FlushContent)
-            window.Resize(host.Width, host.Height + DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H);
-        else
-            window.Resize(host.Width + DraggableWindow.FRAME_LEFT + DraggableWindow.FRAME_RIGHT + 6, host.Height + 2 * DraggableWindow.FRAME_TOP + DraggableWindow.TITLE_H + 6);
+        window.ResizeToFitClientSize(host.Width, host.Height);
     }
 
     //maps a screen point into the magnified profile book's native space (for the equip-on-drop hit check)

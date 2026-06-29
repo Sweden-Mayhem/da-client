@@ -83,6 +83,9 @@ public class DraggableWindow : UIPanel
     public int ChromeWidth => FlushContent ? 0 : (UseWoodFrame ? FRAME_LEFT + FRAME_RIGHT : 2);
     public int ChromeHeight => (UseWoodFrame ? FRAME_TOP : 0) + TITLE_H + (FlushContent ? 0 : (UseWoodFrame ? FRAME_BOTTOM : 1));
 
+    public int ClientWidth { get => Width - ChromeWidth; set => Width = value + ChromeWidth; }
+    public int ClientHeight { get => Height - ChromeHeight; set => Height = value + ChromeHeight; }
+
     private bool Dragging;
     private int DragOffsetX;
     private int DragOffsetY;
@@ -810,6 +813,14 @@ public class DraggableWindow : UIPanel
     {
         Width = width;
         Height = height;
+        Relayout();
+    }
+
+    /// <summary>Programmatically resize the window such that the clientWidth and height match the specified.</summary>
+    public void ResizeToFitClientSize(int width, int height)
+    {
+        ClientWidth = width;
+        ClientHeight = height;
         Relayout();
     }
 

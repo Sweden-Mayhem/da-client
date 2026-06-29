@@ -50,13 +50,14 @@ public sealed class EmoteWindow : DraggableWindow
     public Action<BodyAnimation>? EmoteChosen;
 
     public EmoteWindow(AislingRenderer renderer)
-        //wood frame like the other windows; the cells sit in Content (PAD margin) so they inset with the frame for free.
-        //Size = the cell grid + the wood chrome (2*FRAME sides, FRAME+TITLE_H+FRAME top/bottom).
-        : base("Emotes", COLS * CELL_W + 2 * PAD + FRAME_LEFT + FRAME_RIGHT, TITLE_H + 2 * PAD + RowCount * CELL_H + FRAME_TOP + FRAME_BOTTOM, useWoodFrame: true)
+        : base("Emotes", 100, 100, useWoodFrame: true)
     {
         Renderer = renderer;
         X = 140;
         Y = 60;
+
+        //the cells sit in Content (PAD margin) so they inset with the frame for free.
+        ResizeToFitClientSize(COLS * CELL_W + 2 * PAD, 2 * PAD + RowCount * CELL_H);
 
         BuildCells();
     }
