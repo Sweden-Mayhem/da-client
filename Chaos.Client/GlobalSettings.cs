@@ -16,7 +16,7 @@ public static class GlobalSettings
     public static readonly SamplerState Sampler = SamplerState.PointClamp; //SamplerState.LinearClamp;
     private static ushort ClientVersion => 741;
 
-    public const string CustomClientVersion = "0.11.0";
+    public const string CustomClientVersion = "0.12.0";
 
     // The folder the executable actually lives in. For a self-extracting single-file build,
     // AppContext.BaseDirectory is the temp extraction dir, so we use the real exe path instead;
