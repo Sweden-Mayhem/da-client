@@ -547,6 +547,15 @@ public sealed class ConnectionManager : IDisposable
     /// </summary>
     public event QuestTrackerHandler? OnQuestTracker;
 
+    /// <summary>SWM: the album manifest arrived (server pushed it, or replied to a manifest request).</summary>
+    public event Action<AlbumArgs>? OnAlbum;
+
+    /// <summary>SWM: one album image's bytes arrived (reply to a RequestAlbumImage).</summary>
+    public event Action<AlbumImageArgs>? OnAlbumImage;
+
+    /// <summary>SWM: the player's own profile picture was pushed by the server.</summary>
+    public event Action<SelfPortraitArgs>? OnSelfPortrait;
+
     /// <summary>
     ///     SWM extension: fired when a quest completes and pays rewards (banner + visual reward panel).
     /// </summary>
@@ -815,6 +824,30 @@ public sealed class ConnectionManager : IDisposable
     ///     Sends a self profile request.
     /// </summary>
     public void RequestSelfProfile() => SendIfWorld(new SelfProfileRequestArgs());
+
+    /// <summary>SWM: ask the server to (re)send the screenshot-album manifest (sent when the Album tab opens).</summary>
+    public void RequestAlbumManifest() => SendIfWorld(new AlbumManifestRequestArgs());
+
+    /// <summary>SWM: upload a captured screenshot (JPEG) to the album, split into packet-sized chunks the server reassembles.</summary>
+    public void UploadAlbumImage(byte[] jpeg)
+    {
+        if (jpeg is not { Length: > 0 })
+            return;
+
+        const int CHUNK = 60000; //a JPEG can be far larger than one packet; the server reassembles on Last
+
+        for (var offset = 0; offset < jpeg.Length; offset += CHUNK)
+        {
+            var len = Math.Min(CHUNK, jpeg.Length - offset);
+            SendIfWorld(new AlbumUploadArgs { Data = jpeg[offset..(offset + len)], Last = (offset + len) >= jpeg.Length });
+        }
+    }
+
+    /// <summary>SWM: fetch one album image's JPEG bytes by id (lazy thumbnail load).</summary>
+    public void RequestAlbumImage(uint id) => SendIfWorld(new AlbumImageRequestArgs { Id = id });
+
+    /// <summary>SWM: delete one album image by id.</summary>
+    public void DeleteAlbumImage(uint id) => SendIfWorld(new AlbumDeleteArgs { Id = id });
 
     /// <summary>
     ///     SWM: requests the server START a quest directly from the quest journal. The server validates the quest is
@@ -1412,6 +1445,9 @@ public sealed class ConnectionManager : IDisposable
 
         //SWM quest-tracker push (opcode 114 - not in the stock ServerOpCode enum, so via the converter constant)
         PacketHandlers[QuestTrackerConverter.OPCODE] = HandleQuestTracker;
+        PacketHandlers[AlbumConverter.OPCODE] = HandleAlbum;
+        PacketHandlers[AlbumImageConverter.OPCODE] = HandleAlbumImage;
+        PacketHandlers[SelfPortraitConverter.OPCODE] = HandleSelfPortrait;
 
         //SWM quest-completion + rewards push (opcode 115)
         PacketHandlers[QuestCompleteConverter.OPCODE] = HandleQuestComplete;
@@ -1839,6 +1875,24 @@ public sealed class ConnectionManager : IDisposable
     {
         var args = Client.Deserialize<QuestTrackerArgs>(in pkt);
         OnQuestTracker?.Invoke(args);
+    }
+
+    private void HandleAlbum(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<AlbumArgs>(in pkt);
+        OnAlbum?.Invoke(args);
+    }
+
+    private void HandleAlbumImage(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<AlbumImageArgs>(in pkt);
+        OnAlbumImage?.Invoke(args);
+    }
+
+    private void HandleSelfPortrait(ServerPacket pkt)
+    {
+        var args = Client.Deserialize<SelfPortraitArgs>(in pkt);
+        OnSelfPortrait?.Invoke(args);
     }
 
     private void HandleQuestComplete(ServerPacket pkt)

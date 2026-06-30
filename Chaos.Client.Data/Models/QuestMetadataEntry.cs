@@ -14,10 +14,16 @@ public sealed record QuestStepInfo(string Label, string Description, bool Show);
 /// </summary>
 public sealed record QuestRewardOutcome(string Label, int Exp, int Gold, IReadOnlyList<RewardItemInfo> Items, IReadOnlyList<RewardMarkInfo> Marks);
 
+/// <summary>One item reward for the journal: inventory panel sprite + colour + count + name (for the hover tooltip).</summary>
+public sealed record RewardItemInfo(ushort Sprite, byte Color, int Count, string Name = "");
+
+/// <summary>One legend-mark reward for the journal: MarkIcon byte (legends.epf frame) + MarkColor byte + title.</summary>
+public sealed record RewardMarkInfo(byte Icon, byte Color, string Title);
+
 /// <summary>
-///     A single parsed quest from the server's dedicated <c>SwmQuests</c> catalog metafile. Unlike the legacy SEvent
-///     <see cref="EventMetadataEntry" />, each entry carries the FULL reward-outcome scan, so the quest journal and the
-///     NPC offer / turn-in window can render identical, complete reward previews from this one source.
+///     A single parsed quest from the server's dedicated <c>SwmQuests</c> catalog metafile. Each entry carries the FULL
+///     reward-outcome scan, so the quest journal and the NPC offer / turn-in window can render identical, complete
+///     reward previews from this one source.
 /// </summary>
 public sealed record QuestMetadataEntry
 {

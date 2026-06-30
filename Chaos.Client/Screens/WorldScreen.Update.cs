@@ -76,6 +76,16 @@ public sealed partial class WorldScreen
             return;
         }
 
+        //the profile-picture file dialog runs on its own thread (so the game stays connected); veil the game while it
+        //is open so it reads as paused
+        PortraitDim.Visible = PortraitPickerOpen;
+
+        if (PortraitPickerOpen)
+        {
+            PortraitDim.Width = ChaosGame.UiWidth;
+            PortraitDim.Height = ChaosGame.UiHeight;
+        }
+
         //calm login intro: hold full black a beat after the first map loaded so the night/darkness LightLevel snaps in
         //unseen, then start the slow eased reveal. The world keeps simulating behind the black (no freeze) - it is only
         //~0.3s, so entities just slide a hair before they appear.
@@ -569,10 +579,6 @@ public sealed partial class WorldScreen
                 //the popup is magnified by a ScaleHost, so hit-test the HOST's on-screen rect (the inner control's own
                 //bounds are in native coords); hiding the inner fades the host out via the visibility sync.
                 AbilityMetadataDetails.Hide();
-                skipDispatch = true;
-            } else if (EventMetadataDetails.Visible && (EventDetailsHost is null || !EventDetailsHost.ContainsPoint(mx, my)))
-            {
-                EventMetadataDetails.Hide();
                 skipDispatch = true;
             } else if (SocialStatusPicker.Visible && (SocialStatusHost is null || !SocialStatusHost.ContainsPoint(mx, my)))
             {
@@ -1370,8 +1376,10 @@ public sealed partial class WorldScreen
             };
         }
 
-        //3. the equipment book - an equipped item icon, else a stat value label
-        if (StatusBook.Visible)
+        //3. the equipment book - an equipped item icon, else a stat value label. ONLY on the Equipment tab: the slots
+        //live under the other tabs' content (e.g. the Album thumbnails), so without this an album picture would pop an
+        //equipped item's tooltip.
+        if (StatusBook.Visible && (StatusBook.ActiveTab == StatusBookTab.Equipment))
         {
             var (bx, by) = MapToBook(InputBuffer.MouseX, InputBuffer.MouseY);
 

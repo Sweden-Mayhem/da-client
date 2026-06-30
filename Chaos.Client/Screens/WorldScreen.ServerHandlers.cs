@@ -10,7 +10,9 @@ using Chaos.Client.Models;
 using Chaos.Client.Networking;
 using Chaos.Client.Networking.Definitions;
 using Chaos.Client.Rendering.Models;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Systems;
+using Chaos.Client.Utilities;
 using Chaos.Client.ViewModel;
 using Chaos.DarkAges.Definitions;
 using Chaos.Extensions.Common;
@@ -19,6 +21,7 @@ using Chaos.Networking.Entities.Server;
 using DALib.Drawing;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SkiaSharp;
 #endregion
 
 namespace Chaos.Client.Screens;
@@ -857,6 +860,87 @@ public sealed partial class WorldScreen
 
     private void HandleEditableProfileRequest() => Game.Connection.SendEditableProfile(PlayerPortrait, StatusBook.GetProfileText());
 
+    //the server owns the profile picture (a per-character portrait.jpg, also editable from the website). It pushes
+    //our own picture here on login and after any change, so we keep our copy in sync and show it in the self-profile.
+    private void HandleSelfPortrait(SelfPortraitArgs args)
+    {
+        PlayerPortrait = args.Portrait;
+        StatusBook.SetSelfPortrait(args.Portrait);
+
+        //the server keeps the profile TEXT too (profile.txt). Adopt it ONLY when this machine has no local copy, so a
+        //local edit that has not synced yet is not clobbered; cache it locally so it is there next time too.
+        if (string.IsNullOrEmpty(LoadProfileText()) && !string.IsNullOrEmpty(args.ProfileText))
+        {
+            StatusBook.SetProfileText(args.ProfileText);
+            SaveProfileText(args.ProfileText);
+        }
+    }
+
+    //clicking the self-profile portrait: pick an image from disk, shrink it, show it now, and save it to the server
+    private void OnPlayerPortraitClicked()
+    {
+        if (PortraitPickerOpen) //only ONE dialog at a time (clicking again while it's open would open another)
+            return;
+
+        //run the native file dialog on its OWN thread so the game keeps ticking (and stays connected) while it is open,
+        //instead of freezing the whole client. Nothing here touches the GraphicsDevice: we just send the picture, and
+        //the server echoes it back via SelfPortrait, which sets it on the game thread.
+        PortraitPickerOpen = true;
+        var profileText = StatusBook.GetProfileText();
+
+        var picker = new Thread(() =>
+        {
+            try
+            {
+                var path = FilePicker.OpenImage();
+
+                if (string.IsNullOrEmpty(path))
+                    return;
+
+                var jpeg = BuildPortraitJpeg(path);
+
+                if (jpeg is not { Length: > 0 })
+                    return;
+
+                PlayerPortrait = jpeg;
+                Game.Connection.SendEditableProfile(jpeg, profileText);
+            } finally
+            {
+                PortraitPickerOpen = false;
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "ProfilePicturePicker"
+        };
+
+        //the Windows Common Item Dialog (and Wine's) must run on an STA thread
+        if (OperatingSystem.IsWindows())
+            picker.SetApartmentState(ApartmentState.STA);
+
+        picker.Start();
+    }
+
+    //load any image file, downscale its longest side to <=256, and JPEG-encode it small enough for one packet
+    private static byte[]? BuildPortraitJpeg(string path)
+    {
+        try
+        {
+            using var src = SKImage.FromEncodedData(File.ReadAllBytes(path));
+
+            if (src is null)
+                return null;
+
+            //fit a 256px box and keep it under one UInt16-length packet (58000 mirrors the server's PortraitStore cap)
+            var bytes = ImageEncoding.ScaleToJpeg(src, 256, 256, 58000, 82, 60, 42);
+
+            return bytes is { Length: > 0 and <= 58000 } ? bytes : null;
+        } catch
+        {
+            return null;
+        }
+    }
+
     private static byte[] LoadPortraitFile(string name)
     {
         if (!DataContext.LocalPlayerSettings.IsInitialized || string.IsNullOrEmpty(name))
@@ -939,7 +1023,7 @@ public sealed partial class WorldScreen
         else
             StatusBook.ClearSkills();
 
-        //build a set of completed event ids from legend marks for o(1) lookup (the events book + the journal share it).
+        //build a set of completed quest ids from legend marks for o(1) lookup (the journal greens completed quests by it).
         //kept so the metadata-sync handler can re-feed the journal guide once a fresh SwmQuests lands.
         var completedEventIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -947,14 +1031,6 @@ public sealed partial class WorldScreen
             completedEventIds.Add(mark.Key);
 
         CompletedEventIds = completedEventIds;
-
-        //the SelfProfile "Events" book still reads the legacy SEvent catalog
-        var eventMetadata = DataContext.MetaFiles.GetEventMetadata();
-
-        if (eventMetadata.Count > 0)
-            StatusBook.SetEvents(eventMetadata, completedEventIds, args.BaseClass, args.EnableMasterQuestMetaData);
-        else
-            StatusBook.ClearEvents();
 
         //the quest journal reads the dedicated SwmQuests catalog (full reward-outcome scan), cached for the offer lookup
         var questCatalog = GetQuestCatalog();
@@ -1391,6 +1467,37 @@ public sealed partial class WorldScreen
         QuestJournal?.SetStartStatuses(args.StartStatuses);
         QuestJournal?.SetCompletedKeys(args.CompletedKeys);
         DetectNewlyStartedQuests(args.Quests);
+    }
+
+    //SWM screenshot album: the manifest (image ids, oldest-first) and a single fetched image's bytes.
+    private void HandleAlbum(AlbumArgs args)
+    {
+        var ids = new List<uint>(args.Entries.Count);
+
+        foreach (var entry in args.Entries)
+            ids.Add(entry.Id);
+
+        StatusBook.SetAlbumManifest(ids);
+    }
+
+    //album images arrive in packet-sized chunks; accumulate per id and decode the whole JPEG on the final chunk
+    private readonly Dictionary<uint, List<byte>> AlbumImageChunks = [];
+
+    private void HandleAlbumImage(AlbumImageArgs args)
+    {
+        if (args.Data.Length > 0)
+        {
+            if (!AlbumImageChunks.TryGetValue(args.Id, out var buffer))
+                AlbumImageChunks[args.Id] = buffer = [];
+
+            buffer.AddRange(args.Data);
+        }
+
+        if (!args.Last)
+            return;
+
+        AlbumImageChunks.Remove(args.Id, out var assembled);
+        StatusBook.SetAlbumImage(args.Id, assembled?.ToArray() ?? []);
     }
 
     //a quest-giver NPC offered an available quest: pop the WoW-style "Accept this quest?" window (name + short

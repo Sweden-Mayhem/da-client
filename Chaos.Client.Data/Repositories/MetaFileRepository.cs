@@ -124,11 +124,6 @@ public sealed class MetaFileRepository
     }
 
     /// <summary>
-    ///     Loads and parses all event metadata (SEvent1, SEvent2, ...).
-    /// </summary>
-    public IReadOnlyList<EventMetadataEntry> GetEventMetadata() => EventMetadataEntry.ParseAll(GetAll("SEvent"));
-
-    /// <summary>
     ///     Loads and parses the dedicated SWM quest catalog (SwmQuests) - one entry per quest, with the full
     ///     reward-outcome scan. This is the single source the quest journal and the offer / turn-in window both read.
     /// </summary>

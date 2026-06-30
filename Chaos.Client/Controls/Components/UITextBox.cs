@@ -173,6 +173,10 @@ public class UITextBox : UIElement, INativeTextDrawer
 
     public int MaxLength { get; set; } = 12;
 
+    /// <summary>When false, Enter does not insert a line break and pasted text has its newlines stripped, while the box
+    ///     still soft-wraps long text across lines (use with <see cref="IsMultiLine" /> for a wrapping single-paragraph field).</summary>
+    public bool AllowNewlines { get; set; } = true;
+
     /// <summary>
     ///     Non-editable prefix rendered before the editable text (e.g. "Name: " for chat). Not included in <see cref="Text" />
     ///     and cannot be deleted by the user.
@@ -267,7 +271,7 @@ public class UITextBox : UIElement, INativeTextDrawer
 
     private void ComputeLineLayout()
     {
-        var innerWidth = Width - PaddingLeft + PaddingRight;
+        var innerWidth = Width - PaddingLeft - PaddingRight;
 
         if ((innerWidth == CachedLayoutWidth) && (Text == CachedLayoutText))
             return;
@@ -302,7 +306,7 @@ public class UITextBox : UIElement, INativeTextDrawer
 
             while (remaining.Length > 0)
             {
-                var lineEnd = TextRenderer.FindLineBreak(remaining, innerWidth, ColorCodesEnabled);
+                var lineEnd = FindWrapPoint(remaining, innerWidth);
                 var consumed = lineEnd;
 
                 while ((consumed < remaining.Length) && (remaining[consumed] == ' '))
@@ -324,6 +328,33 @@ public class UITextBox : UIElement, INativeTextDrawer
         //ensure trailing \n produces a final empty line
         if ((Text.Length > 0) && (Text[^1] == '\n') && (LineStarts[^1] != Text.Length))
             LineStarts.Add(Text.Length);
+    }
+
+    //like TextRenderer.FindLineBreak, but measures with THIS box's font (native TTF when RenderNative), so the wrap
+    //points line up with how the text actually renders. Identical to the bitmap helper for a non-native box. Prefers the
+    //last space; force-breaks an over-long word so no text is ever lost.
+    private int FindWrapPoint(string text, int maxWidth)
+    {
+        var lastSpace = -1;
+
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (ColorCodesEnabled && TextRenderer.IsColorCode(text, i))
+            {
+                i += 2;
+
+                continue;
+            }
+
+            if (text[i] == ' ')
+                lastSpace = i;
+
+            //cumulative kerned width (same measure the text renders with), so the line doesn't wrap a few chars early
+            if (MeasureText(text[..(i + 1)]) > maxWidth)
+                return lastSpace > 0 ? lastSpace + 1 : Math.Max(1, i);
+        }
+
+        return text.Length;
     }
 
     public void ClearSelection() => SelectionAnchor = CursorPosition;
@@ -981,13 +1012,16 @@ public class UITextBox : UIElement, INativeTextDrawer
             }
 
             var nextI = i + 1;
-            var charWidth = prevWidth + TextRenderer.MeasureCharWidth(lineText[i]);
-            var midpoint = (prevWidth + charWidth) / 2;
+
+            //CUMULATIVE width up to + including this char, so kerning matches how the caret is drawn (which uses
+            //MeasureText on the prefix), not a per-char sum that drifts the cursor away from the click
+            var charEnd = MeasureText(lineText[..nextI]);
+            var midpoint = (prevWidth + charEnd) / 2;
 
             if (targetPixelX < midpoint)
                 return i;
 
-            prevWidth = charWidth;
+            prevWidth = charEnd;
             i = nextI;
         }
 
@@ -1056,9 +1090,11 @@ public class UITextBox : UIElement, INativeTextDrawer
         if (string.IsNullOrEmpty(clipText))
             return;
 
-        //strip newlines for single-line textboxes
+        //single-line boxes drop newlines; a wrapping field that forbids line breaks turns them into spaces so words stay apart
         if (!IsMultiLine)
             clipText = clipText.Replace("\r", "").Replace("\n", "");
+        else if (!AllowNewlines)
+            clipText = clipText.Replace("\r", " ").Replace("\n", " ");
 
         //snapshot for potential clamptovisiblearea revert
         var savedText = Text;
@@ -1361,7 +1397,7 @@ public class UITextBox : UIElement, INativeTextDrawer
             //── newline (multi-line only) ──
             //SDL delivers Enter as a key event, not a TextInput char, so the OnTextInput '\r' path never fires here;
             //insert the newline from OnKeyDown instead so the in-game mail composer accepts multi-line bodies.
-            case Keys.Enter when IsMultiLine && !IsReadOnly:
+            case Keys.Enter when IsMultiLine && !IsReadOnly && AllowNewlines:
             {
                 if (HasSelection)
                     DeleteSelection();
@@ -1474,8 +1510,9 @@ public class UITextBox : UIElement, INativeTextDrawer
             default:
                 //swallow all other key presses while focused so they don't bubble
                 //to hotkey handlers. actual character insertion happens via ontextinput.
-                //let escape and tab bubble for unfocus / focus cycling.
-                if (e.Key is not Keys.Escape && !(e.Key is Keys.Enter && !IsMultiLine) && !(e.Key is Keys.Tab && IsTabStop))
+                //let escape and tab bubble for unfocus / focus cycling, and Enter when it isn't a line break (so a host
+                //can treat it as submit).
+                if (e.Key is not Keys.Escape && !(e.Key is Keys.Enter && (!IsMultiLine || !AllowNewlines)) && !(e.Key is Keys.Tab && IsTabStop))
                     e.Handled = true;
 
                 break;
@@ -1505,7 +1542,7 @@ public class UITextBox : UIElement, INativeTextDrawer
 
         if ((c == '\r') || (c == '\n'))
         {
-            if (!IsMultiLine)
+            if (!IsMultiLine || !AllowNewlines)
                 return;
 
             //snapshot state before additive mutation for potential overflow revert

@@ -395,6 +395,16 @@ public sealed partial class WorldScreen
                 Overlays.DrawNameTagsNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
                 Overlays.DrawChantOverlaysNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
             }
+
+            //the album screenshot grabs the backbuffer HERE - world + chat bubbles are on it, the HUD is not yet - so the
+            //shot is the world as displayed with no interface. End the batch first so those draws are flushed to read.
+            if (Game.ScreenshotRequested)
+            {
+                spriteBatch.End();
+                Game.CaptureWorldFrame();
+                spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+            }
+
             Root!.Draw(spriteBatch);
             if ((NpcSessionHost is not null) && NpcSessionHost.Visible)
                 NpcSession.DrawTextNative(spriteBatch, NpcSessionHost.ScreenX, NpcSessionHost.ScreenY, NpcSessionHost.Scale, NpcSessionHost.OpenFraction);

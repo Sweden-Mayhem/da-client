@@ -544,7 +544,8 @@ public static class Keybindings
 
         //system
         yield return (GameAction.ToggleFullscreen, new KeyBind(Keys.Enter, KeyModifiers.Alt), KeyBind.None);
-        yield return (GameAction.Screenshot, K(Keys.PrintScreen), KeyBind.None);
+        //PrintScreen is often swallowed by the OS, so a reliable secondary (Ctrl+B) ships by default; both rebindable
+        yield return (GameAction.Screenshot, K(Keys.PrintScreen), new KeyBind(Keys.B, KeyModifiers.Ctrl));
         yield return (GameAction.ToggleDebugOverlay, KeyBind.None, KeyBind.None);
 
         //emotes: the classic banks across the number row (keys 1-0 then "-"), Ctrl bank first, then Ctrl+Alt, then Alt

@@ -61,6 +61,12 @@ public sealed class MenuButton : UIPanel
         set => Label.CustomFontSize = value;
     }
 
+    /// <summary>Render the label as crisp native-resolution TTF (for a button inside a magnifying ScaleHost book). Off by default.</summary>
+    public bool RenderNative
+    {
+        set => Label.RenderNative = value;
+    }
+
     public string Text
     {
         set => Label.Text = value;

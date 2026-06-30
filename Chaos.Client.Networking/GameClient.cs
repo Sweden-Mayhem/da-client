@@ -515,6 +515,18 @@ public sealed class GameClient : IDisposable
         converters[typeof(MarketRequestArgs)] = new MarketRequestConverter();
         converters[typeof(MarketDataArgs)] = new MarketDataConverter();
 
+        // SWM screenshot Album: server->client (Album 118, AlbumImage 119) + client->server (manifest 118, upload 119,
+        // delete 120, image-request 122). Client-local types the NuGet auto-discovery cannot see, so register by hand.
+        converters[typeof(AlbumArgs)] = new AlbumConverter();
+        converters[typeof(AlbumImageArgs)] = new AlbumImageConverter();
+        converters[typeof(AlbumManifestRequestArgs)] = new AlbumManifestRequestConverter();
+        converters[typeof(AlbumUploadArgs)] = new AlbumUploadConverter();
+        converters[typeof(AlbumDeleteArgs)] = new AlbumDeleteConverter();
+        converters[typeof(AlbumImageRequestArgs)] = new AlbumImageRequestConverter();
+
+        // SWM: the player's own profile picture, pushed by the server (ServerOpCode.SelfPortrait 120)
+        converters[typeof(SelfPortraitArgs)] = new SelfPortraitConverter();
+
         //Windows-1252, not the retail Korean code page 949. 949 cannot represent the Nordic letters å/ä/ö (it turns
         //them into '?'), while 1252 round-trips them as single bytes. ASCII is identical in both, so normal traffic is
         //unaffected, this only adds Latin-1 support. The server's

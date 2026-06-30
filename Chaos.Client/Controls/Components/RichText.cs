@@ -173,6 +173,10 @@ public static class RichText
                 return;
 
             var w = word.ToString();
+            word.Clear();
+            var color = wordColor;
+            wordColor = null;
+
             var wWidth = TtfTextRenderer.MeasureWidth(w, size);
             var spaceWidth = lineWidth > 0 ? TtfTextRenderer.MeasureWidth(" ", size) : 0;
 
@@ -183,17 +187,42 @@ public static class RichText
                 spaceWidth = 0;
             }
 
+            //a single word longer than the whole line: force-break it across lines so none of it is clipped/lost
+            if ((maxWidth > 0) && (wWidth > maxWidth))
+            {
+                var start = 0;
+                var segWidth = 0;
+
+                for (var i = 0; i < w.Length; i++)
+                {
+                    var cw = TtfTextRenderer.MeasureWidth(w[i].ToString(), size);
+
+                    if ((segWidth + cw > maxWidth) && (i > start))
+                    {
+                        AppendRun(w[start..i], color);
+                        BreakLine();
+                        start = i;
+                        segWidth = 0;
+                    }
+
+                    segWidth += cw;
+                }
+
+                AppendRun(w[start..], color);
+                lineWidth = segWidth;
+
+                return;
+            }
+
             if (spaceWidth > 0)
             {
                 //the joining space belongs to the preceding run's color so runs stay merged
-                AppendRun(" ", line.Count > 0 ? line[^1].Color : wordColor);
+                AppendRun(" ", line.Count > 0 ? line[^1].Color : color);
                 lineWidth += spaceWidth;
             }
 
-            AppendRun(w, wordColor);
+            AppendRun(w, color);
             lineWidth += wWidth;
-            word.Clear();
-            wordColor = null;
         }
 
         foreach (var run in Parse(text))

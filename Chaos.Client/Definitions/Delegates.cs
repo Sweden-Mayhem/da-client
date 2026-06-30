@@ -505,11 +505,6 @@ public delegate void EffectiveWindowScaleChangedHandler();
 public delegate void AbilityMetadataClickedHandler(AbilityMetadataEntry entry);
 
 /// <summary>
-///     An event metadata entry was clicked.
-/// </summary>
-public delegate void EventMetadataClickedHandler(EventMetadataEntry entry, EventState state);
-
-/// <summary>
 ///     A group toggle was requested on the profile.
 /// </summary>
 public delegate void GroupToggledHandler();

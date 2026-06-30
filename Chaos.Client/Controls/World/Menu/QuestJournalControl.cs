@@ -234,7 +234,7 @@ public sealed class QuestJournalControl : DraggableWindow
         Rebuild(); //completion changes which tab a quest lands in
     }
 
-    //SWM: "Claim Reward" was removed - an event / no-npc quest finishes on its own, so nothing is ever
+    //SWM (Hezkore): "Claim Reward" was removed - an event / no-npc quest finishes on its own, so nothing is ever
     //left to claim from the journal.
 
     public void SetGuide(IReadOnlyList<QuestMetadataEntry> guide, HashSet<string> completedIds, BaseClass playerClass, bool masterQuests)
@@ -750,12 +750,12 @@ public sealed class QuestJournalControl : DraggableWindow
             var key = entry.QuestKey;
             AddSeparator(innerW, ref y);
 
-            //SWM: events / no-npc quests FINISH ON THEIR OWN now - there is never a journal "Claim Reward".
+            //SWM (Hezkore): events / no-npc quests FINISH ON THEIR OWN now - there is never a journal "Claim Reward".
 
             var tracked = !ClientSettings.UntrackedQuests.Contains(key);
             AddActionButton(tracked ? "Hide from tracker" : "Show on tracker", tracked ? DimColor : ActiveColor, ref y, () => ToggleTrack(key));
 
-            //SWM: mandatory quests (choose-your-class, the tutorial events) carry canabandon=0 in the
+            //SWM (Hezkore): mandatory quests (choose-your-class, the tutorial events) carry canabandon=0 in the
             //SwmQuests metafile - hide the Abandon button for them so the player cannot drop them.
             if (CanAbandonQuest(key))
             {

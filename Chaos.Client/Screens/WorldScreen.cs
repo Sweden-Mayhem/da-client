@@ -102,7 +102,6 @@ public sealed partial class WorldScreen : IScreen
 
     private AbilityMetadataDetailsControl AbilityMetadataDetails = null!;
     private ScaleHost? AbilityDetailsHost;
-    private ScaleHost? EventDetailsHost;
     private AislingContextMenu AislingContext = null!;
 
     private int AnimationTick;
@@ -231,8 +230,6 @@ public sealed partial class WorldScreen : IScreen
     private GraphicsDevice Device = null!;
     private OkPopupMessageControl DisconnectPopup = null!;
 
-    //event detail popup (from events tab)
-    private EventMetadataDetailsControl EventMetadataDetails = null!;
     private ExchangeControl Exchange = null!;
     private OkPopupMessageControl ExchangeResultPopup = null!;
     private ItemAmountControl ItemAmount = null!;
@@ -347,10 +344,12 @@ public sealed partial class WorldScreen : IScreen
     private string? ReconnectGiveUpMessage;
     private ReconnectFlow? Reconnect;
     private UIPanel ReconnectDim = null!;
+    private UIPanel PortraitDim = null!; //full-window dark veil while the profile-picture file dialog is open
     private UILabel ReconnectLabel = null!;
     private UILabel ReconnectLabelShadow = null!;
 
     private byte[] PlayerPortrait = [];
+    private volatile bool PortraitPickerOpen; //a profile-picture file dialog is open on its own thread (dims the game)
     private SelfProfileTextEditorControl SelfProfileTextEditor = null!;
     private ScaleHost ProfileEditorHost = null!;
     private Direction? QueuedWalkDirection;
@@ -397,6 +396,7 @@ public sealed partial class WorldScreen : IScreen
     private uint? RedundantClickTargetId;
     private int RedundantClickCount;
     private SelfProfileTabControl StatusBook = null!;
+    private readonly AlbumImageViewer AlbumViewer = new(); //screen-space full-screen viewer for an album picture (not in the book)
 
     //item + money feedback sounds (custom embedded SoundSystem.SoundItem / SoundMoney). The item sound plays on ANY
     //inventory change (item gained OR lost); the money sound on any gold change. Both stay silent during the login
@@ -834,6 +834,16 @@ public sealed partial class WorldScreen : IScreen
             ZIndex = 300_000
         };
 
+        //a dark veil + input wall while the (off-thread) profile-picture file dialog is open: the game reads as paused
+        //AND nothing behind it can be clicked (InputBlocker is hit-testable and swallows every mouse event)
+        PortraitDim = new InputBlocker
+        {
+            Name = "PortraitDim",
+            BackgroundColor = Color.Black * 0.55f,
+            Visible = false,
+            ZIndex = 280_000
+        };
+
         ReconnectLabelShadow = new UILabel
         {
             Name = "ReconnectLabelShadow",
@@ -867,6 +877,25 @@ public sealed partial class WorldScreen : IScreen
         StatusBook.OnUnequip += slot => Game.Connection.Unequip(slot);
         StatusBook.OnClose += SavePlayerFamilyList;
 
+        //SWM screenshot album: the tab asks for the manifest on open + each image lazily; clicking a thumbnail opens the
+        //full-screen viewer (a screen-space modal, NOT part of the book), whose Delete routes through the confirm dialog.
+        StatusBook.OnAlbumRequestManifest += () => Game.Connection.RequestAlbumManifest();
+        StatusBook.OnAlbumRequestImage += id => Game.Connection.RequestAlbumImage(id);
+        StatusBook.OnAlbumViewImage += (id, tex) => AlbumViewer.Show(id, tex);
+        StatusBook.VisibilityChanged += visible =>
+        {
+            if (!visible)
+                AlbumViewer.Hide(); //close the viewer when the book closes
+        };
+
+        AlbumViewer.OnDelete += id => ConfirmDialog.Confirm(
+            "Delete this screenshot?",
+            () =>
+            {
+                AlbumViewer.Hide();
+                Game.Connection.DeleteAlbumImage(id);
+            });
+
         StatusBook.OnGroupToggled += () => Game.Connection.ToggleGroup();
 
         //the equipment book's level-up arrows raise a stat; clicking the emoticon opens the Social status picker at the cursor
@@ -877,7 +906,7 @@ public sealed partial class WorldScreen : IScreen
         //upper-left), matching how the book host itself is centered
         StatusBook.OnProfileTextClicked += () =>
         {
-            SelfProfileTextEditor.Show(StatusBook.GetProfileText());
+            SelfProfileTextEditor.Show(StatusBook.GetProfileText(), StatusBook.ProfileTextWrapWidth, StatusBook.ProfileTextFontSize);
 
             //the host owns placement + magnification (like the chant editor): scale by "Window size", center, raise above
             //the book that spawned it in the shared window stack.
@@ -885,6 +914,8 @@ public sealed partial class WorldScreen : IScreen
             ProfileEditorHost.CenterOnUi();
             ProfileEditorHost.ZIndex = WindowOrder.Next();
         };
+
+        StatusBook.OnPortraitClicked += OnPlayerPortraitClicked;
 
         StatusBook.OnAbilityDetailRequested += entry =>
         {
@@ -898,17 +929,6 @@ public sealed partial class WorldScreen : IScreen
                 AbilityDetailsHost.ZIndex = WindowOrder.Next();
             }
         };
-        StatusBook.OnEventDetailRequested += (entry, state) =>
-        {
-            EventMetadataDetails.ShowEntry(entry, state);
-
-            if (EventDetailsHost is not null)
-            {
-                EventDetailsHost.Scale = ClientSettings.EffectiveWindowScale;
-                EventDetailsHost.CenterOnUi();
-                EventDetailsHost.ZIndex = WindowOrder.Next();
-            }
-        };
 
         //above the centered book host (ZIndex 100000) so detail/editor popups it spawns draw ON TOP of it, not behind
         SelfProfileTextEditor = new SelfProfileTextEditorControl
@@ -920,14 +940,10 @@ public sealed partial class WorldScreen : IScreen
         {
             StatusBook.SetProfileText(text);
             SaveProfileText(text);
+            Game.Connection.SendEditableProfile(PlayerPortrait, text); //persist server-side too (profile.txt), so other machines get it
         };
 
         AbilityMetadataDetails = new AbilityMetadataDetailsControl
-        {
-            ZIndex = 100010
-        };
-
-        EventMetadataDetails = new EventMetadataDetailsControl
         {
             ZIndex = 100010
         };
@@ -1148,13 +1164,11 @@ public sealed partial class WorldScreen : IScreen
         //it; it visibility-syncs to the inner editor, which is shown/positioned/raised in the OnProfileTextClicked handler.
         ProfileEditorHost = new ScaleHost(SelfProfileTextEditor, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
         Root.AddChild(ProfileEditorHost);
-        //the skill/spell + event detail popups live inside a magnifier so they open at the "Window size" scale (like the
-        //book that spawns them) with crisp native TTF; each host visibility-syncs to its inner control, which is
-        //shown/centered/raised in the OnAbilityDetailRequested / OnEventDetailRequested handlers above.
+        //the skill/spell detail popup lives inside a magnifier so it opens at the "Window size" scale (like the book
+        //that spawns it) with crisp native TTF; the host visibility-syncs to its inner control, which is
+        //shown/centered/raised in the OnAbilityDetailRequested handler above.
         AbilityDetailsHost = new ScaleHost(AbilityMetadataDetails, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
-        EventDetailsHost = new ScaleHost(EventMetadataDetails, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
         Root.AddChild(AbilityDetailsHost);
-        Root.AddChild(EventDetailsHost);
         //wrap the other-player profile in the same draggable, magnified menu-window host the rest of the books use, so
         //it scales with the "Window size" slider and drags by its background like the self-profile book
         Root.AddChild(RegisterMenuWindow(OtherProfile));
@@ -1179,6 +1193,8 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(WrapOkPopup(DisconnectPopup));
 
         Root.AddChild(ReconnectDim);
+        Root.AddChild(PortraitDim);
+        Root.AddChild(AlbumViewer);
         Root.AddChild(ReconnectLabelShadow);
         Root.AddChild(ReconnectLabel);
 

@@ -4,6 +4,7 @@ using Chaos.Client.Controls.World.Hud.Panel;
 using Chaos.Client.Data;
 using Chaos.Client.Definitions;
 using Chaos.Client.Models;
+using Chaos.Client.Rendering;
 using Chaos.Client.Rendering.Utility;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
@@ -67,6 +68,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     private readonly UIImage? PaperdollImage;
 
     //portrait and profile text
+    private readonly UIImage? PortraitImage;
     private readonly UILabel? PortraitTextLabel;
 
     //equipment slot rendering: maps equipmentslot to its visual state
@@ -83,6 +85,13 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     ///     Gets the current profile text from the label.
     /// </summary>
     public string ProfileText => PortraitTextLabel?.Text ?? string.Empty;
+
+    /// <summary>The Presentation profile-text label's EFFECTIVE inner wrap width (its width minus its own padding) and
+    ///     font size, so the editor can preview the EXACT same line breaks by matching its own inner text width to this.
+    ///     0 when the label does not exist.</summary>
+    public int ProfileTextWrapWidth => PortraitTextLabel is { } l ? l.Width - l.PaddingLeft - l.PaddingRight : 0;
+
+    public int ProfileTextFontSize => PortraitTextLabel?.CustomFontSize ?? 0;
 
     public SelfProfileEquipmentTab(string prefabName)
         : base(prefabName, false)
@@ -237,7 +246,12 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         PaperdollImage = CreateImage("HumanImage");
 
         //portrait and profile text
-        CreateImage("Portrait");
+        PortraitImage = CreateImage("Portrait");
+
+        //hit-testing is (re)enabled below, after the prefab disables it on every child
+        if (PortraitImage is not null)
+            PortraitImage.Tooltip = "Profile picture\nThe picture other players see on your profile. Click to choose an image from your computer.";
+
         PortraitTextLabel = CreateLabel("PortraitText");
 
         if (PortraitTextLabel is not null)
@@ -318,6 +332,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
             visual.Image.IsHitTestVisible = true;
 
         PortraitTextLabel?.IsHitTestVisible = true;
+
+        //the profile picture is clickable - it opens a file picker to choose a new one
+        PortraitImage?.IsHitTestVisible = true;
 
         //the social-status emoticon (icon + its label) is clickable - it opens the Social status picker. Restoring
         //hit-testing here also stops a click there from dragging the book.
@@ -495,6 +512,10 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     }
 
     public event GroupToggledHandler? OnGroupToggled;
+
+    /// <summary>Raised when the player clicks their profile picture (to pick a new one).</summary>
+    public event Action? OnPortraitClicked;
+
     public event ProfileTextClickedHandler? OnProfileTextClicked;
     public event RaiseStatHandler? OnRaiseStat;
     public event Action? OnSocialStatusClicked;
@@ -645,6 +666,19 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     }
 
     /// <summary>
+    ///     Sets the player's own profile picture from its encoded (JPEG/PNG) bytes, cropped + scaled to fill the
+    ///     portrait box (same "cover" framing the website uses). Null/empty clears it.
+    /// </summary>
+    public void SetSelfPortrait(byte[]? portraitData)
+    {
+        if (PortraitImage is null)
+            return;
+
+        PortraitImage.Texture?.Dispose();
+        PortraitImage.Texture = PortraitRenderer.Cover(portraitData, PortraitImage.Width, PortraitImage.Height);
+    }
+
+    /// <summary>
     ///     Sets the item icon for a specific equipment slot.
     /// </summary>
     public void SetSlot(EquipmentSlot slot, ushort sprite, DisplayColor color, string? itemName = null)
@@ -736,6 +770,15 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         if (PortraitTextLabel is not null && PortraitTextLabel.ContainsPoint(e.ScreenX, e.ScreenY))
         {
             OnProfileTextClicked?.Invoke();
+            e.Handled = true;
+
+            return;
+        }
+
+        //the portrait picture: clicking it opens a file picker to choose a new profile picture
+        if ((PortraitImage is not null) && PortraitImage.ContainsPoint(e.ScreenX, e.ScreenY))
+        {
+            OnPortraitClicked?.Invoke();
             e.Handled = true;
         }
     }

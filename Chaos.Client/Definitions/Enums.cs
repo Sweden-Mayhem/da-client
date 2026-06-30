@@ -107,7 +107,6 @@ public enum StatusBookTab
     Equipment,
     Legend,
     Skills,
-    Events,
     Album,
     Family
 }
@@ -131,27 +130,6 @@ public enum AbilityIconState
     ///     Player does not meet the requirements, use the locked icon (003 variant).
     /// </summary>
     Locked
-}
-
-/// <summary>
-///     Figures out the display state of an event entry in the events metadata tab.
-/// </summary>
-public enum EventState
-{
-    /// <summary>
-    ///     Player does not meet circle, class, or prerequisite requirements, gray text.
-    /// </summary>
-    Unavailable,
-
-    /// <summary>
-    ///     Player meets all requirements and can complete this event, blue text.
-    /// </summary>
-    Available,
-
-    /// <summary>
-    ///     Player has a legend mark matching this event's ID, green text.
-    /// </summary>
-    Completed
 }
 
 /// <summary>

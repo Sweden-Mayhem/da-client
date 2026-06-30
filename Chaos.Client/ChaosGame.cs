@@ -8,6 +8,7 @@ using DALib.Utility;
 using Chaos.Client.Controls.Generic;
 using Chaos.Client.Networking;
 using Chaos.Client.Networking.Definitions;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Screens;
 using Chaos.Client.Systems;
 using Chaos.Client.Utilities;
@@ -51,11 +52,10 @@ public sealed class ChaosGame : Game
     private int CursorOffsetY;
     private Texture2D? CursorTexture;
     internal volatile bool GcRequested;
-    private bool ScreenshotRequested;
+    internal bool ScreenshotRequested; //WorldScreen captures the frame mid-UI-pass (after bubbles, before the HUD)
 
-    //dev --screenoutput: a reused backbuffer readback buffer + an accumulating timer, used to dump the composited frame
-    //(world + UI) to a file every LaunchArgs.ScreenOutputInterval seconds so an external watcher can poll one stable path.
-    private Color[]? ScreenOutputBuffer;
+    //dev --screenoutput: an accumulating timer used to dump the composited frame (world + UI) to a file every
+    //LaunchArgs.ScreenOutputInterval seconds so an external watcher can poll one stable path.
     private double ScreenOutputTimer;
     private int HandCursorOffsetX;
     private int HandCursorOffsetY;
@@ -343,13 +343,8 @@ public sealed class ChaosGame : Game
         if (DebugOverlay.IsActive)
             DebugOverlay.DrawStats(SpriteBatch);
 
-        //capture screenshot while the render target is still bound, DiscardContents may
-        //invalidate pixel data after SetRenderTarget(null) on some drivers
-        if (ScreenshotRequested)
-        {
-            ScreenshotRequested = false;
-            SaveScreenshot();
-        }
+        //the album screenshot is captured later, in WorldScreen's UI pass (after the world + chat bubbles are on the
+        //backbuffer but BEFORE the HUD), so the shot is the world + bubbles with no interface on it. See CaptureWorldFrame.
 
         //sharp-bilinear world scaling (native only). A non-integer window scale makes nearest-neighbour stretch some
         //source pixels across 2 screen pixels and others across 3, so a few columns/rows look "squished" and shimmer as
@@ -520,22 +515,13 @@ public sealed class ChaosGame : Game
         if (string.IsNullOrEmpty(path))
             return;
 
-        var w = GraphicsDevice.PresentationParameters.BackBufferWidth;
-        var h = GraphicsDevice.PresentationParameters.BackBufferHeight;
-
-        if ((w <= 0) || (h <= 0))
-            return;
-
-        if ((ScreenOutputBuffer is null) || (ScreenOutputBuffer.Length != w * h))
-            ScreenOutputBuffer = new Color[w * h];
-
         try
         {
-            GraphicsDevice.GetBackBufferData(ScreenOutputBuffer);
+            using var image = ReadBackbuffer();
 
-            var info = new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul);
+            if (image is null)
+                return;
 
-            using var image = SKImage.FromPixelCopy(info, MemoryMarshal.AsBytes(ScreenOutputBuffer.AsSpan()), w * 4);
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
             var tmp = path + ".tmp";
@@ -629,7 +615,67 @@ public sealed class ChaosGame : Game
 
     public void RequestScreenshot() => ScreenshotRequested = true;
 
-    private void SaveScreenshot()
+    //a reused backbuffer-readback buffer, shared by the album screenshot and the --screenoutput dev dump (only one
+    //captures at a time; the backbuffer is window-sized, so this grows once).
+    private Color[]? ScreenshotBuffer;
+
+    //reads the fully-composited backbuffer into an SKImage (RGBA8888). FromPixelCopy copies, so the buffer is free again
+    //immediately. Null when the device has no size yet. GetBackBufferData stalls the GPU, so callers gate it (never per-frame).
+    private SKImage? ReadBackbuffer()
+    {
+        var w = GraphicsDevice.PresentationParameters.BackBufferWidth;
+        var h = GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+        if ((w <= 0) || (h <= 0))
+            return null;
+
+        if ((ScreenshotBuffer is null) || (ScreenshotBuffer.Length != w * h))
+            ScreenshotBuffer = new Color[w * h];
+
+        GraphicsDevice.GetBackBufferData(ScreenshotBuffer);
+
+        var info = new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul);
+
+        return SKImage.FromPixelCopy(info, MemoryMarshal.AsBytes(ScreenshotBuffer.AsSpan()), w * 4);
+    }
+
+    //SWM: called from WorldScreen's UI pass once the world + chat bubbles are on the backbuffer but BEFORE the HUD, so
+    //the shot is the world exactly as displayed (with bubbles, sharp-bilinear scaling) and no interface. The world fills
+    //the whole backbuffer in native mode, so the backbuffer IS the world frame here. Must never crash (runs inside Draw).
+    internal void CaptureWorldFrame()
+    {
+        if (!ScreenshotRequested)
+            return;
+
+        ScreenshotRequested = false;
+
+        try
+        {
+            using var frame = ReadBackbuffer();
+
+            if (frame is null)
+                return;
+
+            //push the album JPEG first (best-effort) so a local-save problem can never stop it
+            TryUploadAlbumShot(frame);
+
+            try
+            {
+                SaveLocalScreenshotPng(frame, frame.Width, frame.Height);
+            }
+            catch
+            {
+                //a local-save failure must never surface as a crash; the album upload above already ran
+            }
+        }
+        catch
+        {
+            //never let a screenshot bring down the client
+        }
+    }
+
+    //the original local-disk screenshot: a palettized PNG written to the data folder as lodNNN.png
+    private static void SaveLocalScreenshotPng(SKImage sourceImage, int shotW, int shotH)
     {
         var dataPath = GlobalSettings.DataPath;
         var highestNumber = 0;
@@ -645,19 +691,6 @@ public sealed class ChaosGame : Game
         var nextNumber = highestNumber + 1;
         var fileName = Path.Combine(dataPath, $"lod{nextNumber:D3}.png");
 
-        //the world target can be larger than 640x480 now (expanded to fill the window), so read its actual size
-        var shotW = RenderTarget.Width;
-        var shotH = RenderTarget.Height;
-        var pixels = new Color[shotW * shotH];
-        RenderTarget.GetData(pixels);
-
-        var imageInfo = new SKImageInfo(shotW, shotH, SKColorType.Rgba8888, SKAlphaType.Premul);
-
-        using var sourceImage = SKImage.FromPixelCopy(
-            imageInfo,
-            MemoryMarshal.AsBytes(pixels.AsSpan()),
-            shotW * 4);
-
         using var intermediary = ImageProcessor.PreserveNonTransparentBlacks(sourceImage);
         using var quantized = ImageProcessor.Quantize(QuantizerOptions.Default, intermediary);
         var palette = quantized.Palette;
@@ -672,6 +705,25 @@ public sealed class ChaosGame : Game
         }
 
         WritePalettizedPng(fileName, shotW, shotH, indices, rgbPalette);
+    }
+
+    //SWM: scale the captured world frame to fit a 1280x720 box, JPEG-encode it, and upload it to the player's
+    //server-side album. Wrapped so a failed / oversized / offline upload can never disturb the local screenshot.
+    private void TryUploadAlbumShot(SKImage source)
+    {
+        try
+        {
+            //high quality (chunked, so no single-packet cap); only step quality down if a busy frame exceeds the budget.
+            //The chunked upload + storage then carry whatever this comes out as, up to the 500000 cap.
+            var bytes = ImageEncoding.ScaleToJpeg(source, 1280, 720, 460000, 94, 86, 78);
+
+            if (bytes is { Length: > 0 and <= 500000 })
+                Connection.UploadAlbumImage(bytes);
+        }
+        catch
+        {
+            //best-effort: an album upload must never break the local screenshot that was just saved
+        }
     }
 
     private static void WritePalettizedPng(string fileName, int width, int height, byte[] indices, List<uint> palette)

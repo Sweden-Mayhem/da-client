@@ -6,6 +6,7 @@ using Chaos.Client.Data.Models;
 using Chaos.Client.Models;
 using Chaos.DarkAges.Definitions;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 #endregion
 
@@ -17,7 +18,7 @@ namespace Chaos.Client.Controls.World.Popups.Profile;
 /// </summary>
 public sealed class SelfProfileTabControl : PrefabPanel
 {
-    private const int TAB_COUNT = 6;
+    private const int TAB_COUNT = 5;
 
     //tab control names in the _nui prefab, in order matching statusbooktab enum
     private static readonly string[] TabControlNames =
@@ -25,7 +26,6 @@ public sealed class SelfProfileTabControl : PrefabPanel
         "TAB_INTRO",
         "TAB_LEGEND",
         "TAB_SKILL",
-        "TAB_EVENT",
         "TAB_ALBUM",
         "TAB_FAMILY"
     ];
@@ -35,9 +35,8 @@ public sealed class SelfProfileTabControl : PrefabPanel
     [
         "Equipment\nThe gear you are wearing, your appearance, and your profile text. Drag items here to equip them.",
         "Legend\nThe marks and milestones recorded about your character - achievements, titles and notable events.",
-        "Skills\nReference details about the skills your character knows.",
-        "Events\nA record of events your character has taken part in.",
-        "Album\nSaved portraits and pictures collected by your character.",
+        "Skills\nEvery skill and spell your class can learn - the level, stats and prerequisites each needs, and whether you know it, can learn it now, or it is still locked.",
+        "Album\nYour in-game screenshots, saved to your account. Press the screenshot key in-game to add one.",
         "Family\nYour family ties - marriage and lineage."
     ];
 
@@ -119,13 +118,26 @@ public sealed class SelfProfileTabControl : PrefabPanel
             tabBtn.ZIndex = 1;
         }
 
+        //the Events tab was removed from the MIDDLE of the strip (it sat between Skill and Album in the prefab), so
+        //pull the two tabs below its old slot up one notch to keep the column gapless. Pitch = the uniform spacing
+        //between two adjacent tabs (Skill - Legend); Album takes Skill's next slot, Family the one after.
+        if (TabButtons[1] is { } legendBtn && TabButtons[2] is { } skillBtn)
+        {
+            var pitch = skillBtn.Y - legendBtn.Y;
+
+            if (TabButtons[3] is { } albumBtn)
+                albumBtn.Y = skillBtn.Y + pitch;
+
+            if (TabButtons[4] is { } familyBtn)
+                familyBtn.Y = skillBtn.Y + (pitch * 2);
+        }
+
         CloseButton?.ZIndex = 1;
 
         //lazily load tab pages
         TabPages[StatusBookTab.Equipment] = null;
         TabPages[StatusBookTab.Skills] = null;
         TabPages[StatusBookTab.Legend] = null;
-        TabPages[StatusBookTab.Events] = null;
         TabPages[StatusBookTab.Album] = null;
         TabPages[StatusBookTab.Family] = null;
 
@@ -140,7 +152,6 @@ public sealed class SelfProfileTabControl : PrefabPanel
             StatusBookTab.Equipment => "_nui_eq",
             StatusBookTab.Skills    => "_nui_sk",
             StatusBookTab.Legend    => "_nui_dr",
-            StatusBookTab.Events    => "_nui_ev",
             StatusBookTab.Album     => "_nui_al",
             StatusBookTab.Family    => "_nui_fm",
             _                       => null
@@ -158,8 +169,7 @@ public sealed class SelfProfileTabControl : PrefabPanel
             StatusBookTab.Equipment => new SelfProfileEquipmentTab(prefabName),
             StatusBookTab.Skills    => new SelfProfileAbilityMetadataTab(prefabName),
             StatusBookTab.Legend    => new SelfProfileLegendTab(prefabName),
-            StatusBookTab.Events    => new SelfProfileEventMetadataTab(prefabName),
-            StatusBookTab.Album     => new SelfProfileBlankTab(prefabName),
+            StatusBookTab.Album     => new SelfProfileAlbumTab(prefabName),
             StatusBookTab.Family    => new SelfProfileFamilyTab(prefabName),
             _                       => new SelfProfileBlankTab(prefabName)
         };
@@ -177,6 +187,7 @@ public sealed class SelfProfileTabControl : PrefabPanel
             equipTab.OnUnequip += slot => OnUnequip?.Invoke(slot);
             equipTab.OnGroupToggled += () => OnGroupToggled?.Invoke();
             equipTab.OnProfileTextClicked += () => OnProfileTextClicked?.Invoke();
+            equipTab.OnPortraitClicked += () => OnPortraitClicked?.Invoke();
             equipTab.OnRaiseStat += stat => OnRaiseStat?.Invoke(stat);
             equipTab.OnSocialStatusClicked += () => OnSocialStatusClicked?.Invoke();
         }
@@ -184,8 +195,12 @@ public sealed class SelfProfileTabControl : PrefabPanel
         if (page is SelfProfileAbilityMetadataTab skillsTab)
             skillsTab.OnEntryClicked += entry => OnAbilityDetailRequested?.Invoke(entry);
 
-        if (page is SelfProfileEventMetadataTab eventsTab)
-            eventsTab.OnEntryClicked += (entry, state) => OnEventDetailRequested?.Invoke(entry, state);
+        if (page is SelfProfileAlbumTab albumTab)
+        {
+            albumTab.OnRequestManifest += () => OnAlbumRequestManifest?.Invoke();
+            albumTab.OnRequestImage += id => OnAlbumRequestImage?.Invoke(id);
+            albumTab.OnViewImage += (id, tex) => OnAlbumViewImage?.Invoke(id, tex);
+        }
 
         return page;
     }
@@ -217,10 +232,22 @@ public sealed class SelfProfileTabControl : PrefabPanel
     }
 
     public event AbilityMetadataClickedHandler? OnAbilityDetailRequested;
+
+    /// <summary>SWM: the Album tab opened - (re)request the album manifest from the server.</summary>
+    public event Action? OnAlbumRequestManifest;
+
+    /// <summary>SWM: lazily fetch one album image's bytes by id.</summary>
+    public event Action<uint>? OnAlbumRequestImage;
+
+    /// <summary>SWM: a thumbnail was clicked - open the full-screen viewer for this image id + texture.</summary>
+    public event Action<uint, Texture2D>? OnAlbumViewImage;
+
     public event CloseHandler? OnClose;
-    public event EventMetadataClickedHandler? OnEventDetailRequested;
     public event GroupToggledHandler? OnGroupToggled;
     public event ProfileTextClickedHandler? OnProfileTextClicked;
+
+    /// <summary>SWM: the player clicked their profile picture (to choose a new one).</summary>
+    public event Action? OnPortraitClicked;
     public event RaiseStatHandler? OnRaiseStat;
     public event Action? OnSocialStatusClicked;
     public event UnequipHandler? OnUnequip;
@@ -301,34 +328,6 @@ public sealed class SelfProfileTabControl : PrefabPanel
         Hide();
         OnClose?.Invoke();
     }
-
-    #region Events API
-    /// <summary>
-    ///     Sets the event/quest entries on the Events tab page.
-    /// </summary>
-    public void SetEvents(
-        IReadOnlyList<EventMetadataEntry> events,
-        HashSet<string> completedEventIds,
-        BaseClass baseClass,
-        bool enableMasterQuests)
-    {
-        if (GetOrCreatePage<SelfProfileEventMetadataTab>(StatusBookTab.Events) is { } page)
-            page.SetEvents(
-                events,
-                completedEventIds,
-                baseClass,
-                enableMasterQuests);
-    }
-
-    /// <summary>
-    ///     Clears all event entries on the Events tab page.
-    /// </summary>
-    public void ClearEvents()
-    {
-        if (GetOrCreatePage<SelfProfileEventMetadataTab>(StatusBookTab.Events) is { } page)
-            page.ClearAll();
-    }
-    #endregion
 
     #region Family API
     /// <summary>
@@ -522,6 +521,11 @@ public sealed class SelfProfileTabControl : PrefabPanel
         return equipPage?.ProfileText ?? string.Empty;
     }
 
+    /// <summary>The Presentation profile-text label's wrap width + font, so the editor previews the same line breaks.</summary>
+    public int ProfileTextWrapWidth => GetOrCreateEquipmentPage()?.ProfileTextWrapWidth ?? 0;
+
+    public int ProfileTextFontSize => GetOrCreateEquipmentPage()?.ProfileTextFontSize ?? 0;
+
     /// <summary>
     ///     Sets the profile text on the equipment tab's editable text box.
     /// </summary>
@@ -531,6 +535,9 @@ public sealed class SelfProfileTabControl : PrefabPanel
 
         equipPage?.SetProfileText(text);
     }
+
+    /// <summary>Sets the player's own profile picture (shown in the Equipment tab) from its encoded bytes.</summary>
+    public void SetSelfPortrait(byte[]? portraitData) => GetOrCreateEquipmentPage()?.SetSelfPortrait(portraitData);
 
     private SelfProfileEquipmentTab? GetOrCreateEquipmentPage()
     {
@@ -567,6 +574,29 @@ public sealed class SelfProfileTabControl : PrefabPanel
     public void ClearSkills()
     {
         if (GetOrCreatePage<SelfProfileAbilityMetadataTab>(StatusBookTab.Skills) is { } page)
+            page.ClearAll();
+    }
+    #endregion
+
+    #region Album API
+    /// <summary>Sets the album manifest (image ids) on the Album tab.</summary>
+    public void SetAlbumManifest(IReadOnlyList<uint> ids)
+    {
+        if (GetOrCreatePage<SelfProfileAlbumTab>(StatusBookTab.Album) is { } page)
+            page.SetAlbumManifest(ids);
+    }
+
+    /// <summary>Supplies one fetched album image's JPEG bytes to the Album tab.</summary>
+    public void SetAlbumImage(uint id, byte[] bytes)
+    {
+        if (GetOrCreatePage<SelfProfileAlbumTab>(StatusBookTab.Album) is { } page)
+            page.SetAlbumImage(id, bytes);
+    }
+
+    /// <summary>Clears the Album tab (e.g. on logout).</summary>
+    public void ClearAlbum()
+    {
+        if (GetOrCreatePage<SelfProfileAlbumTab>(StatusBookTab.Album) is { } page)
             page.ClearAll();
     }
     #endregion

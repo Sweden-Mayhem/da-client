@@ -91,6 +91,9 @@ public sealed partial class WorldScreen
 
         //SWM quest tracker (corner HUD panel)
         Game.Connection.OnQuestTracker += HandleQuestTracker;
+        Game.Connection.OnAlbum += HandleAlbum;
+        Game.Connection.OnAlbumImage += HandleAlbumImage;
+        Game.Connection.OnSelfPortrait += HandleSelfPortrait;
 
         //SWM quest completion + rewards (banner + visual reward panel)
         Game.Connection.OnQuestComplete += HandleQuestComplete;

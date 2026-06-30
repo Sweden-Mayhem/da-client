@@ -89,12 +89,13 @@ public sealed class SelfProfileTextEditorControl : UIPanel
             Y = INSET_TOP,
             Width = TOTAL_WIDTH - INSET_LEFT - INSET_RIGHT,
             Height = textBoxHeight,
-            IsMultiLine = true,
+            IsMultiLine = true,        //soft-wraps long text across lines...
+            AllowNewlines = false,     //...but it stays one paragraph - Enter saves instead of adding a line break
             ClampToVisibleArea = true,
             BackgroundColor = Color.Black,
             FocusedBackgroundColor = Color.Black,
             ForegroundColor = Color.White,
-            MaxLength = 256
+            MaxLength = 85
         }.Native(11); //magnified by the editor's ScaleHost, so paint the body in crisp native TTF
         AddChild(TextBox);
 
@@ -117,7 +118,13 @@ public sealed class SelfProfileTextEditorControl : UIPanel
 
     private void Confirm()
     {
-        OnSave?.Invoke(TextBox.Text);
+        //defensive: one line, no stray newlines, capped at 85 (the box already enforces this, but never trust it blindly)
+        var text = TextBox.Text.Replace("\r", " ").Replace("\n", " ").Trim();
+
+        if (text.Length > 85)
+            text = text[..85];
+
+        OnSave?.Invoke(text);
         Hide();
     }
 
@@ -141,8 +148,20 @@ public sealed class SelfProfileTextEditorControl : UIPanel
 
     public event ProfileTextSavedHandler? OnSave;
 
-    public void Show(string text)
+    public void Show(string text, int wrapWidth = 0, int fontSize = 0)
     {
+        //match the in-book Presentation label's EFFECTIVE wrap width + font so the editor previews the EXACT same line
+        //breaks. wrapWidth is the label's inner width (already minus its padding), so add this box's own padding back to
+        //get the outer width that yields the same inner wrap, then CENTER the (often narrower) text column in the popup.
+        if (wrapWidth > 0)
+        {
+            TextBox.Width = Math.Min(wrapWidth + TextBox.PaddingLeft + TextBox.PaddingRight, TOTAL_WIDTH - INSET_LEFT - INSET_RIGHT);
+            TextBox.X = (TOTAL_WIDTH - TextBox.Width) / 2;
+        }
+
+        if (fontSize > 0)
+            TextBox.CustomFontSize = fontSize;
+
         TextBox.Text = text;
         TextBox.CursorPosition = 0;
         TextBox.ScrollOffset = 0;
@@ -156,6 +175,11 @@ public sealed class SelfProfileTextEditorControl : UIPanel
         if (e.Key == Keys.Escape)
         {
             Cancel();
+            e.Handled = true;
+        } else if (e.Key == Keys.Enter)
+        {
+            //the field forbids line breaks, so Enter submits the profile text
+            Confirm();
             e.Handled = true;
         }
     }

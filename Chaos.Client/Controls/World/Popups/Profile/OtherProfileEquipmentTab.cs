@@ -5,7 +5,6 @@ using Chaos.DarkAges.Definitions;
 using Chaos.Networking.Entities.Server;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SkiaSharp;
 #endregion
 
 namespace Chaos.Client.Controls.World.Popups.Profile;
@@ -330,16 +329,9 @@ public sealed class OtherProfileEquipmentTab : PrefabPanel
         if (PortraitImage is null)
             return;
 
+        //cover-fit it to the box (crop + scale) so a portrait of any size fills the frame instead of overflowing
         PortraitImage.Texture?.Dispose();
-        PortraitImage.Texture = null;
-
-        if (portraitData is { Length: > 0 })
-        {
-            using var skImage = SKImage.FromEncodedData(portraitData);
-
-            if (skImage is not null)
-                PortraitImage.Texture = TextureConverter.ToTexture2D(skImage);
-        }
+        PortraitImage.Texture = PortraitRenderer.Cover(portraitData, PortraitImage.Width, PortraitImage.Height);
     }
 
     public void SetProfileText(string text)

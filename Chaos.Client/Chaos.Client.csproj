@@ -136,6 +136,9 @@
 
     <ItemGroup>
         <PackageReference Include="Chaos.Pathfinding"/>
+        <!-- nativefiledialog-extended: the OS-native open-file dialog (Common Item Dialog on Windows), for the
+             profile-picture picker. Ships its own win/linux/mac natives, bundled by the single-file publish. -->
+        <PackageReference Include="NativeFileDialogNET"/>
     </ItemGroup>
 
     <!-- SkiaSharp (pulled in transitively via DALib) ships native libSkiaSharp only for Windows/macOS in

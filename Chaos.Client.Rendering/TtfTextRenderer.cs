@@ -135,6 +135,31 @@ public static class TtfTextRenderer
 
             foreach (var word in rawLine.Split(' '))
             {
+                //a single word wider than the whole line must be char-broken, else it overflows and the box clips the
+                //tail (e.g. a long pasted token loses its end). Break it into line-width pieces; the last piece stays
+                //"current" so a following short word can still share the line.
+                if (font.MeasureText(word) > maxWidth)
+                {
+                    if (current.Length > 0)
+                    {
+                        result.Add(current);
+                        current = string.Empty;
+                    }
+
+                    foreach (var ch in word)
+                    {
+                        if ((current.Length > 0) && (font.MeasureText(current + ch) > maxWidth))
+                        {
+                            result.Add(current);
+                            current = string.Empty;
+                        }
+
+                        current += ch;
+                    }
+
+                    continue;
+                }
+
                 var candidate = current.Length == 0 ? word : current + " " + word;
 
                 if ((current.Length == 0) || (font.MeasureText(candidate) <= maxWidth))
