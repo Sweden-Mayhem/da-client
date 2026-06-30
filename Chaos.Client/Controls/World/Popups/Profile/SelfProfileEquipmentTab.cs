@@ -18,7 +18,7 @@ namespace Chaos.Client.Controls.World.Popups.Profile;
 ///     layout with item icons. Each slot has a fixed position from the prefab and maps to an <see cref="EquipmentSlot" />.
 ///     Empty slots show a placeholder icon from _nui_eqi; occupied slots show the item's panel icon.
 /// </summary>
-public sealed class SelfProfileEquipmentTab : PrefabPanel
+public sealed class SelfProfileEquipmentTab : PrefabPanel, INativeTextDrawer
 {
     //emoticon status icon frame index → _nemots.spf frame
     private const int EMOTICON_FRAME_COUNT = 8;
@@ -699,6 +699,7 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         visual.ItemTexture = texture;
         visual.Image.Texture = texture;
         visual.Image.IsEquipped = true;
+        visual.Image.Unidentified = ItemNaming.IsUnidentified(itemName);
     }
 
     /// <summary>
@@ -783,6 +784,24 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
         }
     }
 
+    /// <summary>
+    ///     Paints the "?" badge over any equipped un-appraised item in the book's native-text pass, so it stays crisp
+    ///     instead of being magnified soft like the icons. Uses the same <see cref="SlotBadge" /> as the inventory grid.
+    /// </summary>
+    public void DrawNativeText(SpriteBatchEx spriteBatch, int screenOriginX, int screenOriginY, int nativeOriginX, int nativeOriginY, float scale, float alpha)
+    {
+        int MapX(float sx) => screenOriginX + (int)((sx - nativeOriginX) * scale);
+        int MapY(float sy) => screenOriginY + (int)((sy - nativeOriginY) * scale);
+
+        foreach ((_, var visual) in SlotVisuals)
+        {
+            var img = visual.Image;
+
+            if (img.Unidentified && img.IsEquipped)
+                SlotBadge.DrawUnidentified(spriteBatch, MapX(img.ScreenX + img.Width), MapY(img.ScreenY + img.Height), scale, alpha);
+        }
+    }
+
     private sealed class EquipmentSlotVisual
     {
         public required EquipmentSlotImage Image { get; init; }
@@ -799,6 +818,9 @@ public sealed class SelfProfileEquipmentTab : PrefabPanel
     {
         public EquipmentSlot Slot { get; init; }
         public bool IsEquipped { get; set; }
+
+        /// <summary>True when the equipped item is un-appraised; the tab paints a "?" badge over the icon (native pass).</summary>
+        public bool Unidentified { get; set; }
 
         public override void OnDragStart(DragStartEvent e)
         {

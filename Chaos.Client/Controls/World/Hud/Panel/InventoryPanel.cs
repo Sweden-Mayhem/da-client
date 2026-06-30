@@ -129,6 +129,7 @@ public sealed class InventoryPanel : PanelBase
             control.CurrentDurability = data.CurrentDurability;
             control.MaxDurability = data.MaxDurability;
             control.StackCount = data.Stackable ? (int)data.Count : 0;
+            control.Unidentified = data.Unidentified;
         } else
         {
             control.NormalTexture?.Dispose();
@@ -138,6 +139,7 @@ public sealed class InventoryPanel : PanelBase
             control.CurrentDurability = 0;
             control.MaxDurability = 0;
             control.StackCount = 0;
+            control.Unidentified = false;
         }
 
         //the bag never covers an ITEM: if the server just filled the slot it was sitting on (it only ever sits on

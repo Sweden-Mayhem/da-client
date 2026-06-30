@@ -92,6 +92,12 @@ public class PanelSlot : UIButton
     public int StackCount { get; set; }
 
     /// <summary>
+    ///     True when this slot holds an un-appraised item. Drawn as a "?" badge in the lower-right by the parent grid's
+    ///     native-text pass. Unidentified items are gear (never stackable), so the "?" never collides with the stack count.
+    /// </summary>
+    public bool Unidentified { get; set; }
+
+    /// <summary>
     ///     The 1-based slot number this control represents.
     /// </summary>
     public byte Slot { get; init; }

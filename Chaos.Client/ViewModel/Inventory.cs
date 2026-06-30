@@ -1,4 +1,5 @@
 #region
+using Chaos.Client.Definitions;
 using Chaos.DarkAges.Definitions;
 #endregion
 
@@ -145,5 +146,11 @@ public sealed class Inventory
         ///     True if this slot contains an item (has a sprite assigned).
         /// </summary>
         public bool IsOccupied => Sprite > 0;
+
+        /// <summary>
+        ///     True if this slot holds an un-appraised item, derived from the server-masked name (see
+        ///     <see cref="ItemNaming.IsUnidentified" />). Drives the slot's "?" badge.
+        /// </summary>
+        public bool Unidentified => ItemNaming.IsUnidentified(Name);
     }
 }

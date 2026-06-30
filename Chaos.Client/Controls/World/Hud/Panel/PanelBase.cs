@@ -314,6 +314,17 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
             spriteBatch.Draw(tex, pos, new Color(200, 200, 200) * alpha);
         }
 
+        //unidentified marker: a gold "?" in the lower-right corner (where the stack count sits - unidentified items are
+        //gear, which never stacks, so the two never appear on the same slot). Shared SlotBadge so the equipment paper-doll
+        //draws the identical mark.
+        for (var i = 0; (i < VisibleSlotCount) && (i < Slots.Count); i++)
+        {
+            var slot = Slots[i];
+
+            if (slot.Visible && slot.Unidentified)
+                SlotBadge.DrawUnidentified(spriteBatch, MapX(slot.ScreenX + slot.Width), MapY(slot.ScreenY + slot.Height), scale, alpha);
+        }
+
         //remaining-cooldown seconds, centered on each cooling icon: white text, 8-dir black outline so it reads over the
         //dark-blue meter. ">=1s" shows whole seconds (rounded up); under a second shows one decimal (e.g. "0.4").
         var cdFont = Math.Max(1, (int)MathF.Round(COOLDOWN_FONT * scale));
