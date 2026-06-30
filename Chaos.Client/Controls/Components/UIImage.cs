@@ -10,6 +10,13 @@ public class UIImage : UIElement
 {
     public Texture2D? Texture { get; set; }
 
+    public UIImage(Texture2D? texture = null)
+    {
+        Texture = texture;
+        Width = texture?.Width ?? 0;
+        Height = texture?.Height ?? 0;
+    }
+
     public override void Dispose()
     {
         Texture?.Dispose();

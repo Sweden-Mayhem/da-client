@@ -324,10 +324,12 @@ public sealed partial class WorldScreen
     {
         var openFraction = NpcSessionHost?.OpenFraction ?? 0f;
 
-        if (openFraction > 0f)
+        //dialog is opening or open: render all HUD children to an offscreen target so they can be drawn at
+        //reduced alpha while the dialog system (ZIndex >= 149999) draws at full alpha on top
+        var renderToTarget = openFraction > 0f;
+
+        if (renderToTarget)
         {
-            //dialog is opening or open: render all HUD children to an offscreen target so they can be drawn at
-            //reduced alpha while the dialog system (ZIndex >= 149999) draws at full alpha on top
             var device = spriteBatch.GraphicsDevice;
 
             if (HudRenderTarget is null || HudRenderTarget.IsDisposed
@@ -343,18 +345,35 @@ public sealed partial class WorldScreen
 
             device.SetRenderTarget(HudRenderTarget);
             device.Clear(Color.Transparent);
+        }
+        
+        spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
+        DrawScreenBorder(spriteBatch);
+        DrawCameraEffects(spriteBatch);
+        DrawDeathVignette(spriteBatch);
+        //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
+        DrawCastBar(spriteBatch);
+        if (!NpcSession.Visible)
+            Overlays.DrawChatBubblesNative(spriteBatch);
+        if (MapFile is not null)
+        {
+            Overlays.DrawNameTagsNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
+            Overlays.DrawChantOverlaysNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
+        }
+
+        //the album screenshot grabs the backbuffer HERE - world + chat bubbles are on it, the HUD is not yet - so the
+        //shot is the world as displayed with no interface. End the batch first so those draws are flushed to read.
+        if (Game.ScreenshotRequested)
+        {
+            spriteBatch.End();
+            Game.CaptureWorldFrame();
             spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
-            DrawCameraEffects(spriteBatch);
-            DrawDeathVignette(spriteBatch);
-            //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
-            DrawCastBar(spriteBatch);
-            if (!NpcSession.Visible)
-                Overlays.DrawChatBubblesNative(spriteBatch);
-            if (MapFile is not null)
-            {
-                Overlays.DrawNameTagsNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
-                Overlays.DrawChantOverlaysNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
-            }
+        }
+
+        if (renderToTarget)
+        {
+            var device = spriteBatch.GraphicsDevice;
+
             Root!.EnsureChildOrder();
 
             foreach (var child in Root.Children)
@@ -373,47 +392,21 @@ public sealed partial class WorldScreen
             foreach (var child in Root.Children)
                 if (child.Visible && !child.SuppressDraw && (child.ZIndex >= 149_999))
                     child.Draw(spriteBatch);
-
-            if ((NpcSessionHost is not null) && NpcSessionHost.Visible)
-                NpcSession.DrawTextNative(spriteBatch, NpcSessionHost.ScreenX, NpcSessionHost.ScreenY, NpcSessionHost.Scale, NpcSessionHost.OpenFraction);
-
-            ItemTooltip.Draw(spriteBatch);
-            spriteBatch.End();
-        }
-        else
-        {
-            //normal path: no dialog, draw everything in one pass
-            spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
-            DrawCameraEffects(spriteBatch);
-            DrawDeathVignette(spriteBatch);
-            //cast bar has the lowest UI priority so every overlay, window, and tooltip sits on top of it
-            DrawCastBar(spriteBatch);
-            if (!NpcSession.Visible)
-                Overlays.DrawChatBubblesNative(spriteBatch);
-            if (MapFile is not null)
-            {
-                Overlays.DrawNameTagsNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
-                Overlays.DrawChantOverlaysNative(spriteBatch, Camera, MapFile.Height, Game.CreatureRenderer);
-            }
-
-            //the album screenshot grabs the backbuffer HERE - world + chat bubbles are on it, the HUD is not yet - so the
-            //shot is the world as displayed with no interface. End the batch first so those draws are flushed to read.
-            if (Game.ScreenshotRequested)
-            {
-                spriteBatch.End();
-                Game.CaptureWorldFrame();
-                spriteBatch.Begin(samplerState: GlobalSettings.Sampler);
-            }
-
+        } else
             Root!.Draw(spriteBatch);
-            if ((NpcSessionHost is not null) && NpcSessionHost.Visible)
-                NpcSession.DrawTextNative(spriteBatch, NpcSessionHost.ScreenX, NpcSessionHost.ScreenY, NpcSessionHost.Scale, NpcSessionHost.OpenFraction);
 
-            ItemTooltip.Draw(spriteBatch);
+        if ((NpcSessionHost is not null) && NpcSessionHost.Visible)
+            NpcSession.DrawTextNative(spriteBatch, NpcSessionHost.ScreenX, NpcSessionHost.ScreenY, NpcSessionHost.Scale, NpcSessionHost.OpenFraction);
+
+        ItemTooltip.Draw(spriteBatch);
+
+        if (!renderToTarget)
+        {
             DrawTargetingCursor(spriteBatch, gameTime);
             DrawDragIcon(spriteBatch);
-            spriteBatch.End();
         }
+
+        spriteBatch.End();
     }
 
     private const int CAST_BAR_FONT_SIZE = 16;
@@ -434,8 +427,8 @@ public sealed partial class WorldScreen
         var cx = ChaosGame.UiWidth / 2;
         var barX = cx - (BAR_W / 2);
         //sit above the skill hotbar when it's laid out; otherwise fall back to a fixed spot near the bottom
-        var anchorTop = SkillBar?.Y ?? (ChaosGame.UiHeight - 200);
-        var barY = anchorTop - BAR_H - 34;
+        var anchorTop = Hotbar?.Y ?? (ChaosGame.UiHeight - 200);
+        var barY = anchorTop - BAR_H - 10;
 
         var pixel = UIElement.GetPixel();
 
@@ -1671,14 +1664,14 @@ public sealed partial class WorldScreen
         ScaleHost? scaleHost = null;
 
         //spell hotbar (most common case)
-        if (SpellBar?.Visible == true && SpellBarPanel is not null)
+        if (SpellBarPanel?.Visible == true && SpellBarPanel is not null)
         {
             var c = SpellBarPanel.GetSlotControl(slotNum);
 
             if (c is not null)
             {
                 visualSlot = c;
-                scaleHost = SpellBar;
+                scaleHost = Hotbar;
             }
         }
 

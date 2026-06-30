@@ -1222,6 +1222,15 @@ public sealed class ChaosGame : Game
         FadeTarget = 1f;
     }
 
+    public static Texture2D LoadTextureResource(String filename)
+    {
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+        using var stream = assembly.GetManifestResourceStream(filename) ?? throw new InvalidOperationException($"Embedded resource '{filename}' not found");
+
+        return Texture2D.FromStream(Device, stream);
+    }
+
     private void UpdateScreenFade(float dt)
     {
         if (FadeAlpha < FadeTarget)

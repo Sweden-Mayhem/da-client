@@ -62,6 +62,9 @@
         <EmbeddedResource Include="Assets\window_widget_pin_active.png">
             <LogicalName>window_widget_pin_active.png</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Assets\screen_border.png">
+            <LogicalName>screen_border.png</LogicalName>
+        </EmbeddedResource>
         <!-- Custom audio is not embedded, it ships as plain files in the Data/sound/ folder (source in
              client-data/sound/), so it loads by path like the rest of the game's assets and can be swapped without a
              rebuild. Sound effects are item/money/ui/dialog/window_open/window_close/level_up.mp3 and the login theme
@@ -96,6 +99,9 @@
         </EmbeddedResource>
         <EmbeddedResource Include="Assets\map_mark_red.png">
             <LogicalName>map_mark_red.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\hotbar.png">
+            <LogicalName>hotbar.png</LogicalName>
         </EmbeddedResource>
         <!-- Warp table for the town-map (T) overlay, tab separated as srcMapId, x, y, destMapId, destName.
              Baked in, an external warps.txt in the Data folder overrides it. -->

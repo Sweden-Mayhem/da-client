@@ -22,6 +22,7 @@ using Chaos.Client.Extensions;
 using Chaos.Client.Models;
 using Chaos.Client.Networking;
 using Chaos.Client.Rendering.Models;
+using Chaos.Client.Rendering.Utility;
 using Chaos.Client.Systems;
 using Chaos.Client.ViewModel;
 using Chaos.DarkAges.Definitions;
@@ -144,10 +145,12 @@ public sealed partial class WorldScreen : IScreen
     //the chat input the focus/typing shortcuts target: the window's (visible) input, falling back to the HUD's
     private ChatInputControl ActiveChatInput => ChatWin?.ChatInput ?? WorldHud.ChatInput;
 
+    private Texture2D? ScreenBorder;
+
     //fixed on-screen hotbars (single-row, auto-bound views): inventory top-center, skills+spells bottom-center.
+    private UIPanel? HotbarPanel;
+    private ScaleHost? Hotbar;
     private ScaleHost? InvBar;
-    private ScaleHost? SkillBar;
-    private ScaleHost? SpellBar;
     //eased 0..1 alpha applied to all three hotbars; dims to HOTBAR_TARGET_ALPHA while targeting a spell
     private float TargetingHotbarAlpha = 1f;
 
@@ -1493,24 +1496,48 @@ public sealed partial class WorldScreen : IScreen
         RefreshHotbarSlotLabels();
         Keybindings.Changed += RefreshHotbarSlotLabels;
 
-        SkillBar = new ScaleHost(SkillBarPanel, ClientSettings.EffectiveHotbarScale);
-        SpellBar = new ScaleHost(SpellBarPanel, ClientSettings.EffectiveHotbarScale);
+        ScreenBorder = ChaosGame.LoadTextureResource("screen_border.png");
+
+        HotbarPanel = new UIPanel
+        {
+            Name = "Hotbar",
+            Background = ChaosGame.LoadTextureResource("hotbar.png")
+        };
+        HotbarPanel.Width = HotbarPanel.Background.Width;
+        HotbarPanel.Height = HotbarPanel.Background.Height;
+
         InvBar = new ScaleHost(InvBarPanel, ClientSettings.EffectiveHotbarScale);
         Root.AddChild(InvBar);
-        Root.AddChild(SkillBar);
-        Root.AddChild(SpellBar);
 
-        HpOrb = new OrbDisplayControl(OrbKind.Hp);
+        SkillBarPanel.X = (HotbarPanel.Width - SkillBarPanel.Width) / 2;
+        SkillBarPanel.Y = 5;
+        HotbarPanel.AddChild(SkillBarPanel);
+        SpellBarPanel.X = (HotbarPanel.Width - SpellBarPanel.Width) / 2;
+        SpellBarPanel.Y = 55;
+        HotbarPanel.AddChild(SpellBarPanel);
+
+        Hotbar = new ScaleHost(HotbarPanel, ClientSettings.EffectiveHotbarScale);
+        Root.AddChild(Hotbar);
+
+        HpOrb = new OrbDisplayControl(OrbKind.Hp)
+        {
+            X = 10,
+            Y = 3
+        };
         HpOrb.HoverEntered += () => HoveredOrb = HpOrb;
         HpOrb.HoverExited += () => { if (HoveredOrb == HpOrb) HoveredOrb = null; };
         HpOrb.Clicked += ToggleStatsWindow;
-        Root.AddChild(HpOrb);
+        HotbarPanel.AddChild(HpOrb);
 
-        MpOrb = new OrbDisplayControl(OrbKind.Mp);
+        MpOrb = new OrbDisplayControl(OrbKind.Mp)
+        {
+            Y = 3
+        };
+        MpOrb.X = HotbarPanel.Width - MpOrb.Width - 10;
         MpOrb.HoverEntered += () => HoveredOrb = MpOrb;
         MpOrb.HoverExited += () => { if (HoveredOrb == MpOrb) HoveredOrb = null; };
         MpOrb.Clicked += ToggleStatsWindow;
-        Root.AddChild(MpOrb);
+        HotbarPanel.AddChild(MpOrb);
 
         //status-effect bar: a fresh EffectBarControl (the HUD's is hidden with the retired HUD) wrapped in a magnifier so
         //the small half-size icons read at the chunky UI scale. Fed by HandleEffect; anchored on the right in AnchorHotbars.
