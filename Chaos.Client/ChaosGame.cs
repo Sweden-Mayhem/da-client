@@ -1228,7 +1228,7 @@ public sealed class ChaosGame : Game
 
         using var stream = assembly.GetManifestResourceStream(filename) ?? throw new InvalidOperationException($"Embedded resource '{filename}' not found");
 
-        return Texture2D.FromStream(Device, stream);
+        return Texture2D.FromStream(Device, stream, DefaultColorProcessors.PremultiplyAlpha);
     }
 
     private void UpdateScreenFade(float dt)

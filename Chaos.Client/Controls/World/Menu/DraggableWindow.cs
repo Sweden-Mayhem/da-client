@@ -350,7 +350,7 @@ public class DraggableWindow : UIPanel
     public void Toggle()
     {
         if (Visible)
-            Visible = false;
+            Close();
         else
             Open();
     }
@@ -364,8 +364,8 @@ public class DraggableWindow : UIPanel
     ///     closed by the Escape-closes-focused-window rule.</summary>
     public bool Closeable => ShowClose;
 
-    /// <summary>Closes the window exactly as its close box does (honouring any subclass <see cref="OnCloseClicked" />).</summary>
-    public void Close() => OnCloseClicked();
+    /// <summary>Closes the window exactly as its close box does (honouring any subclass <see cref="OnClose" />).</summary>
+    public void Close() => OnClose();
 
     /// <summary>
     ///     Draws the window. Flat windows are entirely the base panel (fill + 1px border + chrome children). Wood windows
@@ -702,7 +702,7 @@ public class DraggableWindow : UIPanel
             if (overClose)
             {
                 SoundSystem.PlayUiClick();
-                OnCloseClicked();
+                OnClose();
             }
 
             ClosePressed = false;
@@ -795,7 +795,7 @@ public class DraggableWindow : UIPanel
     }
 
     /// <summary>Invoked when the titlebar close box is clicked. Default hides the window; subclasses may override.</summary>
-    protected virtual void OnCloseClicked()
+    protected virtual void OnClose()
     {
         Visible = false;
     }

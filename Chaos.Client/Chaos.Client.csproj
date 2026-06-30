@@ -103,6 +103,15 @@
         <EmbeddedResource Include="Assets\hotbar.png">
             <LogicalName>hotbar.png</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Assets\notification_circle.png">
+            <LogicalName>notification_circle.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\panelBase_sideButton.png">
+            <LogicalName>panelBase_sideButton.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\panelBase_sideButton_pressed.png">
+            <LogicalName>panelBase_sideButton_pressed.png</LogicalName>
+        </EmbeddedResource>
         <!-- Warp table for the town-map (T) overlay, tab separated as srcMapId, x, y, destMapId, destName.
              Baked in, an external warps.txt in the Data folder overrides it. -->
         <EmbeddedResource Include="Assets\warps.txt">

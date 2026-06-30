@@ -32,14 +32,18 @@ public sealed class InventoryPanel : PanelBase
         Texture2D? background = null,
         Texture2D? expandedBackground = null,
         int normalVisibleSlots = DEFAULT_VISIBLE_SLOTS,
-        bool showGold = true)
+        bool showGold = true,
+        ClickedHandler? sideButtonAction = null,
+        Func<String?>? sideButtonTooltipProvider = null)
         : base(
             hudPrefabSet,
             MAX_SLOTS,
             gridOffsetX: 7,
             gridOffsetY: 5,
             background: background,
-            normalVisibleSlots: normalVisibleSlots)
+            normalVisibleSlots: normalVisibleSlots,
+            sideButtonAction: sideButtonAction,
+            sideButtonTooltipProvider: sideButtonTooltipProvider)
     {
         Name = "Inventory";
 

@@ -17,7 +17,7 @@ public static class ClientSettings
     //menu button: dragging flag, attachment side (0=below, 1=above, 2=left, 3=right, -1=detached/independent),
     //and the independent center-relative offset used when detached.
     public static bool AllowDragMenuButton { get; set; } = true;
-    public static int MenuButtonAttachSide { get; set; } = 0; //default is attached below the minimap
+    public static int MenuButtonAttachSide { get; set; } = -1; //default is attached below the minimap
     public static int MenuButtonOffsetX { get; set; } = int.MinValue; //only used when AttachSide == -1
     public static int MenuButtonOffsetY { get; set; } = int.MinValue;
 

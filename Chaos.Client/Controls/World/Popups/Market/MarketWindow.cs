@@ -1443,7 +1443,7 @@ public sealed class MarketWindow : DraggableWindow
         }
     }
 
-    protected override void OnCloseClicked()
+    protected override void OnClose()
     {
         ClearSearch(); //closing the window clears the Browse filter
         Visible = false;

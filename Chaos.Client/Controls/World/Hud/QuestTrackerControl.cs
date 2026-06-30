@@ -518,8 +518,8 @@ public sealed class QuestTrackerControl : UIPanel
             } else
             {
                 //default: top-left corner
-                X = PAD;
-                Y = PAD;
+                X = 48 - PAD;
+                Y = 72;
                 StoreOffset();
             }
 

@@ -887,7 +887,7 @@ public sealed class QuestJournalControl : DraggableWindow
             _              => "You have not completed any quests yet."
         };
 
-    protected override void OnCloseClicked()
+    protected override void OnClose()
     {
         ClearSearch();
         Visible = false;

@@ -942,7 +942,17 @@ public sealed partial class WorldScreen
     {
         AnchorScaledPopup(GoldDropHost);
         AnchorScaledPopup(ItemAmountHost);
+        AnchorQuickMenu();
         AnchorTextPopup();
+    }
+
+    private void AnchorQuickMenu()
+    {
+        if (QuickMenu is null)
+            return;
+
+        QuickMenu.X = ChaosGame.UiWidth - QuickMenu.Width - QuickMenu.GROW_RIGHT - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
+        QuickMenu.Y = (ChaosGame.UiHeight - QuickMenu.Height) / 2;
     }
 
     //the sign/board popup: centered, but while the host fades open it slides UP from half its height below center

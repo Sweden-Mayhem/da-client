@@ -26,7 +26,9 @@ public sealed class SpellBookPanel : PanelBase
         int gridOffsetX = 8,
         bool drawSlotNumberOverlay = true,
         bool loadFallbackBackground = true,
-        int? compactGridPadding = null)
+        int? compactGridPadding = null,
+        ClickedHandler? sideButtonAction = null,
+        Func<String?>? sideButtonTooltipProvider = null)
         : base(
             hudPrefabSet,
             MAX_SLOTS,
@@ -39,7 +41,9 @@ public sealed class SpellBookPanel : PanelBase
             normalVisibleSlots: normalVisibleSlots,
             drawSlotNumberOverlay: drawSlotNumberOverlay,
             loadFallbackBackground: loadFallbackBackground,
-            compactGridPadding: compactGridPadding)
+            compactGridPadding: compactGridPadding,
+            sideButtonAction: sideButtonAction,
+            sideButtonTooltipProvider: sideButtonTooltipProvider)
     {
         Name = page switch
         {

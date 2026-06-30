@@ -559,7 +559,7 @@ public sealed class ChatWindow : DraggableWindow
 
     public void RefreshChatTimestamps() => Chat.RefreshTimestamps();
 
-    protected override void OnCloseClicked()
+    protected override void OnClose()
     {
         Pinned = false;
         ChatInput.Unfocus();

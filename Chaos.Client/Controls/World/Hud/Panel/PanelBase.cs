@@ -108,6 +108,9 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
     /// </summary>
     public int DragX => DragMouseX;
 
+    static private Texture2D? SideButtonNormalTexture;
+    static private Texture2D? SideButtonPressedTexture;
+
     protected PanelBase(
         ControlPrefabSet hudPrefabSet,
         int maxSlots,
@@ -121,7 +124,9 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
         int normalVisibleSlots = DEFAULT_VISIBLE_SLOTS,
         bool drawSlotNumberOverlay = true,
         bool loadFallbackBackground = true,
-        int? compactGridPadding = null)
+        int? compactGridPadding = null,
+        ClickedHandler? sideButtonAction = null,
+        Func<String?>? sideButtonTooltipProvider = null)
     {
         MaxSlots = maxSlots;
         GridOffsetX = gridOffsetX;
@@ -160,6 +165,22 @@ public abstract class PanelBase : ExpandablePanel, INativeTextDrawer
         {
             Width = Background.Width;
             Height = Background.Height;
+        }
+
+        if (SideButtonNormalTexture is null || SideButtonPressedTexture is null)
+        {
+            SideButtonNormalTexture = ChaosGame.LoadTextureResource("panelBase_sideButton.png");
+            SideButtonPressedTexture = ChaosGame.LoadTextureResource("panelBase_sideButton_pressed.png");
+        }
+
+        if (sideButtonAction is not null)
+        {
+            var sideButton = UIButton.CreateWithTexture(String.Empty, SideButtonNormalTexture, SideButtonPressedTexture);
+            sideButton.X = Width;
+            sideButton.TooltipProvider = sideButtonTooltipProvider;
+            sideButton.Clicked += sideButtonAction;
+            AddChild(sideButton);
+            Width += sideButton.Width;
         }
 
         //slot count: explicit cellCount overrides the computed value
