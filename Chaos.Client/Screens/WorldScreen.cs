@@ -1535,6 +1535,9 @@ public sealed partial class WorldScreen : IScreen
         StatusBook.SetProfileText(LoadProfileText());
 
         //build menus
+        //main menu options are expected to always SHOW (and ideally focus) windows, as it's a popup option that breaks flow and can't be clicked multiple times
+        //quick menu options are expected to always TOGGLE, since these options are fixed on screen, and they can all be easily clicked multiple times to toggle screen states
+
         // AddMenuOption("Inventory", InventoryWindow.Open, null, Tip("Inventory",
         //     "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
         //     GameAction.ToggleInventory));
