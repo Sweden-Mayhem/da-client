@@ -848,7 +848,7 @@ public sealed partial class WorldScreen
         var h = ChaosGame.UiHeight;
 
         Hotbar.X = (w - Hotbar.Width) / 2;
-        Hotbar.Y = h - Hotbar.Height - (int)MathF.Round(4 * ClientSettings.EffectiveHotbarScale);
+        Hotbar.Y = h - Hotbar.Height - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
 
         InvBar.X = (w - InvBar.Width) / 2;
         InvBar.Y = margin;
@@ -861,13 +861,10 @@ public sealed partial class WorldScreen
 
             if (ClientSettings.ChatWindowOffsetX == int.MinValue)
             {
-                const int CHAT_MARGIN = 8;
-                const int ORB_CLEAR = 6;
-
-                var targetW = Math.Max(180, HpOrb.X - ORB_CLEAR - CHAT_MARGIN);
-                ChatWin.X = CHAT_MARGIN;
+                var targetW = Math.Max(180, Hotbar.X - 8);
+                ChatWin.X = 8;
                 ChatWin.Resize(targetW, ChatWin.Height);
-                ChatWin.Y = h - ChatWin.Height - CHAT_MARGIN;
+                ChatWin.Y = h - ChatWin.Height - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
                 ChatWin.CommitPosition(); //persist the default so it survives the next resize
             }
         }
