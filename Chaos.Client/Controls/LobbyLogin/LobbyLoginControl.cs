@@ -40,18 +40,18 @@ public sealed class LobbyLoginControl : UIPanel
         Width = ChaosGame.VIRTUAL_WIDTH;
         Height = ChaosGame.VIRTUAL_HEIGHT;
 
-        Background = LoadTexture("da_login.png");
-        Campfire = UIAnimatedImage.CreateWithTexture("Campfire", LoadTexture("da_login_campfire.png"), 108);
+        Background = ChaosGame.LoadTextureResource("da_login.png", premultiply: false);
+        Campfire = UIAnimatedImage.CreateWithTexture("Campfire", ChaosGame.LoadTextureResource("da_login_campfire.png"), 108);
         Campfire.X = 254;
         Campfire.Y = 353;
         Campfire.FrameTime = 1000*5/60;
         Campfire.IsHitTestVisible = false;
         AddChild(Campfire);
 
-        BackgroundEffect = LoadEffect("loginBackground.mgfxo");
+        BackgroundEffect = ChaosGame.LoadEffectResource("loginBackground.mgfxo");
         BackgroundEffectTime = BackgroundEffect.Parameters["Time"];
 
-        var buttonHotspotArea = LoadTexture("da_login_button_mask.png");
+        var buttonHotspotArea = ChaosGame.LoadTextureResource("da_login_button_mask.png");
         ButtonMaskPress = ImageUtil.BuildButtonMaskPressTint(ChaosGame.Device, buttonHotspotArea);
         ButtonMaskHover = ImageUtil.BuildButtonMaskHoverTint(ChaosGame.Device, buttonHotspotArea);
         buttonHotspotArea.Dispose();
@@ -81,26 +81,6 @@ public sealed class LobbyLoginControl : UIPanel
         AddChild(button);
 
         return button;
-    }
-
-    private static Texture2D LoadTexture(String path)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
-
-        return Texture2D.FromStream(ChaosGame.Device, stream, null);
-    }
-
-    private static Effect LoadEffect(String path)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
-        using var fxBuffer = new MemoryStream();
-        stream.CopyTo(fxBuffer);
-
-        return new Effect(ChaosGame.Device, fxBuffer.ToArray());
     }
 
     public void EnableButtons() => SetButtonsEnabled(true);

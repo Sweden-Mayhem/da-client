@@ -1222,13 +1222,24 @@ public sealed class ChaosGame : Game
         FadeTarget = 1f;
     }
 
-    public static Texture2D LoadTextureResource(String filename)
+    public static Texture2D LoadTextureResource(String filename, bool premultiply = true)
     {
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var assembly = Assembly.GetExecutingAssembly();
 
         using var stream = assembly.GetManifestResourceStream(filename) ?? throw new InvalidOperationException($"Embedded resource '{filename}' not found");
 
-        return Texture2D.FromStream(Device, stream, DefaultColorProcessors.PremultiplyAlpha);
+        return Texture2D.FromStream(Device, stream, premultiply ? DefaultColorProcessors.PremultiplyAlpha : null);
+    }
+
+    public static Effect LoadEffectResource(String path)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+
+        using var stream = assembly.GetManifestResourceStream(path) ?? throw new InvalidOperationException($"Embedded resource '{path}' not found");
+        using var fxBuffer = new MemoryStream();
+        stream.CopyTo(fxBuffer);
+
+        return new Effect(Device, fxBuffer.ToArray());
     }
 
     private void UpdateScreenFade(float dt)

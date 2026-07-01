@@ -93,9 +93,9 @@ public sealed class CharacterCreationControl : PrefabPanel
 
         //override the retail _ncreate art with the custom "New Character" background (640x480)
         //controls (name/password fields, hair picker, OK/Cancel) keep their _ncreate positions and align with it
-        Background = LoadTexture("cc_bg.png");
-        OkayMask = LoadTexture("cc_bg_okay_mask.png");
-        CancelMask = LoadTexture("cc_bg_cancel_mask.png");
+        Background = ChaosGame.LoadTextureResource("cc_bg.png");
+        OkayMask = ChaosGame.LoadTextureResource("cc_bg_okay_mask.png");
+        CancelMask = ChaosGame.LoadTextureResource("cc_bg_cancel_mask.png");
         Visible = false;
         UsesControlStack = true;
         X = 0;
@@ -285,15 +285,6 @@ public sealed class CharacterCreationControl : PrefabPanel
         Renderer.Dispose();
 
         base.Dispose();
-    }
-
-    private static Texture2D LoadTexture(String filename)
-    {
-        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-
-        using var stream = assembly.GetManifestResourceStream(filename) ?? throw new InvalidOperationException($"Embedded resource '{filename}' not found");
-
-        return Texture2D.FromStream(ChaosGame.Device, stream);
     }
 
     public override void Draw(SpriteBatchEx spriteBatch)

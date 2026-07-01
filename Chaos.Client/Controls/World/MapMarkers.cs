@@ -26,7 +26,7 @@ internal static class MapMarkers
 
     public static void EnsureLoaded(GraphicsDevice device)
     {
-        RedMark ??= LoadEmbeddedPremultiplied(device, "map_mark_red.png");
+        RedMark ??= ChaosGame.LoadTextureResource("map_mark_red.png", premultiply: false);
 
         if (Pixel is null)
         {
@@ -62,39 +62,5 @@ internal static class MapMarkers
             spriteBatch.Draw(region.Atlas, dest, region.SourceRect, tint);
         else
             spriteBatch.Draw(tex, dest, null, tint);
-    }
-
-    /// <summary>
-    ///     Loads an embedded PNG and premultiplies its alpha. <see cref="Texture2D.FromStream(GraphicsDevice, Stream)" />
-    ///     yields STRAIGHT alpha; the UI batch blends premultiplied, so soft edges get bright fringes without this.
-    /// </summary>
-    public static Texture2D? LoadEmbeddedPremultiplied(GraphicsDevice device, string logicalName)
-    {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(logicalName);
-
-        if (stream is null)
-            return null;
-
-        var tex = Texture2D.FromStream(device, stream);
-        var px = new Color[tex.Width * tex.Height];
-        tex.GetData(px);
-
-        for (var i = 0; i < px.Length; i++)
-        {
-            var p = px[i];
-
-            if (p.A == 255)
-                continue;
-
-            px[i] = new Color(
-                (byte)(p.R * p.A / 255),
-                (byte)(p.G * p.A / 255),
-                (byte)(p.B * p.A / 255),
-                p.A);
-        }
-
-        tex.SetData(px);
-
-        return tex;
     }
 }
