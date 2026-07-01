@@ -1289,10 +1289,6 @@ public sealed partial class WorldScreen : IScreen
 
         InventoryWindow = DraggableWindow.CreateScaledPopup("Inventory", TrimPanelBorder(inv));
         Root.AddChild(InventoryWindow);
-        // AddMenuOption("Inventory", InventoryWindow.Open, null, Tip("Inventory",
-        //     "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
-        //     GameAction.ToggleInventory));
-        //starts closed like every other menu window; the player opens it from Menu > Inventory
 
         //character stats window (level-up arrows show when there are unspent points; next-level EXP in the labels)
         var statusHb = DataContext.UserControls.Get("_nstatus")!;
@@ -1315,9 +1311,6 @@ public sealed partial class WorldScreen : IScreen
 
         StatsWin = DraggableWindow.CreateScaledPopup("Stats", TrimPanelBorder(statsContainer));
         Root.AddChild(StatsWin);
-        StatsMenuEntry = AddMenuOption("Stats", StatsWin.Open, null, Tip("Stats",
-            "Your character's attributes, health and mana, level and experience. When you have unspent stat points, the up-arrows let you raise Strength, Intelligence, Wisdom, Constitution or Dexterity.",
-            GameAction.ToggleStats));
         WorldState.Attributes.Changed += PushStatsWindow;
         PushStatsWindow();
 
@@ -1333,9 +1326,6 @@ public sealed partial class WorldScreen : IScreen
         SkillWinPanel.OnSlotSwapped += (s, t) => Game.Connection.SwapSlot(PanelType.SkillBook, s, t);
         SkillWin = DraggableWindow.CreateScaledPopup("Skills", TrimPanelBorder(SkillWinPanel));
         Root.AddChild(SkillWin);
-        // AddMenuOption("Skills", SkillWin.Open, null, Tip("Skills",
-        //     "Your skill book: every skill you have learned. Drag a skill onto the hotbar for quick use, or right-click it to edit its chant line. Hover a skill to read what it does and its requirements.",
-        //     GameAction.ToggleSkills));
 
         SpellWinPanel = new SpellBookPanel(bookHb, background: bookBg, normalVisibleSlots: 36);
         SpellWinPanel.OnSlotClicked += HandleSpellSlotClicked;
@@ -1345,9 +1335,6 @@ public sealed partial class WorldScreen : IScreen
         SpellWinPanel.OnSlotDroppedOutside += HandleSpellSlotDropped;
         SpellWin = DraggableWindow.CreateScaledPopup("Spells", TrimPanelBorder(SpellWinPanel));
         Root.AddChild(SpellWin);
-        // AddMenuOption("Spells", SpellWin.Open, null, Tip("Spells",
-        //     "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
-        //     GameAction.ToggleSpells));
 
         //Actions window: the split Skills (left) / Spells (right) abilities panel. Detached from the retired HUD so it
         //keeps all its wiring and stays registered for the drag ghost via WorldHud.Tools. Magnified like the other books.
@@ -1363,61 +1350,11 @@ public sealed partial class WorldScreen : IScreen
         WireAbilityRightClicks(tools.WorldSpells);
         ActionsWin = DraggableWindow.CreateScaledPopup("Actions", TrimPanelBorder(tools));
         Root.AddChild(ActionsWin);
-        AddMenuOption("Actions", ActionsWin.Open, null, Tip("Actions",
-            "Your skills and spells side by side in one window, so you can manage both at once. Drag onto the hotbar, right-click to edit a chant, or hover for details.",
-            GameAction.ToggleActions));
-
-        //the book-themed profile dialog (centered): Equipment opens the Intro tab, Legend opens the Legend tab
-        EquipmentMenuEntry = AddMenuOption("Character", ShowEquipment, ToggleEquipment, Tip("Character",
-            "Your character profile: the gear you are wearing, your appearance, and your profile text. Drag an item from your inventory onto a slot to equip it, or drag an equipped item out to remove it. Click your portrait text to edit what others read.",
-            GameAction.ToggleEquipment));
-
-        // AddMenuOption("Legend", ShowProfile, null, Tip("Legend",
-        //     "Your legend: the marks and milestones recorded about your character over its life - achievements, titles, and notable events. Other players can read these when they view your profile.",
-        //     GameAction.ToggleLegend));
-
-        //Group window (members), centered + magnified
-        AddMenuOption("Group", ShowGroup, null, Tip("Group",
-            "Your party. See who is grouped with you and their health, set up recruitment to find members, and (as leader) remove members. Group members share experience and can use group chat.",
-            GameAction.ToggleGroup));
-
-        //Friends list (toggle the free-floating window; data is loaded on world entry via LoadPlayerFriendList)
-        AddMenuOption("Friends", FriendsList.Show, null, Tip("Friends",
-            "Your friends list. See which of your friends are online right now, and keep track of the players you want to stay in touch with.",
-            GameAction.ToggleFriends));
-
-        //Who is online (the world-list window; data is requested from the server when opened)
-        AddMenuOption("Who is online", ShowWorldListPanel, null, Tip("Who is online",
-            "Everyone currently playing. Filter the list by class using the tabs, and click a name to view that player's profile.",
-            GameAction.ToggleWorldList));
-
-        //Mail / message boards; the R key opens the same panel
-        MailMenuEntry = AddMenuOption("Mail", ShowBoardPanel, ToggleBoardPanel, Tip("Mail",
-            "Read and send personal mail and browse the message boards. A marker appears here when you have unread mail.",
-            GameAction.ToggleBulletinBoard));
 
         //emote picker: a grid of every emote, each shown as its real face/bubble graphic in the player's skin tone
         EmoteWin = new EmoteWindow(Game.AislingRenderer) { CentersOnFirstShow = true, FadeOnOpen = true };
         EmoteWin.EmoteChosen += TrySendEmote;
         Root.AddChild(EmoteWin);
-        AddMenuOption("Emotes", EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
-            "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
-            GameAction.ToggleEmotes));
-
-        AddMenuOption("Quests", OpenQuestJournal, ToggleQuestJournal, Tip("Quest Journal",
-            "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
-            GameAction.ToggleQuestJournal));
-
-        //Temuair Exchange: the standalone market window. Opening it asks the server for the catalog (the window also
-        //opens itself when the first screen arrives); every later screen/action flows over the market packet pair.
-        AddMenuOption("Market", OpenMarket, ToggleMarket, Tip("Market",
-            "Browse and trade at the Temuair Exchange from anywhere: buy and bid from any spot. Selling and collecting winnings must be done in person at a market clerk.",
-            GameAction.ToggleMarket));
-
-        //Help topics; the H key opens the same panel
-        MailMenuEntry = AddMenuOption("Help", () => ShowBoardPanelByName("help"), null, Tip("Help",
-            "Read all help topics.",
-            GameAction.ToggleHelp));
 
         //SWM quest journal window: the modern quest log (Active / Suggested / Locked / Completed)
         QuestJournal = new QuestJournalControl { CentersOnFirstShow = true, FadeOnOpen = true };
@@ -1454,9 +1391,6 @@ public sealed partial class WorldScreen : IScreen
         OptionsWin.CentersOnFirstShow = true;
         OptionsWin.FadeOnOpen = true;
         Root.AddChild(OptionsWin);
-        AddMenuOption("Options", OptionsWin.Open, null, Tip("Options",
-            "Game settings: sound and music volume, interface and minimap sizes, camera and movement feel, tooltips, and more. The Controls button inside opens the keybinding editor where every key can be reassigned.",
-            GameAction.ToggleOptions));
 
         //market window: standalone floating market, opened by the server's SwmProtocol.Market menu type
         //(created earlier so WireNpcSession could subscribe to it)
@@ -1465,10 +1399,6 @@ public sealed partial class WorldScreen : IScreen
         //live render-FX tuning panel, opened by "/debugOptions" (no menu entry - a dev tool, see HandleChatMessage)
         DebugFxWin = new DebugFxWindow { CentersOnFirstShow = true, FadeOnOpen = true, Visible = false };
         Root.AddChild(DebugFxWin);
-
-        //log out back to the login screen: fade to black, the server confirms (OnExitResponse), we send the real logout,
-        //and the redirect switches us to the lobby (see BeginLogout + HandleExitResponse + WorldScreen.Update's PendingLoginSwitch).
-        AddMenuOption("Log out", BeginLogout, null, "Log out\nLeave the world and return to the login screen. Your character is saved automatically.");
 
         //fixed on-screen hotbars: single-row, auto-bound views of the top rows
         //reuse the panel class (the collapsed-HUD look); each self-subscribes to its WorldState view model, so these
@@ -1603,6 +1533,76 @@ public sealed partial class WorldScreen : IScreen
         var playerName = Game.Connection.AislingName;
         PlayerPortrait = LoadPortraitFile(playerName);
         StatusBook.SetProfileText(LoadProfileText());
+
+        //build menus
+        // AddMenuOption("Inventory", InventoryWindow.Open, null, Tip("Inventory",
+        //     "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
+        //     GameAction.ToggleInventory));
+
+        StatsMenuEntry = AddMenuOption("Stats", StatsWin.Open, null, Tip("Stats",
+            "Your character's attributes, health and mana, level and experience. When you have unspent stat points, the up-arrows let you raise Strength, Intelligence, Wisdom, Constitution or Dexterity.",
+            GameAction.ToggleStats));
+
+        // AddMenuOption("Skills", SkillWin.Open, null, Tip("Skills",
+        //     "Your skill book: every skill you have learned. Drag a skill onto the hotbar for quick use, or right-click it to edit its chant line. Hover a skill to read what it does and its requirements.",
+        //     GameAction.ToggleSkills));
+
+        // AddMenuOption("Spells", SpellWin.Open, null, Tip("Spells",
+        //     "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
+        //     GameAction.ToggleSpells));
+
+        AddMenuOption("Actions", ActionsWin.Open, null, Tip("Actions",
+            "Your skills and spells side by side in one window, so you can manage both at once. Drag onto the hotbar, right-click to edit a chant, or hover for details.",
+            GameAction.ToggleActions));
+
+        EquipmentMenuEntry = AddMenuOption("Character", ShowEquipment, ToggleEquipment, Tip("Character",
+            "Your character profile: the gear you are wearing, your appearance, and your profile text. Drag an item from your inventory onto a slot to equip it, or drag an equipped item out to remove it. Click your portrait text to edit what others read.",
+            GameAction.ToggleEquipment));
+
+        // AddMenuOption("Legend", ShowProfile, null, Tip("Legend",
+        //     "Your legend: the marks and milestones recorded about your character over its life - achievements, titles, and notable events. Other players can read these when they view your profile.",
+        //     GameAction.ToggleLegend));
+
+        AddMenuOption("Group", ShowGroup, null, Tip("Group",
+            "Your party. See who is grouped with you and their health, set up recruitment to find members, and (as leader) remove members. Group members share experience and can use group chat.",
+            GameAction.ToggleGroup));
+
+        AddMenuOption("Friends", FriendsList.Show, null, Tip("Friends",
+            "Your friends list. See which of your friends are online right now, and keep track of the players you want to stay in touch with.",
+            GameAction.ToggleFriends));
+
+        AddMenuOption("Who is online", ShowWorldListPanel, null, Tip("Who is online",
+            "Everyone currently playing. Filter the list by class using the tabs, and click a name to view that player's profile.",
+            GameAction.ToggleWorldList));
+
+        MailMenuEntry = AddMenuOption("Mail", ShowBoardPanel, ToggleBoardPanel, Tip("Mail",
+            "Read and send personal mail and browse the message boards. A marker appears here when you have unread mail.",
+            GameAction.ToggleBulletinBoard));
+
+        AddMenuOption("Emotes", EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
+            "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
+            GameAction.ToggleEmotes));
+
+        AddMenuOption("Quests", OpenQuestJournal, ToggleQuestJournal, Tip("Quest Journal",
+            "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
+            GameAction.ToggleQuestJournal));
+
+        //Temuair Exchange: the standalone market window. Opening it asks the server for the catalog (the window also
+        //opens itself when the first screen arrives); every later screen/action flows over the market packet pair.
+        AddMenuOption("Market", OpenMarket, ToggleMarket, Tip("Market",
+            "Browse and trade at the Temuair Exchange from anywhere: buy and bid from any spot. Selling and collecting winnings must be done in person at a market clerk.",
+            GameAction.ToggleMarket));
+
+        AddMenuOption("Options", OptionsWin.Open, null, Tip("Options",
+            "Game settings: sound and music volume, interface and minimap sizes, camera and movement feel, tooltips, and more. The Controls button inside opens the keybinding editor where every key can be reassigned.",
+            GameAction.ToggleOptions));
+
+        //Help topics; the H key opens the same panel
+        MailMenuEntry = AddMenuOption("Help", () => ShowBoardPanelByName("help"), null, Tip("Help",
+            "Read all help topics.",
+            GameAction.ToggleHelp));
+
+        AddMenuOption("Log out", BeginLogout, null, "Log out\nLeave the world and return to the login screen. Your character is saved automatically.");
 
         //retire the old border HUD: keep the objects alive (so the many references still resolve) but
         //stop drawing it. The world now fills the screen and the new menu/windows/HP/MP/chat overlay.
