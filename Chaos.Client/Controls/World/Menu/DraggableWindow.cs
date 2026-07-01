@@ -339,7 +339,8 @@ public class DraggableWindow : UIPanel
     {
         if (CentersOnFirstShow && !HasCentered)
         {
-            this.CenterOnUi();
+            // this.CenterOnUi();
+            this.CenterOnUiNearMouse(0.65f);
             HasCentered = true;
         }
 
