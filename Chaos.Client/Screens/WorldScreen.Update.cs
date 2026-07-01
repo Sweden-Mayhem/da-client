@@ -855,7 +855,7 @@ public sealed partial class WorldScreen
 
         //ONE-TIME default placement: size the chat to fill the lower-left gap beside the HP orb.
         //Skipped if the player already has a saved position in config.
-        if (HpOrb is not null && !ChatDefaultSized && ChatWin is not null)
+        if (!ChatDefaultSized && ChatWin is not null)
         {
             ChatDefaultSized = true;
 
