@@ -112,7 +112,7 @@ public sealed class QuestTrackerControl : UIPanel
     private IReadOnlyList<QuestTrackerQuestInfo> ActiveQuests = [];
 
     //drag / click handling, all polled from InputBuffer in Update (the dispatcher can drop a mouse-up after a drag)
-    private bool LmbWasDown;
+    private bool CursorOver;
     private bool PressActive;
     private bool Dragging;
     private int PressMouseX, PressMouseY;
@@ -142,7 +142,6 @@ public sealed class QuestTrackerControl : UIPanel
     {
         Name = "QuestTracker";
         Visible = false;
-        IsPassThrough = true; //idle: clicks fall through to the world (toggled off in Update while interactive)
 
         PinNormalTex = LoadWidgetArt("window_widget_pin.png");
         PinActiveTex = LoadWidgetArt("window_widget_pin_active.png");
@@ -549,15 +548,11 @@ public sealed class QuestTrackerControl : UIPanel
         if (!Pinned && (BrightSeconds > 0))
             BrightSeconds -= dt;
 
-        var lit = Pinned || Dragging || CursorOver() || (BrightSeconds > 0);
+        var lit = Pinned || Dragging || CursorOver || (BrightSeconds > 0);
         var target = lit ? 1f : 0f;
         ChromeOpacity = MathHelper.Lerp(ChromeOpacity, target, Math.Clamp(dt * 8f, 0f, 1f));
 
         ApplyChrome();
-
-        //interactive (capture clicks for drag / pin / open-detail) while pinned or actually hovered
-        var interactive = Pinned || Dragging || CursorOver();
-        IsPassThrough = !interactive;
 
         UpdateDetailDismiss();
 
@@ -583,27 +578,10 @@ public sealed class QuestTrackerControl : UIPanel
     //press / drag / click resolution, polled from the global mouse state so a dropped mouse-up can never strand us
     private void HandlePointer()
     {
-        var lmb = InputBuffer.IsLeftButtonHeld;
         var mx = InputBuffer.MouseX;
         var my = InputBuffer.MouseY;
-        var over = PointInPanel(mx, my);
-        var interactive = Pinned || over || Dragging;
 
-        //rising edge: begin a press only when we are the thing under the cursor (otherwise leave the world alone)
-        if (lmb && !LmbWasDown && interactive && over)
-        {
-            PressActive = true;
-            Dragging = false;
-            PressMouseX = mx;
-            PressMouseY = my;
-            DragGrabX = mx - X;
-            DragGrabY = my - Y;
-            PressedOnPin = PointInPin(mx, my);
-            PressedOnBook = PointInBook(mx, my);
-            PressedQuestIndex = PressedOnPin || PressedOnBook ? -1 : QuestIndexAt(mx, my);
-        }
-
-        if (PressActive && lmb)
+        if (PressActive)
         {
             if (!Dragging && (Math.Abs(mx - PressMouseX) + Math.Abs(my - PressMouseY) > DRAG_THRESHOLD))
                 Dragging = true;
@@ -615,28 +593,51 @@ public sealed class QuestTrackerControl : UIPanel
                 ClampOnScreen();
             }
         }
-
-        //falling edge: a drag persists the new spot; a still press is a click (pin toggle or open the quest detail)
-        if (!lmb && LmbWasDown && PressActive)
-        {
-            if (Dragging)
-                StoreOffset();
-            else if (PressedOnPin && PointInPin(mx, my))
-                TogglePinned();
-            else if (PressedOnBook && PointInBook(mx, my))
-            {
-                SoundSystem.PlayUiClick();
-                OpenJournalRequested?.Invoke();
-            }
-            else if ((PressedQuestIndex >= 0) && (QuestIndexAt(mx, my) == PressedQuestIndex))
-                ToggleDetail(PressedQuestIndex);
-
-            PressActive = false;
-            Dragging = false;
-        }
-
-        LmbWasDown = lmb;
     }
+
+    public override void OnMouseDown(MouseDownEvent e)
+    {
+        var mx = e.ScreenX;
+        var my = e.ScreenY;
+
+        PressActive = true;
+        Dragging = false;
+        PressMouseX = mx;
+        PressMouseY = my;
+        DragGrabX = mx - X;
+        DragGrabY = my - Y;
+        PressedOnPin = PointInPin(mx, my);
+        PressedOnBook = PointInBook(mx, my);
+        PressedQuestIndex = PressedOnPin || PressedOnBook ? -1 : QuestIndexAt(mx, my);
+
+        e.Handled = true;
+    }
+
+    public override void OnMouseUp(MouseUpEvent e)
+    {
+        var mx = e.ScreenX;
+        var my = e.ScreenY;
+
+        if (Dragging)
+            StoreOffset();
+        else if (PressedOnPin && PointInPin(mx, my))
+            TogglePinned();
+        else if (PressedOnBook && PointInBook(mx, my))
+        {
+            SoundSystem.PlayUiClick();
+            OpenJournalRequested?.Invoke();
+        }
+        else if ((PressedQuestIndex >= 0) && (QuestIndexAt(mx, my) == PressedQuestIndex))
+            ToggleDetail(PressedQuestIndex);
+
+        PressActive = false;
+        Dragging = false;
+
+        e.Handled = true;
+    }
+
+    public override void OnMouseEnter() => CursorOver = true;
+    public override void OnMouseLeave() => CursorOver = false;
 
     private void TogglePinned()
     {
@@ -730,8 +731,6 @@ public sealed class QuestTrackerControl : UIPanel
                 break;
             }
     }
-
-    private bool CursorOver() => PointInPanel(InputBuffer.MouseX, InputBuffer.MouseY);
 
     private bool PointInPanel(int x, int y)
         => (x >= ScreenX) && (x < ScreenX + Width) && (y >= ScreenY) && (y < ScreenY + Height);
