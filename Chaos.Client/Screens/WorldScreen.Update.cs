@@ -17,6 +17,7 @@ using Chaos.Geometry.Abstractions.Definitions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Pathfinder = Chaos.Client.Systems.Pathfinder;
+using KGySoft.CoreLibraries;
 #endregion
 
 namespace Chaos.Client.Screens;
@@ -826,7 +827,7 @@ public sealed partial class WorldScreen
 
     private void AnchorHotbars(float elapsedMs)
     {
-        if ((InvBar is null) || (SkillBar is null) || (SpellBar is null))
+        if ((Hotbar is null) || (InvBar is null) || (SkillBarPanel is null) || (SpellBarPanel is null))
             return;
 
         //dim the hotbars while awaiting a spell target so the cursor overlay reads clearly
@@ -836,65 +837,35 @@ public sealed partial class WorldScreen
             ? MathF.Min(alphaTarget, TargetingHotbarAlpha + step)
             : MathF.Max(alphaTarget, TargetingHotbarAlpha - step);
         InvBar.ExternalAlpha = TargetingHotbarAlpha;
-        SkillBar.ExternalAlpha = TargetingHotbarAlpha;
-        SpellBar.ExternalAlpha = TargetingHotbarAlpha;
+        Hotbar.ExternalAlpha = TargetingHotbarAlpha;
 
         var scale = ClientSettings.EffectiveHotbarScale;
         InvBar.Scale = scale;
-        SkillBar.Scale = scale;
-        SpellBar.Scale = scale;
+        Hotbar.Scale = scale;
 
         const int margin = 6;
         var w = ChaosGame.UiWidth;
         var h = ChaosGame.UiHeight;
 
+        Hotbar.X = (w - Hotbar.Width) / 2;
+        Hotbar.Y = h - Hotbar.Height - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
+
         InvBar.X = (w - InvBar.Width) / 2;
         InvBar.Y = margin;
 
-        SpellBar.X = (w - SpellBar.Width) / 2;
-        SpellBar.Y = h - SpellBar.Height - margin;
-
-        SkillBar.X = (w - SkillBar.Width) / 2;
-        SkillBar.Y = SpellBar.Y - SkillBar.Height - 2;
-
-        //hp/mp orbs: scaled by hotbar scale, bottom-aligned with the spell bar, flanking it
-        if ((HpOrb is not null) && (MpOrb is not null))
+        //ONE-TIME default placement: size the chat to fill the lower-left gap beside the HP orb.
+        //Skipped if the player already has a saved position in config.
+        if (HpOrb is not null && !ChatDefaultSized && ChatWin is not null)
         {
-            const int ORB_NATIVE_W = 30;
-            const int ORB_NATIVE_H = 101;
-            const int ORB_GAP = 3;
+            ChatDefaultSized = true;
 
-            var orbW = (int)(ORB_NATIVE_W * scale);
-            var orbH = (int)(ORB_NATIVE_H * scale);
-            var spellBottom = SpellBar.Y + SpellBar.Height;
-
-            HpOrb.Width = orbW;
-            HpOrb.Height = orbH;
-            HpOrb.X = SpellBar.X - orbW - ORB_GAP;
-            HpOrb.Y = spellBottom - orbH;
-
-            MpOrb.Width = orbW;
-            MpOrb.Height = orbH;
-            MpOrb.X = SpellBar.X + SpellBar.Width + ORB_GAP;
-            MpOrb.Y = spellBottom - orbH;
-
-            //ONE-TIME default placement: size the chat to fill the lower-left gap beside the HP orb.
-            //Skipped if the player already has a saved position in config.
-            if (!ChatDefaultSized && (ChatWin is not null) && (orbW > 0))
+            if (ClientSettings.ChatWindowOffsetX == int.MinValue)
             {
-                ChatDefaultSized = true;
-
-                if (ClientSettings.ChatWindowOffsetX == int.MinValue)
-                {
-                    const int CHAT_MARGIN = 8;
-                    const int ORB_CLEAR = 6;
-
-                    var targetW = Math.Max(180, HpOrb.X - ORB_CLEAR - CHAT_MARGIN);
-                    ChatWin.X = CHAT_MARGIN;
-                    ChatWin.Resize(targetW, ChatWin.Height);
-                    ChatWin.Y = h - ChatWin.Height - CHAT_MARGIN;
-                    ChatWin.CommitPosition(); //persist the default so it survives the next resize
-                }
+                var targetW = Math.Max(180, Hotbar.X - 8);
+                ChatWin.X = 8;
+                ChatWin.Resize(targetW, ChatWin.Height);
+                ChatWin.Y = h - ChatWin.Height - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
+                ChatWin.CommitPosition(); //persist the default so it survives the next resize
             }
         }
 
@@ -912,14 +883,7 @@ public sealed partial class WorldScreen
         //feed the chat window's ClampToScreen with the current rects of every HUD element it must avoid
         ChatWindow.BeginHudRects();
         ChatWindow.AddHudRect(new Rectangle(InvBar.X, InvBar.Y, InvBar.Width, InvBar.Height));
-        ChatWindow.AddHudRect(new Rectangle(SkillBar.X, SkillBar.Y, SkillBar.Width, SkillBar.Height));
-        ChatWindow.AddHudRect(new Rectangle(SpellBar.X, SpellBar.Y, SpellBar.Width, SpellBar.Height));
-
-        if (HpOrb?.Visible == true)
-            ChatWindow.AddHudRect(new Rectangle(HpOrb.X, HpOrb.Y, HpOrb.Width, HpOrb.Height));
-
-        if (MpOrb?.Visible == true)
-            ChatWindow.AddHudRect(new Rectangle(MpOrb.X, MpOrb.Y, MpOrb.Width, MpOrb.Height));
+        ChatWindow.AddHudRect(new Rectangle(Hotbar.X, Hotbar.Y, Hotbar.Width, Hotbar.Height));
 
         if (Minimap?.Visible == true)
             ChatWindow.AddHudRect(new Rectangle(Minimap.X, Minimap.Y, Minimap.Width, Minimap.Height));
@@ -975,7 +939,17 @@ public sealed partial class WorldScreen
     {
         AnchorScaledPopup(GoldDropHost);
         AnchorScaledPopup(ItemAmountHost);
+        AnchorQuickMenu();
         AnchorTextPopup();
+    }
+
+    private void AnchorQuickMenu()
+    {
+        if (QuickMenu is null)
+            return;
+
+        QuickMenu.X = ChaosGame.UiWidth - QuickMenu.Width - QuickMenu.GROW_RIGHT - 3 * (int)MathF.Round(ClientSettings.EffectiveHotbarScale);
+        QuickMenu.Y = (ChaosGame.UiHeight - QuickMenu.Height) / 2;
     }
 
     //the sign/board popup: centered, but while the host fades open it slides UP from half its height below center

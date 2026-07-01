@@ -33,6 +33,7 @@ public enum GameAction
     ToggleWorldList,
     ToggleSettings,
     ToggleBulletinBoard,
+    ToggleHelp,
     ToggleFriends,
     ToggleSocialStatus,
     ToggleEmotes,
@@ -446,7 +447,8 @@ public static class Keybindings
             //deprecated: the old Settings/Macros/Friends slide menu is replaced by the Options window + the Friends key,
             //so it is no longer bindable (hidden from Options > Controls). The dispatch case stays but is unreachable.
             new(GameAction.ToggleSettings, "Settings / macros / friends", BindCategory.Panels, Bindable: false),
-            new(GameAction.ToggleBulletinBoard, "Mail and Help", BindCategory.Panels),
+            new(GameAction.ToggleBulletinBoard, "Mail", BindCategory.Panels),
+            new(GameAction.ToggleHelp, "Help", BindCategory.Panels),
             new(GameAction.ToggleFriends, "Friends", BindCategory.Panels),
             //social status is opened by clicking the emoticon in the Equipment book, not a key, so it is not rebindable
             new(GameAction.ToggleSocialStatus, "Social status", BindCategory.Panels, Bindable: false),
@@ -502,7 +504,7 @@ public static class Keybindings
         yield return (GameAction.ToggleSkills, K(Keys.K), KeyBind.None);
         yield return (GameAction.ToggleSpells, K(Keys.P), KeyBind.None);
         yield return (GameAction.ToggleStats, K(Keys.C), KeyBind.None);
-        yield return (GameAction.ToggleEquipment, K(Keys.U), K(Keys.H));
+        yield return (GameAction.ToggleEquipment, K(Keys.U), KeyBind.None);
         //J opens the Legend tab of the same Equipment book. Toggling it closes the book (see WorldScreen ToggleStatusBook)
         yield return (GameAction.ToggleLegend, K(Keys.J), KeyBind.None);
         yield return (GameAction.ToggleActions, K(Keys.N), KeyBind.None);
@@ -516,6 +518,7 @@ public static class Keybindings
         //the old "Settings / macros / friends" slide menu is deprecated (Options window + Friends key replace it): unbound
         yield return (GameAction.ToggleSettings, KeyBind.None, KeyBind.None);
         yield return (GameAction.ToggleBulletinBoard, K(Keys.R), KeyBind.None);
+        yield return (GameAction.ToggleHelp, K(Keys.H), KeyBind.None);
         yield return (GameAction.ToggleFriends, K(Keys.L), K(Keys.Y));
         yield return (GameAction.ToggleSocialStatus, KeyBind.None, KeyBind.None);
         yield return (GameAction.ToggleEmotes, K(Keys.Q), KeyBind.None);

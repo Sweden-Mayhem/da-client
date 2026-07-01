@@ -31,6 +31,7 @@ public static class TextMacros
         ["emotes"] = GameAction.ToggleEmotes,
         ["friends"] = GameAction.ToggleFriends,
         ["mail"] = GameAction.ToggleBulletinBoard,
+        ["help"] = GameAction.ToggleHelp,
         ["townmap"] = GameAction.ToggleTownMap,
         ["minimap"] = GameAction.ToggleMinimap,
         ["worldlist"] = GameAction.ToggleWorldList,

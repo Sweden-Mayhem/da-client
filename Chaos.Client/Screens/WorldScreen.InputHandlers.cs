@@ -743,6 +743,10 @@ public sealed partial class WorldScreen
                 ToggleBoardPanel();
 
                 break;
+            case GameAction.ToggleHelp:
+                ShowBoardPanelByName("help");
+
+                break;
             case GameAction.ToggleFriends:
                 ToggleFriendsWindow();
 
@@ -1041,6 +1045,36 @@ public sealed partial class WorldScreen
         RequestStatusBook(tab);
     }
 
+    private void ShowProfile()
+    {
+        SelfProfileRequested = true;
+        SelfProfileRequestedTab = StatusBookTab.Legend;
+        Game.Connection.RequestSelfProfile();
+    }
+
+    private void ShowEquipment()
+    {
+        SelfProfileRequested = true;
+        SelfProfileRequestedTab = StatusBookTab.Equipment;
+        Game.Connection.RequestSelfProfile();
+    }
+
+    private void ToggleEquipment()
+    {
+        if(StatusBook.Visible || SelfProfileRequested)
+        {
+            StatusBook.Close();
+            SelfProfileRequested = false; //cancel any pending request
+        }else
+            ShowEquipment();
+    }
+
+    private void ShowGroup()
+    {
+        Game.Connection.RequestSelfProfile();
+        GroupPanel.ShowMembers();
+    }
+
     //asks the server for the profile, which opens the book on the requested tab (see ServerHandlers)
     private void RequestStatusBook(StatusBookTab tab)
     {
@@ -1067,6 +1101,17 @@ public sealed partial class WorldScreen
         }
     }
 
+    private void ShowBoardPanel()
+    {
+        ForceCloseOtherTogglePanels(Keys.W);
+        
+        if (!IsAnyBoardPanelVisible())
+        {
+            WorldHud.BulletinButton?.IsSelected = true;
+            Game.Connection.SendBoardInteraction(BoardRequestType.BoardList);
+        }
+    }
+
     private void ToggleBoardPanel()
     {
         ForceCloseOtherTogglePanels(Keys.W);
@@ -1084,6 +1129,34 @@ public sealed partial class WorldScreen
         }
     }
 
+    private void ShowBoardPanelByName(string name)
+    {
+        ForceCloseOtherTogglePanels(Keys.W);
+
+        if (IsAnyBoardPanelVisible())
+        {
+            //TODO: focus window?
+            BoardList.SelectBoardByName(name);
+        } else
+        {
+            WorldHud.BulletinButton?.IsSelected = true;
+
+            BoardListReceivedHandler? handler = null;
+            handler = () => 
+            {
+                WorldState.Board.BoardListReceived -= handler;
+                BoardList.SelectBoardByName(name);
+            };
+            WorldState.Board.BoardListReceived += handler;
+            Game.Connection.SendBoardInteraction(BoardRequestType.BoardList);
+        }
+    }
+
+    private void ShowWorldListPanel()
+    {
+        Game.Connection.RequestWorldList();
+    }
+
     //the world list is a free-floating window (like Friends/Group): closing hides it, opening asks the server for the
     //list and the response (OnWorldListChanged -> Show) makes the window visible + fills it.
     private void ToggleWorldListPanel()
@@ -1091,7 +1164,7 @@ public sealed partial class WorldScreen
         if (WorldList.Visible)
             WorldList.Hide();
         else
-            Game.Connection.RequestWorldList();
+            ShowWorldListPanel();
     }
 
     //JOURNAL "Start quest": a plain OK/Cancel confirm "Start the quest X?". On OK, sends the start request AND closes
@@ -1113,9 +1186,19 @@ public sealed partial class WorldScreen
             });
     }
 
+    private void OpenQuestJournal()
+    {
+        if (QuestJournal is null || QuestJournal.Visible)
+            return;
+
+        QuestJournal.Open();
+        Game.Connection.RequestSelfProfile();
+        QuestJournal.RebuildIfVisible();
+    }
+
     //opens/closes the quest journal. On open, refresh the guide/completion via a self-profile request (SelfProfileRequested
     //stays false, so HandleSelfProfile only POPULATES the journal + status book, it does not open the equipment book).
-    private void OpenQuestJournal()
+    private void ToggleQuestJournal()
     {
         if (QuestJournal is null)
             return;

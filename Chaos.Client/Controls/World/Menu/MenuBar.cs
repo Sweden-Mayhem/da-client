@@ -148,8 +148,8 @@ public sealed class MenuBar : UIPanel
             }
             else
             {
-                Button.X = HasOffset ? cx + OffsetX : 2;
-                Button.Y = HasOffset ? (OffsetY >= 0 ? OffsetY : ChaosGame.UiHeight + OffsetY) : 2;
+                Button.X = HasOffset ? cx + OffsetX : 48;
+                Button.Y = HasOffset ? (OffsetY >= 0 ? OffsetY : ChaosGame.UiHeight + OffsetY) : 32;
             }
         }
 

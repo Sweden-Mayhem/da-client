@@ -177,6 +177,20 @@ public sealed class BoardListControl : PrefabPanel, INativeTextDrawer
         Show();
     }
 
+    public bool SelectBoardByName(string name)
+    {
+        name = name.ToLowerInvariant();
+
+        var index = Boards.FindIndex(0, item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+            return false;
+
+        SelectedIndex = index;
+
+        OnViewBoard?.Invoke(Boards[SelectedIndex].BoardId);
+        return true;
+    }
+
     /// <summary>
     ///     Appends additional boards (e.g. server boards arriving after the list was already shown with help topics).
     /// </summary>
