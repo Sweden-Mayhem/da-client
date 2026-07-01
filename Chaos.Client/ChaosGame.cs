@@ -259,7 +259,7 @@ public sealed class ChaosGame : Game
     
             if (interfaceScale < 1)
             {
-                interfaceScale = Math.Min(bb.Width/1280f, bb.Height/900f);
+                interfaceScale = Math.Min(bb.Width/1280f, bb.Height/850f);
     
                 //avoid scaling to 1.25. If too close round to the nearest half size instead, otherwise scale to the nearest quarter
                 if (Math.Abs(interfaceScale - 1.25) <= 0.125)
