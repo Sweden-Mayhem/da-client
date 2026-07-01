@@ -188,6 +188,12 @@ public static class ClientSettings
     //mouse target buttons: Mouse 3 = target self, Mouse 4 = target enemy. When on, the two are swapped. Default off.
     public static bool FlipMouseTargetButtons { get; set; } = false;
 
+    //quickmenu display style: 0 = text, 1 = icons. Default icons.
+    public static float QuickmenuStyle { get; set; } = 1;
+
+    public static event QuickmenuStyleChangedHandler? OnQuickmenuStyleChanged;
+    public static void NotifyQuickmenuStyleChanged() => OnQuickmenuStyleChanged?.Invoke();
+
     //opacity of the item/map hover tooltip background (Options "Tooltip opacity" slider, 0.25 to 1.0). Read live.
     public static float TooltipAlpha { get; set; } = 0.85f;
 
@@ -357,6 +363,12 @@ public static class ClientSettings
 
                     case "SwmFlipMouseTargetButtons":
                         FlipMouseTargetButtons = value == "1";
+
+                        break;
+
+                    case "SwmQuickmenuStyle":
+                        if (float.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var qs))
+                            QuickmenuStyle = qs;
 
                         break;
 
@@ -686,6 +698,7 @@ public static class ClientSettings
             writer.WriteLine($"SwmModernControls : {(ModernControls ? 1 : 0)}");
             writer.WriteLine($"SwmFlipWalkInteract : {(FlipWalkInteract ? 1 : 0)}");
             writer.WriteLine($"SwmFlipMouseTargetButtons : {(FlipMouseTargetButtons ? 1 : 0)}");
+            writer.WriteLine($"SwmQuickmenuStyle : {QuickmenuStyle}");
             writer.WriteLine($"SwmTooltipAlpha : {TooltipAlpha.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmTooltipDelay : {TooltipDelaySeconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
             writer.WriteLine($"SwmTooltipScale : {TooltipScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");

@@ -9,6 +9,7 @@ namespace Chaos.Client.Controls.Components;
 public class UIImage : UIElement
 {
     public Texture2D? Texture { get; set; }
+    public Color Color = Color.White;
 
     public UIImage(Texture2D? texture = null)
     {
@@ -41,7 +42,7 @@ public class UIImage : UIElement
             spriteBatch,
             Texture,
             new Vector2(ScreenX, ScreenY),
-            Color.White);
+            Color);
     }
 
 }

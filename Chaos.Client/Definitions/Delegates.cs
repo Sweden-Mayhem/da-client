@@ -495,6 +495,11 @@ public delegate void SoundVolumeChangedHandler(int volume);
 /// <summary>
 ///     The effective scale of windows has changed (either via a setting change, or automatic sizing via a window resize)
 /// </summary>
+public delegate void QuickmenuStyleChangedHandler();
+
+/// <summary>
+///     The effective scale of windows has changed (either via a setting change, or automatic sizing via a window resize)
+/// </summary>
 public delegate void EffectiveWindowScaleChangedHandler();
 #endregion
 

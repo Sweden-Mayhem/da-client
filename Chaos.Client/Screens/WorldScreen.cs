@@ -516,18 +516,20 @@ public sealed partial class WorldScreen : IScreen
     public UIPanel? Root { get; private set; }
 
     /// <inheritdoc />
-    public void Dispose() { }
-
-    /// <inheritdoc />
     public void Initialize(ChaosGame game)
     {
         Game = game;
         WireServerEvents();
 
+        ClientSettings.OnQuickmenuStyleChanged += OnQuickmenuStyleChanged;
         ClientSettings.OnEffectiveWindowScaleChanged += OnWindowScaleChanged;
     }
 
-
+    /// <inheritdoc />
+    public void Dispose() {
+        ClientSettings.OnQuickmenuStyleChanged -= OnQuickmenuStyleChanged;
+        ClientSettings.OnEffectiveWindowScaleChanged -= OnWindowScaleChanged;
+    }
 
     /// <inheritdoc />
     public void LoadContent(GraphicsDevice graphicsDevice)
@@ -1231,7 +1233,13 @@ public sealed partial class WorldScreen : IScreen
 
         QuickMenu = new QuickMenu()
         {
-            Alignment = HorizontalAlignment.Right
+            Alignment = HorizontalAlignment.Right,
+            Mode = (int)ClientSettings.QuickmenuStyle switch
+            {
+                0 => QuickMenu.DisplayMode.text,
+                1 => QuickMenu.DisplayMode.icons,
+                _ => QuickMenu.DisplayMode.text,
+            }
         };
         Root.AddChild(QuickMenu);
 
@@ -1538,74 +1546,74 @@ public sealed partial class WorldScreen : IScreen
         //main menu options are expected to always SHOW (and ideally focus) windows, as it's a popup option that breaks flow and can't be clicked multiple times
         //quick menu options are expected to always TOGGLE, since these options are fixed on screen, and they can all be easily clicked multiple times to toggle screen states
 
-        // AddMenuOption("Inventory", InventoryWindow.Open, null, Tip("Inventory",
+        // AddMenuOption("Inventory", null, InventoryWindow.Open, null, Tip("Inventory",
         //     "Everything you are carrying. Drag items to rearrange them, drag one onto the ground to drop it, or drag onto the hotbar to assign a quick-use slot. Hover an item to see its details.",
         //     GameAction.ToggleInventory));
 
-        StatsMenuEntry = AddMenuOption("Stats", StatsWin.Open, null, Tip("Stats",
+        StatsMenuEntry = AddMenuOption("Stats", null, StatsWin.Open, null, Tip("Stats",
             "Your character's attributes, health and mana, level and experience. When you have unspent stat points, the up-arrows let you raise Strength, Intelligence, Wisdom, Constitution or Dexterity.",
             GameAction.ToggleStats));
 
-        // AddMenuOption("Skills", SkillWin.Open, null, Tip("Skills",
+        // AddMenuOption("Skills", null, SkillWin.Open, null, Tip("Skills",
         //     "Your skill book: every skill you have learned. Drag a skill onto the hotbar for quick use, or right-click it to edit its chant line. Hover a skill to read what it does and its requirements.",
         //     GameAction.ToggleSkills));
 
-        // AddMenuOption("Spells", SpellWin.Open, null, Tip("Spells",
+        // AddMenuOption("Spells", null, SpellWin.Open, null, Tip("Spells",
         //     "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
         //     GameAction.ToggleSpells));
 
-        EquipmentMenuEntry = AddMenuOption("Character", ShowEquipment, ToggleEquipment, Tip("Character",
+        EquipmentMenuEntry = AddMenuOption("Character", ChaosGame.LoadTextureResource("icon_character.png"), ShowEquipment, ToggleEquipment, Tip("Character",
             "Your character profile: the gear you are wearing, your appearance, and your profile text. Drag an item from your inventory onto a slot to equip it, or drag an equipped item out to remove it. Click your portrait text to edit what others read.",
             GameAction.ToggleEquipment));
 
-        AddMenuOption("Actions", null, ActionsWin.Toggle, Tip("Actions",
+        AddMenuOption("Actions", ChaosGame.LoadTextureResource("icon_actions.png"), null, ActionsWin.Toggle, Tip("Actions",
             "View, manage and perform (non-combat) actions. Right-click to edit a chant, or hover for details.",
             GameAction.ToggleActions));
 
-        AddMenuOption("Emotes", EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
+        AddMenuOption("Emotes", ChaosGame.LoadTextureResource("icon_emotes.png"), EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
             "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
             GameAction.ToggleEmotes));
 
-        // AddMenuOption("Legend", ShowProfile, null, Tip("Legend",
+        // AddMenuOption(null, "Legend", ShowProfile, null, Tip("Legend",
         //     "Your legend: the marks and milestones recorded about your character over its life - achievements, titles, and notable events. Other players can read these when they view your profile.",
         //     GameAction.ToggleLegend));
 
-        AddMenuOption("Group", ShowGroup, null, Tip("Group",
+        AddMenuOption("Group", null, ShowGroup, null, Tip("Group",
             "Your party. See who is grouped with you and their health, set up recruitment to find members, and (as leader) remove members. Group members share experience and can use group chat.",
             GameAction.ToggleGroup));
 
-        AddMenuOption("Friends", FriendsList.Show, null, Tip("Friends",
+        AddMenuOption("Friends", null, FriendsList.Show, null, Tip("Friends",
             "Your friends list. See which of your friends are online right now, and keep track of the players you want to stay in touch with.",
             GameAction.ToggleFriends));
 
-        AddMenuOption("Who is online", ShowWorldListPanel, null, Tip("Who is online",
+        AddMenuOption("Who is online", null, ShowWorldListPanel, null, Tip("Who is online",
             "Everyone currently playing. Filter the list by class using the tabs, and click a name to view that player's profile.",
             GameAction.ToggleWorldList));
 
-        MailMenuEntry = AddMenuOption("Mail", ShowBoardPanel, ToggleBoardPanel, Tip("Mail",
+        MailMenuEntry = AddMenuOption("Mail", ChaosGame.LoadTextureResource("icon_mail.png"), ShowBoardPanel, ToggleBoardPanel, Tip("Mail",
             "Read and send personal mail and browse the message boards. A marker appears here when you have unread mail.",
             GameAction.ToggleBulletinBoard));
 
-        AddMenuOption("Quests", OpenQuestJournal, ToggleQuestJournal, Tip("Quest Journal",
+        AddMenuOption("Quests", ChaosGame.LoadTextureResource("icon_quests.png"), OpenQuestJournal, ToggleQuestJournal, Tip("Quest Journal",
             "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
             GameAction.ToggleQuestJournal));
 
         //Temuair Exchange: the standalone market window. Opening it asks the server for the catalog (the window also
         //opens itself when the first screen arrives); every later screen/action flows over the market packet pair.
-        AddMenuOption("Market", OpenMarket, ToggleMarket, Tip("Market",
+        AddMenuOption("Market", ChaosGame.LoadTextureResource("icon_market.png"), OpenMarket, ToggleMarket, Tip("Market",
             "Browse and trade at the Temuair Exchange from anywhere: buy and bid from any spot. Selling and collecting winnings must be done in person at a market clerk.",
             GameAction.ToggleMarket));
 
-        AddMenuOption("Options", OptionsWin.Open, null, Tip("Options",
+        AddMenuOption("Options", null, OptionsWin.Open, null, Tip("Options",
             "Game settings: sound and music volume, interface and minimap sizes, camera and movement feel, tooltips, and more. The Controls button inside opens the keybinding editor where every key can be reassigned.",
             GameAction.ToggleOptions));
 
         //Help topics; the H key opens the same panel
-        MailMenuEntry = AddMenuOption("Help", () => ShowBoardPanelByName("help"), null, Tip("Help",
+        MailMenuEntry = AddMenuOption("Help", null, () => ShowBoardPanelByName("help"), null, Tip("Help",
             "Read all help topics.",
             GameAction.ToggleHelp));
 
-        AddMenuOption("Log out", BeginLogout, null, "Log out\nLeave the world and return to the login screen. Your character is saved automatically.");
+        AddMenuOption("Log out", null, BeginLogout, null, "Log out\nLeave the world and return to the login screen. Your character is saved automatically.");
 
         //retire the old border HUD: keep the objects alive (so the many references still resolve) but
         //stop drawing it. The world now fills the screen and the new menu/windows/HP/MP/chat overlay.
@@ -1613,21 +1621,21 @@ public sealed partial class WorldScreen : IScreen
         LargeHud.Visible = false;
     }
 
-    private MenuItem AddMenuOption(string label, Action? mainAction, Action? quickAction, Func<string?> tooltipProvider)
+    private MenuItem AddMenuOption(string label, Texture2D? icon, Action? mainAction, Action? quickAction, Func<string?> tooltipProvider)
     {
         return new MenuItem
         {
             mainMenuItem = mainAction is not null && quickAction is null ? MenuBar!.AddEntry(label, mainAction, tooltipProvider) : null,
-            quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, quickAction, tooltipProvider) : null
+            quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, icon, quickAction, tooltipProvider) : null
         };
     }
 
-    private MenuItem AddMenuOption(string label, Action? mainAction, Action? quickAction, string tooltip)
+    private MenuItem AddMenuOption(string label, Texture2D? icon, Action? mainAction, Action? quickAction, string tooltip)
     {
         return new MenuItem
         {
             mainMenuItem = mainAction is not null && quickAction is null ? MenuBar!.AddEntry(label, mainAction, tooltip) : null,
-            quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, quickAction, tooltip) : null
+            quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, icon, quickAction, tooltip) : null
         };
     }
 
@@ -1835,6 +1843,16 @@ public sealed partial class WorldScreen : IScreen
 
         foreach (var host in MenuWindowHosts)
             host.Scale = scale;
+    }
+
+    public void OnQuickmenuStyleChanged()
+    {
+        QuickMenu?.Mode = (int)ClientSettings.QuickmenuStyle switch
+        {
+            0 => QuickMenu.DisplayMode.text,
+            1 => QuickMenu.DisplayMode.icons,
+            _ => QuickMenu.DisplayMode.text,
+        };
     }
 
     //shared on-screen position for a set of menu windows (see RegisterMenuWindow). Once any of them is placed, the rest

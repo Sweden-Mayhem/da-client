@@ -65,6 +65,24 @@
         <EmbeddedResource Include="Assets\screen_border.png">
             <LogicalName>screen_border.png</LogicalName>
         </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_actions.png">
+            <LogicalName>icon_actions.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_character.png">
+            <LogicalName>icon_character.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_emotes.png">
+            <LogicalName>icon_emotes.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_mail.png">
+            <LogicalName>icon_mail.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_market.png">
+            <LogicalName>icon_market.png</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Assets\icon_quests.png">
+            <LogicalName>icon_quests.png</LogicalName>
+        </EmbeddedResource>
         <!-- Custom audio is not embedded, it ships as plain files in the Data/sound/ folder (source in
              client-data/sound/), so it loads by path like the rest of the game's assets and can be swapped without a
              rebuild. Sound effects are item/money/ui/dialog/window_open/window_close/level_up.mp3 and the login theme

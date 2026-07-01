@@ -517,6 +517,23 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
+                "Right menu style", 0, 1, ClientSettings.QuickmenuStyle, 1,
+                v =>
+                    (int)v switch
+                    {
+                        0 => "Text",
+                        1 => "Icons",
+                        _ => "Text",
+                    }
+                ,
+                v =>
+                {
+                    ClientSettings.QuickmenuStyle = (int)v;
+                    ClientSettings.Save();
+                    ClientSettings.NotifyQuickmenuStyleChanged();
+                }
+            );
+            win.AddSlider(
                 "Tooltip opacity", 0.25f, 1f, ClientSettings.TooltipAlpha, 0.05f, v => $"{v * 100f:0}%",
                 v =>
                 {
