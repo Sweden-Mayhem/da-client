@@ -1554,13 +1554,17 @@ public sealed partial class WorldScreen : IScreen
         //     "Your spell book: every spell you have learned. Drag a spell onto the hotbar for quick casting, or right-click it to edit its chant line. Hover a spell to read its effect, cast lines and cooldown.",
         //     GameAction.ToggleSpells));
 
-        AddMenuOption("Actions", ActionsWin.Open, null, Tip("Actions",
-            "Your skills and spells side by side in one window, so you can manage both at once. Drag onto the hotbar, right-click to edit a chant, or hover for details.",
-            GameAction.ToggleActions));
-
         EquipmentMenuEntry = AddMenuOption("Character", ShowEquipment, ToggleEquipment, Tip("Character",
             "Your character profile: the gear you are wearing, your appearance, and your profile text. Drag an item from your inventory onto a slot to equip it, or drag an equipped item out to remove it. Click your portrait text to edit what others read.",
             GameAction.ToggleEquipment));
+
+        AddMenuOption("Actions", null, ActionsWin.Toggle, Tip("Actions",
+            "View, manage and perform (non-combat) actions. Right-click to edit a chant, or hover for details.",
+            GameAction.ToggleActions));
+
+        AddMenuOption("Emotes", EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
+            "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
+            GameAction.ToggleEmotes));
 
         // AddMenuOption("Legend", ShowProfile, null, Tip("Legend",
         //     "Your legend: the marks and milestones recorded about your character over its life - achievements, titles, and notable events. Other players can read these when they view your profile.",
@@ -1581,10 +1585,6 @@ public sealed partial class WorldScreen : IScreen
         MailMenuEntry = AddMenuOption("Mail", ShowBoardPanel, ToggleBoardPanel, Tip("Mail",
             "Read and send personal mail and browse the message boards. A marker appears here when you have unread mail.",
             GameAction.ToggleBulletinBoard));
-
-        AddMenuOption("Emotes", EmoteWin.Open, EmoteWin.Toggle, Tip("Emotes",
-            "A grid of every emote your character can perform, each shown with its real animation. Click one to play it. Emotes can also be bound to keys in Options > Controls.",
-            GameAction.ToggleEmotes));
 
         AddMenuOption("Quests", OpenQuestJournal, ToggleQuestJournal, Tip("Quest Journal",
             "Your quest journal: everything you are working on, what you can take on next, what is locked behind earlier quests, and what you have finished. Click a quest to read its goal, objectives and rewards.",
