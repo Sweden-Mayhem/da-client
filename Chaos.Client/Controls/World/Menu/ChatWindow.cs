@@ -54,7 +54,6 @@ public sealed class ChatWindow : DraggableWindow
     private bool OffsetLoaded;
     private bool HasOffset;
     private bool WasDragging;
-    private bool SuppressResizeSave;
     private int LastUiW = -1, LastUiH = -1;
     //OffsetX is center-relative (X - screenW/2). OffsetY is anchor-relative: positive is distance from top,
     //negative is distance from bottom (Y - screenH), matching the element's vertical-center half.
@@ -469,7 +468,7 @@ public sealed class ChatWindow : DraggableWindow
         LayoutContents();
 
         //save on user resize; suppressed during the offset-restore Resize() call and during ClampToScreen shrinks
-        if (HasOffset && !SuppressResizeSave)
+        if (HasOffset)
             SavePosition();
     }
 
