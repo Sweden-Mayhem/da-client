@@ -1239,7 +1239,8 @@ public sealed partial class WorldScreen : IScreen
                 0 => QuickMenu.DisplayMode.text,
                 1 => QuickMenu.DisplayMode.icons,
                 _ => QuickMenu.DisplayMode.text,
-            }
+            },
+            Visible = (int)ClientSettings.QuickmenuStyle >= 0
         };
         Root.AddChild(QuickMenu);
 
@@ -1847,12 +1848,17 @@ public sealed partial class WorldScreen : IScreen
 
     public void OnQuickmenuStyleChanged()
     {
-        QuickMenu?.Mode = (int)ClientSettings.QuickmenuStyle switch
+        if (QuickMenu is null)
+            return;
+
+        var style = (int)ClientSettings.QuickmenuStyle;
+        QuickMenu.Mode = style switch
         {
             0 => QuickMenu.DisplayMode.text,
             1 => QuickMenu.DisplayMode.icons,
             _ => QuickMenu.DisplayMode.text,
         };
+        QuickMenu.Visible = style >= 0;
     }
 
     //shared on-screen position for a set of menu windows (see RegisterMenuWindow). Once any of them is placed, the rest

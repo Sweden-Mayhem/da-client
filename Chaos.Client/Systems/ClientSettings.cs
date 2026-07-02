@@ -188,7 +188,7 @@ public static class ClientSettings
     //mouse target buttons: Mouse 3 = target self, Mouse 4 = target enemy. When on, the two are swapped. Default off.
     public static bool FlipMouseTargetButtons { get; set; } = false;
 
-    //quickmenu display style: 0 = text, 1 = icons. Default icons.
+    //quickmenu display style: -1 = hidden, 0 = text, 1 = icons. Default icons.
     public static float QuickmenuStyle { get; set; } = 1;
 
     public static event QuickmenuStyleChangedHandler? OnQuickmenuStyleChanged;

@@ -517,10 +517,11 @@ public sealed class OptionsWindow : DraggableWindow
                 });
 
             win.AddSlider(
-                "Right menu style", 0, 1, ClientSettings.QuickmenuStyle, 1,
+                "Right menu style", -1, 1, ClientSettings.QuickmenuStyle, 1,
                 v =>
                     (int)v switch
                     {
+                        -1 => "Hidden",
                         0 => "Text",
                         1 => "Icons",
                         _ => "Text",
