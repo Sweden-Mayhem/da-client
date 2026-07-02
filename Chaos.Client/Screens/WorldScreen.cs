@@ -1567,7 +1567,7 @@ public sealed partial class WorldScreen : IScreen
             "Your character profile: the gear you are wearing, your appearance, and your profile text. Drag an item from your inventory onto a slot to equip it, or drag an equipped item out to remove it. Click your portrait text to edit what others read.",
             GameAction.ToggleEquipment));
 
-        AddMenuOption("Actions", ChaosGame.LoadTextureResource("icon_actions.png"), null, ActionsWin.Toggle, Tip("Actions",
+        AddMenuOption("Actions", ChaosGame.LoadTextureResource("icon_actions.png"), ActionsWin.Open, ActionsWin.Toggle, Tip("Actions",
             "View, manage and perform (non-combat) actions. Right-click to edit a chant, or hover for details.",
             GameAction.ToggleActions));
 
@@ -1626,7 +1626,7 @@ public sealed partial class WorldScreen : IScreen
     {
         return new MenuItem
         {
-            mainMenuItem = mainAction is not null && quickAction is null ? MenuBar!.AddEntry(label, mainAction, tooltipProvider) : null,
+            mainMenuItem = mainAction is not null ? MenuBar!.AddEntry(label, mainAction, tooltipProvider) : null,
             quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, icon, quickAction, tooltipProvider) : null
         };
     }
@@ -1635,7 +1635,7 @@ public sealed partial class WorldScreen : IScreen
     {
         return new MenuItem
         {
-            mainMenuItem = mainAction is not null && quickAction is null ? MenuBar!.AddEntry(label, mainAction, tooltip) : null,
+            mainMenuItem = mainAction is not null ? MenuBar!.AddEntry(label, mainAction, tooltip) : null,
             quickMenuItem = quickAction is not null ? QuickMenu!.AddEntry(label, icon, quickAction, tooltip) : null
         };
     }
