@@ -40,8 +40,17 @@ public static class UIElementExtensions
         public void CenterOnUi() => element.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
         public void CenterOnUiNearMouse(float strength = 0.5f)
         {
-            element.X = Math.Clamp((int)MathF.Round((ChaosGame.UiWidth/2 * (1.0f - strength) + InputBuffer.MouseX * strength) - element.Width/2), 0, ChaosGame.UiWidth - element.Width);
-            element.Y = Math.Clamp((int)MathF.Round((ChaosGame.UiHeight/2 * (1.0f - strength) + InputBuffer.MouseY * strength) - element.Height/2), 0, ChaosGame.UiHeight - element.Height);
+            var uiRect = new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight);
+
+            if (MathF.Abs(ChaosGame.UiWidth/2 - InputBuffer.MouseX) > MathF.Abs(ChaosGame.UiHeight/2 - InputBuffer.MouseY))
+            {
+                element.X = Math.Clamp((int)MathF.Round((ChaosGame.UiWidth/2 * (1.0f - strength) + InputBuffer.MouseX * strength) - element.Width/2), 0, ChaosGame.UiWidth - element.Width);
+                element.Y = uiRect.CenterY(element.Height);
+            } else
+            {
+                element.X = uiRect.CenterX(element.Width);
+                element.Y = Math.Clamp((int)MathF.Round((ChaosGame.UiHeight/2 * (1.0f - strength) + InputBuffer.MouseY * strength) - element.Height/2), 0, ChaosGame.UiHeight - element.Height);
+            }
         }
 
         public void CenterVerticallyIn(Rectangle rect) => element.Y = rect.CenterY(element.Height);
