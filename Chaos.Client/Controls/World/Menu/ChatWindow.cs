@@ -60,18 +60,6 @@ public sealed class ChatWindow : DraggableWindow
     //negative is distance from bottom (Y - screenH), matching the element's vertical-center half.
     private int OffsetX, OffsetY;
 
-    //HUD-avoidance rects filled by WorldScreen.AnchorHotbars() each frame (hotbars, orbs, minimap, menu button)
-    private static readonly Rectangle[] HudBuf = new Rectangle[10];
-    private static int HudCount;
-
-    internal static void BeginHudRects() => HudCount = 0;
-
-    internal static void AddHudRect(Rectangle r)
-    {
-        if ((r.Width > 0) && (r.Height > 0) && (HudCount < HudBuf.Length))
-            HudBuf[HudCount++] = r;
-    }
-
     private const int MIN_CHAT_W = 150;
     private const int MIN_CHAT_H = 80;
 
@@ -358,17 +346,6 @@ public sealed class ChatWindow : DraggableWindow
 
         base.Update(gameTime); //DraggableWindow: handles drag movement + KeepOnScreen (50%)
 
-        if ((uiW != LastUiW) || (uiH != LastUiH))
-        {
-            ClampToScreen();
-            LastUiW = uiW;
-            LastUiH = uiH;
-        }
-
-        //at most 10% of the chat window may be off-screen at any time
-        X = Math.Clamp(X, -(int)(Width * 0.05f), ChaosGame.UiWidth - (int)(Width * 0.95f));
-        Y = Math.Clamp(Y, -(int)(Height * 0.05f), ChaosGame.UiHeight - (int)(Height * 0.95f));
-
         //detect drag end and persist the clamped position
         if (WasDragging && !IsUserDragging)
             SavePosition();
@@ -376,88 +353,7 @@ public sealed class ChatWindow : DraggableWindow
         WasDragging = IsUserDragging;
     }
 
-    //keeps the chat on-screen and clear of HUD elements. For each axis:
-    //  - push the chat inward from any overflowing screen edge
-    //  - if that push would collide with a HUD element, constrain against it instead
-    //  - if the constrained slot is narrower/shorter than the current size, shrink (not saved as user's size)
-    private void ClampToScreen()
-    {
-        var uiW = ChaosGame.UiWidth;
-        var uiH = ChaosGame.UiHeight;
-
-        //available region starts as full screen; each HUD element shrinks it from the relevant side
-        var loX = 0;
-        var hiX = uiW;
-        var loY = 0;
-        var hiY = uiH;
-
-        var chatCX = X + Width / 2;
-        var chatCY = Y + Height / 2;
-
-        for (var i = 0; i < HudCount; i++)
-        {
-            var h = HudBuf[i];
-            var hR = h.X + h.Width;
-            var hB = h.Y + h.Height;
-
-            //vertical constraint, applied when the HUD horizontally overlaps the chat
-            if ((h.X < X + Width) && (hR > X))
-            {
-                if (h.Y + h.Height / 2 <= chatCY)
-                    loY = Math.Max(loY, hB); //HUD above chat centre, floor rises
-                else
-                    hiY = Math.Min(hiY, h.Y); //HUD below chat centre, ceiling drops
-            }
-
-            //horizontal constraint, applied when the HUD vertically overlaps the chat
-            if ((h.Y < Y + Height) && (hB > Y))
-            {
-                if (h.X + h.Width / 2 <= chatCX)
-                    loX = Math.Max(loX, hR); //HUD left of chat centre, left wall moves right
-                else
-                    hiX = Math.Min(hiX, h.X); //HUD right of chat centre, right wall moves left
-            }
-        }
-
-        FitInSlot(X, Width, loX, hiX, chatCX >= uiW / 2, MIN_CHAT_W, uiW, out var newX, out var newW);
-        FitInSlot(Y, Height, loY, hiY, chatCY >= uiH / 2, MIN_CHAT_H, uiH, out var newY, out var newH);
-
-        X = newX;
-        Y = newY;
-
-        if ((newW != Width) || (newH != Height))
-        {
-            SuppressResizeSave = true;
-            Resize(newW, newH);
-            SuppressResizeSave = false;
-        }
-    }
-
-    private static void FitInSlot(int pos, int size, int lo, int hi, bool nearFarEdge, int minSize, int screenSize, out int newPos, out int newSize)
-    {
-        var avail = hi - lo;
-
-        if (avail <= 0) //conflicting constraints; fall back to screen-edge clamp only
-        {
-            newSize = Math.Max(minSize, Math.Min(size, screenSize));
-            newPos = Math.Clamp(pos, 0, Math.Max(0, screenSize - newSize));
-
-            return;
-        }
-
-        if (size > avail) //must shrink to fit in the slot
-        {
-            newSize = Math.Max(minSize, avail);
-            newPos = nearFarEdge ? hi - newSize : lo; //anchor to whichever screen edge the chat is nearest
-        }
-        else //fits, just push into the slot
-        {
-            newSize = size;
-            newPos = Math.Clamp(pos, lo, hi - size);
-        }
-    }
-
-    private void SavePosition()
+    public void SavePosition()
     {
         HasOffset = true;
         var cx = ChaosGame.UiWidth / 2;

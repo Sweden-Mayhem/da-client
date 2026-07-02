@@ -635,7 +635,83 @@ public sealed partial class WorldScreen
 
         Root!.Update(gameTime);
 
+        ConstrainChatWindow();
+
         UpdateFeedbackSounds();
+    }
+
+    //uncollide against a centred horizontal bar, along the top or bottom of the screen
+    private bool UncollideWindowAgainstBar(DraggableWindow window, Rectangle obstacle)
+    {
+        var windowBounds = window.Bounds;
+
+        if (!windowBounds.Intersects(obstacle)) return false;
+
+        var yOverlap = obstacle.Center.Y <= ChaosGame.UiHeight/2 ? obstacle.Bottom - windowBounds.Top : obstacle.Top - windowBounds.Bottom;
+        var xOverlap = windowBounds.Center.X <= obstacle.Center.X ? obstacle.Left - windowBounds.Right : obstacle.Right - windowBounds.Left;
+
+        if (MathF.Abs(xOverlap) < MathF.Abs(yOverlap))
+        {
+            if (xOverlap <= 0)
+            {
+                if (obstacle.Left < windowBounds.Width)
+                {
+                    //not enough room to slide to the left, so snap to the left edge and shrink
+                    window.X = 0;
+                    window.Resize(obstacle.Left, window.Height);
+                } else
+                {
+                    //slide left
+                    window.X += xOverlap;
+                }
+            } else
+            {
+                if (ChaosGame.UiWidth - obstacle.Right < windowBounds.Width)
+                {
+                    //not enough room to slide to the right, so snap to the right edge and shrink
+                    window.Resize(ChaosGame.UiWidth - obstacle.Right, window.Height);
+                    window.X = ChaosGame.UiWidth - window.Width;
+                } else
+                {
+                    //slide right
+                    window.X += xOverlap;
+                }
+            }
+        } else
+        {
+            window.Y += yOverlap;
+        }
+
+        return true;
+    }
+
+    private void ConstrainChatWindow()
+    {
+        if(ChatWin is null || !ChatWin.Visible)
+            return;
+
+        var chatWindowAdjusted = false;
+
+        if (Hotbar is not null && Hotbar.Visible)
+            chatWindowAdjusted |= UncollideWindowAgainstBar(ChatWin, Hotbar.Bounds);
+
+        if (InvBar is not null && InvBar.Visible)
+            chatWindowAdjusted |= UncollideWindowAgainstBar(ChatWin, InvBar.Bounds);
+
+        var clampedPosition = new Point(
+            Math.Clamp(ChatWin.X, 0, ChaosGame.UiWidth - ChatWin.Width),
+            Math.Clamp(ChatWin.Y, 0, ChaosGame.UiHeight - ChatWin.Height)
+        );
+
+        if (ChatWin.X!=clampedPosition.X || ChatWin.Y!=clampedPosition.Y)
+        {
+            ChatWin.X = clampedPosition.X;
+            ChatWin.Y = clampedPosition.Y;
+            chatWindowAdjusted = true;
+        }
+
+        if (chatWindowAdjusted)
+            ChatWin.SavePosition();
     }
 
     //the chase target stashed by PauseChaseForAction while a skill/spell runs. resumed in Update once the action ends
@@ -877,39 +953,6 @@ public sealed partial class WorldScreen
             BuffBarHost.X = w - BuffBarHost.Width - margin;
             BuffBarHost.Y = Math.Max(margin, (h - BuffBarHost.Height) / 2);
         }
-
-        //SWM quest tracker: self-positions (draggable, persisted, rescale-relative) - see QuestTrackerControl.Update
-
-        //feed the chat window's ClampToScreen with the current rects of every HUD element it must avoid
-        ChatWindow.BeginHudRects();
-        ChatWindow.AddHudRect(new Rectangle(InvBar.X, InvBar.Y, InvBar.Width, InvBar.Height));
-        ChatWindow.AddHudRect(new Rectangle(Hotbar.X, Hotbar.Y, Hotbar.Width, Hotbar.Height));
-
-        if (Minimap?.Visible == true)
-            ChatWindow.AddHudRect(new Rectangle(Minimap.X, Minimap.Y, Minimap.Width, Minimap.Height));
-
-        //menu button: compute from ClientSettings (WorldScreen has no MenuBar field)
-        {
-            var cx = w / 2;
-            var mbOffX = ClientSettings.MenuButtonOffsetX;
-            var mbOffY = ClientSettings.MenuButtonOffsetY;
-
-            int mbX, mbY;
-
-            if ((mbOffX != int.MinValue) && (mbOffY != int.MinValue))
-            {
-                mbX = cx + mbOffX;
-                mbY = mbOffY >= 0 ? mbOffY : h + mbOffY;
-            }
-            else
-            {
-                mbX = 2;
-                mbY = 2;
-            }
-
-            ChatWindow.AddHudRect(new Rectangle(mbX, mbY, 76, 22)); //BTN_W=76, ITEM_H=22
-        }
-
     }
 
     //scales the NPC/sign dialog each frame while it is open and pins it to the BOTTOM of the screen (centered
