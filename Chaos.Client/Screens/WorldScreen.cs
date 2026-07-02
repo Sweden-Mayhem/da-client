@@ -1181,14 +1181,8 @@ public sealed partial class WorldScreen : IScreen
         Root.AddChild(WrapOkPopup(ExchangeResultPopup));
         //host the profile/legend/equipment book in a magnifier; draggable by its background, high ZIndex so the
         //centered book draws above the windows. The book is pass-through so empty-space clicks reach the host to drag.
-        StatusBookHost = new ScaleHost(StatusBook, ClientSettings.EffectiveWindowScale)
-        {
-            Draggable = true,
-            Fades = true,
-            ZIndex = 100000
-        };
         StatusBook.IsPassThrough = true;
-        Root.AddChild(StatusBookHost);
+        Root.AddChild(StatusBookHost = RegisterMenuWindow(StatusBook, null, slideOnFade: true));
         //the profile-text editor lives inside a magnifier so it opens at the "Window size" scale like the book that spawns
         //it; it visibility-syncs to the inner editor, which is shown/positioned/raised in the OnProfileTextClicked handler.
         ProfileEditorHost = new ScaleHost(SelfProfileTextEditor, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
@@ -1835,10 +1829,6 @@ public sealed partial class WorldScreen : IScreen
         RescaleWindow(SpellWin, scale);
         RescaleWindow(ActionsWin, scale);
 
-        //rescale in place - the player's dragged position is kept (no re-centering on a scale change)
-        if (StatusBookHost is not null)
-            StatusBookHost.Scale = scale;
-
         if (GroupHost is not null)
             GroupHost.Scale = scale;
 
@@ -1958,7 +1948,8 @@ public sealed partial class WorldScreen : IScreen
                         host.Y = group.Y;
                     } else
                     {
-                        host.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
+                        // host.CenterOnUi();
+                        host.CenterOnUiNearMouse(0.65f, 70);
                         group.X = host.X;
                         group.Y = host.Y;
                         group.Positioned = true;
@@ -1980,7 +1971,8 @@ public sealed partial class WorldScreen : IScreen
                         host.SnapShown();
                 } else if (!centered)
                 {
-                    host.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
+                    // host.CenterOnUi();
+                    host.CenterOnUiNearMouse(0.65f, 70);
                     centered = true;
                 }
             } else if (group is not null)
