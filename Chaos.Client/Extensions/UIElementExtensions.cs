@@ -38,18 +38,19 @@ public static class UIElementExtensions
         //centers on the full NATIVE window (the new UI's coordinate space). Use this for world popups so they sit in the
         //middle of the actual window, not the top-left 640x480 region that CenterOnScreen targets. Read live (resizes).
         public void CenterOnUi() => element.CenterIn(new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight));
-        public void CenterOnUiNearMouse(float strength = 0.5f)
+
+        public void CenterOnUiNearMouse(float strength = 0.5f, int margin = 0)
         {
             var uiRect = new Rectangle(0, 0, ChaosGame.UiWidth, ChaosGame.UiHeight);
 
             if (MathF.Abs(ChaosGame.UiWidth/2 - InputBuffer.MouseX) > MathF.Abs(ChaosGame.UiHeight/2 - InputBuffer.MouseY))
             {
-                element.X = Math.Clamp((int)MathF.Round((ChaosGame.UiWidth/2 * (1.0f - strength) + InputBuffer.MouseX * strength) - element.Width/2), 0, ChaosGame.UiWidth - element.Width);
+                element.X = Math.Clamp((int)MathF.Round((ChaosGame.UiWidth/2 * (1.0f - strength) + InputBuffer.MouseX * strength) - element.Width/2), margin, ChaosGame.UiWidth - element.Width - margin);
                 element.Y = uiRect.CenterY(element.Height);
             } else
             {
                 element.X = uiRect.CenterX(element.Width);
-                element.Y = Math.Clamp((int)MathF.Round((ChaosGame.UiHeight/2 * (1.0f - strength) + InputBuffer.MouseY * strength) - element.Height/2), 0, ChaosGame.UiHeight - element.Height);
+                element.Y = Math.Clamp((int)MathF.Round((ChaosGame.UiHeight/2 * (1.0f - strength) + InputBuffer.MouseY * strength) - element.Height/2), margin, ChaosGame.UiHeight - element.Height - margin);
             }
         }
 
