@@ -1107,6 +1107,7 @@ public sealed partial class WorldScreen
         
         if (!IsAnyBoardPanelVisible())
         {
+            MenuWindowRequested = true;
             WorldHud.BulletinButton?.IsSelected = true;
             Game.Connection.SendBoardInteraction(BoardRequestType.BoardList);
         }
@@ -1124,6 +1125,7 @@ public sealed partial class WorldScreen
                 WorldState.Board.CloseSession();
         } else
         {
+            MenuWindowRequested = true;
             WorldHud.BulletinButton?.IsSelected = true;
             Game.Connection.SendBoardInteraction(BoardRequestType.BoardList);
         }
@@ -1139,6 +1141,7 @@ public sealed partial class WorldScreen
             BoardList.SelectBoardByName(name);
         } else
         {
+            MenuWindowRequested = true;
             WorldHud.BulletinButton?.IsSelected = true;
 
             BoardListReceivedHandler? handler = null;

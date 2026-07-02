@@ -453,6 +453,8 @@ public sealed partial class WorldScreen : IScreen
     //live: each is built by RegisterMenuWindow and rescaled in ApplyWindowScale.
     private readonly List<ScaleHost> MenuWindowHosts = [];
 
+    private bool MenuWindowRequested;//was the currently opened window requested by a ui interaction? (used to disable world-interaction animations)
+
     //the always-built magnified menu windows + their hosts, kept as fields so the Options "Window size" slider can
     //rescale and resize them live (ApplyWindowScale). The book/group above re-read WindowScale when they open.
     private DraggableWindow? StatsWin;
@@ -1168,13 +1170,13 @@ public sealed partial class WorldScreen : IScreen
         //They SHARE one position (boardGroup) so navigating board list -> a board -> a post stays put instead of each one
         //popping up centered, which made the single flow look like separate menus.
         var boardGroup = new WindowGroup();
-        Root.AddChild(BoardListHost = RegisterMenuWindow(BoardList, boardGroup, slideOnFade: true));
-        Root.AddChild(ArticleListHost = RegisterMenuWindow(ArticleList, boardGroup, slideOnFade: true));
-        Root.AddChild(ArticleReadHost = RegisterMenuWindow(ArticleRead, boardGroup, slideOnFade: true));
-        Root.AddChild(RegisterMenuWindow(ArticleSend, boardGroup, slideOnFade: true));
-        Root.AddChild(MailListHost = RegisterMenuWindow(MailList, boardGroup, slideOnFade: true));
-        Root.AddChild(MailReadHost = RegisterMenuWindow(MailRead, boardGroup, slideOnFade: true));
-        Root.AddChild(RegisterMenuWindow(MailSend, boardGroup, slideOnFade: true));
+        Root.AddChild(BoardListHost = RegisterMenuWindow(BoardList, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(ArticleListHost = RegisterMenuWindow(ArticleList, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(ArticleReadHost = RegisterMenuWindow(ArticleRead, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(RegisterMenuWindow(ArticleSend, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(MailListHost = RegisterMenuWindow(MailList, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(MailReadHost = RegisterMenuWindow(MailRead, boardGroup, slideOnUnrequestedOpen: true));
+        Root.AddChild(RegisterMenuWindow(MailSend, boardGroup, slideOnUnrequestedOpen: true));
         Root.AddChild(WrapOkPopup(DeleteConfirm));
         Root.AddChild(WrapOkPopup(ConfirmDialog));
         Root.AddChild(WrapOkPopup(BoardResponsePopup));
@@ -1182,7 +1184,7 @@ public sealed partial class WorldScreen : IScreen
         //host the profile/legend/equipment book in a magnifier; draggable by its background, high ZIndex so the
         //centered book draws above the windows. The book is pass-through so empty-space clicks reach the host to drag.
         StatusBook.IsPassThrough = true;
-        Root.AddChild(StatusBookHost = RegisterMenuWindow(StatusBook, null, slideOnFade: true));
+        Root.AddChild(StatusBookHost = RegisterMenuWindow(StatusBook));
         //the profile-text editor lives inside a magnifier so it opens at the "Window size" scale like the book that spawns
         //it; it visibility-syncs to the inner editor, which is shown/positioned/raised in the OnProfileTextClicked handler.
         ProfileEditorHost = new ScaleHost(SelfProfileTextEditor, ClientSettings.EffectiveWindowScale) { ZIndex = 100010 };
@@ -1912,7 +1914,7 @@ public sealed partial class WorldScreen : IScreen
     //A `group` makes several windows SHARE one on-screen position (e.g. the board/mail family): the group centers once on
     //first open, each window opens at the group's position, and writes its (possibly dragged) position back when it
     //hides - so navigating board list -> a board -> a post feels like one window changing content, not separate menus.
-    private ScaleHost RegisterMenuWindow(UIPanel panel, WindowGroup? group = null, bool slideOnFade = false)
+    private ScaleHost RegisterMenuWindow(UIPanel panel, WindowGroup? group = null, bool slideOnUnrequestedOpen = false)
     {
         var centered = false;
 
@@ -1923,21 +1925,30 @@ public sealed partial class WorldScreen : IScreen
             ZIndex = 100000
         };
 
-        if (slideOnFade)
-        {
-            //the board/mail family slides up as it fades in (like the sign popup); a slightly longer ramp than the default
-            //0.08s so the slide is actually seen. A sub-menu SWITCH snaps the fade (SnapShown), so it never slides between
-            //pages - only a real open/close from outside the group does.
-            host.SlideOnFade = true;
-            host.FadeSeconds = 0.18f;
-        }
-
         group?.Members.Add(host);
 
         panel.VisibilityChanged += visible =>
         {
             if (visible)
             {
+                if (slideOnUnrequestedOpen)
+                {
+                    if (!MenuWindowRequested)
+                    {
+                        //the board/mail family slides up as it fades in (like the sign popup); a slightly longer ramp than the default
+                        //0.08s so the slide is actually seen. A sub-menu SWITCH snaps the fade (SnapShown), so it never slides between
+                        //pages - only a real open/close from outside the group does.
+                        host.SlideOnFade = true;
+                        host.FadeSeconds = 0.18f;
+                    }else
+                    {
+                        host.SlideOnFade = false;
+                        host.FadeSeconds = ScaleHost.DefaultFadeDurationSeconds;
+                    }
+                }
+        
+                MenuWindowRequested = false;
+
                 host.Scale = ClientSettings.EffectiveWindowScale;
 
                 if (group is not null)

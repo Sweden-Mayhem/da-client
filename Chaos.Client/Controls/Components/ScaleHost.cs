@@ -58,7 +58,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
 
     /// <summary>Seconds for the fade ramp (when <see cref="Fades" />). Defaults to the shared window speed; the NPC dialog
     ///     sets a slightly longer, more deliberate fade.</summary>
-    public float FadeSeconds { get; set; } = FadeDurationSeconds;
+    public float FadeSeconds { get; set; } = DefaultFadeDurationSeconds;
 
     /// <summary>When true (and <see cref="Fades" />), the window also SLIDES up into place as it fades in (and back down as
     ///     it fades out), like the sign popup. A sub-menu SWITCH snaps the fade (FadeAlpha=1) so it does NOT slide.</summary>
@@ -89,7 +89,7 @@ public sealed class ScaleHost : UIPanel, INativeTextRoot
     private float FadeAlpha;
     private float FadeTarget;
     private bool Lingering;
-    private const float FadeDurationSeconds = 0.08f;
+    public const float DefaultFadeDurationSeconds = 0.08f;
 
     //queued open/close feedback-sound triggers (only meaningful when Fades). Set when a real fade-in/out STARTS and
     //used once in Update. A grouped-window SWITCH retires the sibling and snaps the newcomer in via SnapHidden and
