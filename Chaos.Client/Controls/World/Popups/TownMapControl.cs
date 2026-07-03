@@ -1463,8 +1463,8 @@ public sealed class TownMapControl : UIPanel
 
     private static void EnsureArt(GraphicsDevice device)
     {
-        ScrollTexture ??= ChaosGame.LoadTextureResource("map_scroll.png", premultiply: false);
-        BannerTexture ??= ChaosGame.LoadTextureResource("map_banner.png", premultiply: false);
+        ScrollTexture ??= ChaosGame.LoadTextureResource("map_scroll.png");
+        BannerTexture ??= ChaosGame.LoadTextureResource("map_banner.png");
 
         //CPU copy of the parchment for the inked-map multiply bake
         if ((ScrollPixels is null) && (ScrollTexture is not null))

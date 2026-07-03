@@ -26,7 +26,7 @@ internal static class MapMarkers
 
     public static void EnsureLoaded(GraphicsDevice device)
     {
-        RedMark ??= ChaosGame.LoadTextureResource("map_mark_red.png", premultiply: false);
+        RedMark ??= ChaosGame.LoadTextureResource("map_mark_red.png");
 
         if (Pixel is null)
         {
